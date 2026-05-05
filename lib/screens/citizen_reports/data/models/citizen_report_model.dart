@@ -64,4 +64,40 @@ class CitizenReportModel {
       isLiked: isLiked ?? this.isLiked,
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'status': status,
+      'likesCount': likesCount,
+      'viewsCount': viewsCount,
+      'commentsCount': commentsCount,
+      'report_image': report_image,
+      'imageAfterProcessing': imageAfterProcessing,
+      'created_at': created_at,
+      'user_name': user_name,
+      'user_profile': user_profile,
+      'isLiked': isLiked ? 1 : 0,
+    };
+  }
+
+  factory CitizenReportModel.fromMap(Map<String, dynamic> map) {
+    return CitizenReportModel(
+      id: map['id'],
+      title: map['title'] ?? "",
+      description: map['description'] ?? "",
+      status: map['status'] ?? "",
+      likesCount: map['likesCount'] ?? 0,
+      viewsCount: map['viewsCount'] ?? 0,
+      commentsCount: map['commentsCount'] ?? 0,
+      report_image: map['report_image'] ?? "",
+      imageAfterProcessing: map['imageAfterProcessing'],
+      created_at: map['created_at'] ?? "",
+      user_name: map['user_name'] ?? "مواطن",
+      user_profile: map['user_profile'] ?? "",
+      isLiked: map['isLiked'] == 1,
+    );
+  }
 }

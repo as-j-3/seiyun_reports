@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:seiyun_reports_app/screens/report/data/report_model.dart';
 
 class ReportCard extends StatelessWidget {
@@ -39,13 +41,13 @@ class ReportCard extends StatelessWidget {
           children: [
             Stack(
               children: [
-                Image.network(
-                  report.image,
-                  height: 160,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) => Container(
+                report.image.startsWith('http')
+                  ? CachedNetworkImage(
+                      imageUrl: report.image,
+                      height: 160,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorWidget: (context, url, error) => Container(
                         height: 160,
                         color: Theme.of(context).scaffoldBackgroundColor,
                         child: const Icon(
@@ -53,7 +55,21 @@ class ReportCard extends StatelessWidget {
                           color: Colors.grey,
                         ),
                       ),
-                ),
+                    )
+                  : Image.file(
+                      File(report.image),
+                      height: 160,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: 160,
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        child: const Icon(
+                          Icons.image_not_supported,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
                 Positioned(
                   top: 15,
                   right: 15,

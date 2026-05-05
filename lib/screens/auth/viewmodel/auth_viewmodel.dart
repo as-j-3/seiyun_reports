@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:seiyun_reports_app/screens/auth/data/auth_repository.dart';
 
+/// كلاس إدارة حالة المصادقة (تسجيل الدخول، إنشاء حساب، تسجيل جوجل)
 class AuthViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  bool _isSignupMode = true;
+  bool _isSignupMode = true; // وضع إنشاء حساب (true) أو تسجيل دخول (false)
   bool get isSignupMode => _isSignupMode;
 
   final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -17,20 +18,24 @@ class AuthViewModel extends ChangeNotifier {
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
+  /// التبديل بين واجهة تسجيل الدخول وإنشاء الحساب
   void toggleSignupMode() {
     _isSignupMode = !_isSignupMode;
     notifyListeners();
   }
 
+  /// فرض وضع تسجيل الدخول
   void forceSignInMode() {
     _isSignupMode = false;
     notifyListeners();
   }
 
+  /// مسح رسائل الخطأ الحالية
   void clearError() {
     _errorMessage = null;
   }
 
+  /// معالجة المصادقة عبر البريد الإلكتروني وكلمة المرور
   Future<bool> handleEmailAuth({
     required String email,
     required String password,
@@ -42,16 +47,19 @@ class AuthViewModel extends ChangeNotifier {
 
     try {
       if (_isSignupMode) {
+        // إنشاء حساب جديد في Firebase
         await _auth.createUserWithEmailAndPassword(
           email: email.trim(),
           password: password.trim(),
         );
 
+        // تحديث اسم المستخدم إذا تم توفيره
         if (name != null && name.trim().isNotEmpty) {
           await _auth.currentUser?.updateDisplayName(name.trim());
           await _auth.currentUser?.reload();
         }
       } else {
+        // تسجيل الدخول لحساب موجود
         await _auth.signInWithEmailAndPassword(
           email: email.trim(),
           password: password.trim(),
@@ -60,24 +68,21 @@ class AuthViewModel extends ChangeNotifier {
 
       final user = _auth.currentUser;
       if (user != null) {
-        final token = await user.getIdToken();
-        debugPrint("FIREBASE_TOKEN: $token");
-
+        // تسجيل المستخدم في قاعدة بيانات السيرفر الخاص بالتطبيق
         await _authRepo.registerUser(
           role: 'citizens',
-          name:
-              (name != null && name.trim().isNotEmpty)
-                  ? name.trim()
-                  : (user.displayName ?? "User"),
+          name: (name != null && name.trim().isNotEmpty)
+              ? name.trim()
+              : (user.displayName ?? "User"),
         );
         _isLoading = false;
         notifyListeners();
         return true;
       }
     } on FirebaseAuthException catch (e) {
-      _errorMessage = e.message ?? "حدث خطأ غير متوقع";
+      _errorMessage = e.message ?? "حدث خطأ غير متوقع في Firebase";
     } catch (e) {
-      _errorMessage = "فشل الربط مع الخادم";
+      _errorMessage = "فشل الربط مع الخادم، يرجى المحاولة لاحقاً";
     }
 
     _isLoading = false;
@@ -85,13 +90,14 @@ class AuthViewModel extends ChangeNotifier {
     return false;
   }
 
+  /// معالجة تسجيل الدخول عبر حساب Google
   Future<bool> handleGoogleSignIn() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await _googleSignIn.signOut();
+      await _googleSignIn.signOut(); // تسجيل خروج مسبق لضمان اختيار الحساب
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         _isLoading = false;
@@ -99,21 +105,21 @@ class AuthViewModel extends ChangeNotifier {
         return false;
       }
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
+      // تسجيل الدخول في Firebase باستخدام بيانات جوجل
       final userCredential = await _auth.signInWithCredential(credential);
       final user = userCredential.user;
 
       if (user != null) {
-        final finalName =
-            user.displayName ??
+        final finalName = user.displayName ??
             (user.email != null ? user.email!.split('@')[0] : "User");
 
+        // تسجيل المستخدم في قاعدة بيانات السيرفر
         await _authRepo.registerUser(role: 'citizens', name: finalName);
         _isLoading = false;
         notifyListeners();
@@ -129,3 +135,4 @@ class AuthViewModel extends ChangeNotifier {
     return false;
   }
 }
+

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../data/models/citizen_report_model.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 
@@ -30,9 +31,16 @@ class CitizenReportCard extends StatelessWidget {
             padding: const EdgeInsets.all(12.0),
             child: Row(
               children: [
-                CircleAvatar(
-                  backgroundImage: NetworkImage(report.user_profile),
-                  radius: 20,
+                CachedNetworkImage(
+                  imageUrl: report.user_profile,
+                  imageBuilder: (context, imageProvider) => CircleAvatar(
+                    backgroundImage: imageProvider,
+                    radius: 20,
+                  ),
+                  errorWidget: (context, url, error) => const CircleAvatar(
+                    radius: 20,
+                    child: Icon(Icons.person),
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -73,16 +81,12 @@ class CitizenReportCard extends StatelessWidget {
           // Report Image
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(0)),
-            child: Image.network(
-              report.report_image,
+            child: CachedNetworkImage(
+              imageUrl: report.report_image,
               height: 200,
               width: double.infinity,
               fit: BoxFit.cover,
-              //تحديد حجم الكاش للصورة لتقليل استهلاك الذاكرة (RAM)
-              cacheWidth: 400, 
-              cacheHeight: 400,
-              //  عرض أيقونة بديلة في حال فشل تحميل الصورة
-              errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+              errorWidget: (context, url, error) => const Icon(Icons.broken_image),
             ),
           ),
 
@@ -207,13 +211,13 @@ class CitizenReportCard extends StatelessWidget {
                   const SizedBox(height: 10),
                   ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                  report.imageAfterProcessing!, // رابط الصورة من المودل
+                  child: CachedNetworkImage(
+                  imageUrl: report.imageAfterProcessing!, // رابط الصورة من المودل
                   height: 150,
                   width: double.infinity,
                   fit: BoxFit.cover,
                   // تظهر ايقونة اذا الصورة خربانة 
-                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+                  errorWidget: (context, url, error) => const Icon(Icons.broken_image),
                 
             ),
           ),

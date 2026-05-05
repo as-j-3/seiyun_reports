@@ -21,7 +21,7 @@ class _NewsTipsScreenState extends State<NewsTipsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<NewsTipsViewModel>().fetchDataFromLaravel();
+      context.read<NewsTipsViewModel>().loadContent();
     });
   }
 
@@ -32,13 +32,12 @@ class _NewsTipsScreenState extends State<NewsTipsScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Directionality(
         textDirection: TextDirection.rtl,
-        child:
-            viewModel.isLoading
+             child :viewModel.isLoading && viewModel.newsList.isEmpty && viewModel.tipssList.isEmpty
                 ? const Center(
                   child: CircularProgressIndicator(),
                 ) // عرض تحميل أثناء جلب البيانات
                 : RefreshIndicator(
-                  onRefresh: () => viewModel.fetchDataFromLaravel(),
+                  onRefresh: () => viewModel.loadContent(),
                   child: SingleChildScrollView(
                     child: Column(
                       children: [

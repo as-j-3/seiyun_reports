@@ -1,16 +1,21 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:seiyun_reports_app/core/database/news_local_service.dart';
+import 'package:seiyun_reports_app/core/database/reports_local_service.dart';
 import 'package:seiyun_reports_app/core/network/api_service.dart';
 import 'package:seiyun_reports_app/core/network/dio_client.dart' show DioClient;
-import 'package:seiyun_reports_app/core/utils/pref_helper.dart';
+import 'package:seiyun_reports_app/core/network/network_info.dart';
 import 'package:seiyun_reports_app/screens/auth/view/auth_screen.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/data/citizen_reports_repository.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/data/citizen_reports_service.dart';
 import 'package:seiyun_reports_app/screens/home/view/home_screen.dart';
 import 'package:seiyun_reports_app/screens/auth/viewmodel/auth_viewmodel.dart';
 import 'package:seiyun_reports_app/screens/home/viewmodel/home_viewmodel.dart';
+import 'package:seiyun_reports_app/screens/news_tips/data/NewsRepository.dart';
+import 'package:seiyun_reports_app/screens/news_tips/data/NewsService.dart';
 import 'package:seiyun_reports_app/screens/report/data/report_repository.dart';
 import 'package:seiyun_reports_app/screens/report/data/report_service.dart';
 import 'package:seiyun_reports_app/screens/report/viewmodel/report_viewmodel.dart';
@@ -26,35 +31,58 @@ import 'firebase_options.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
+
   runApp(
     MultiProvider(
       providers: [
-
         Provider(create: (_) => ApiService(DioClient())),
-        ProxyProvider<ApiService, ReportService>(
-         update: (_, api, __) => ReportService(api),),
-  
-        ProxyProvider<ReportService, ReportRepository>(
-        update: (_, service, __) => ReportRepository(service), ),
+        Provider<NetworkInfo>(create: (_) => NetworkInfoImpl(Connectivity())),
+        Provider(create: (_) => ReportsLocalService()),
+        Provider(create: (_) => NewsLocalService()),
+
+        ChangeNotifierProvider(
+          create:
+              (context) => ReportViewModel(
+                ReportRepository(
+                  ReportService(context.read<ApiService>()),
+                  ReportsLocalService(),
+                  context.read<NetworkInfo>(),
+                ),
+              ),
+        ),
+        ChangeNotifierProvider(
+          create:
+              (context) => NewsTipsViewModel(
+                NewsRepository(
+                  Newsservice(context.read<ApiService>()),
+                  NewsLocalService(),
+                  context.read<NetworkInfo>(),
+                ),
+              ),
+        ),
 
         ProxyProvider<ApiService, CitizenReportsService>(
-        update: (_, api, __) => CitizenReportsService(api), ),
-         ProxyProvider<CitizenReportsService, CitizenReportsRepository>(
-    update: (_, service, __) => CitizenReportsRepository(service),
-  ),
+          update: (_, api, __) => CitizenReportsService(api),
+        ),
+        ProxyProvider2<
+          CitizenReportsService,
+          NetworkInfo,
+          CitizenReportsRepository
+        >(
+          update:
+              (_, service, networkInfo, __) =>
+                  CitizenReportsRepository(service, networkInfo),
+        ),
         ChangeNotifierProvider(
-  create: (context) => CitizenReportsViewModel(
-    context.read<CitizenReportsRepository>(),
-  ),
-  ),
- 
-        ChangeNotifierProvider(create: (context) => ReportViewModel(context.read<ReportRepository>()),),
-        ChangeNotifierProvider(create: (context) => CitizenReportsViewModel(context.read<CitizenReportsRepository>(),),),
+          create:
+              (context) => CitizenReportsViewModel(
+                context.read<CitizenReportsRepository>(),
+              ),
+        ),
+
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(create: (_) => HomeViewModel()),
-        ChangeNotifierProvider(create: (_) => NotificationViewModel()),       
-        ChangeNotifierProvider(create: (_) => NewsTipsViewModel()),
+        ChangeNotifierProvider(create: (_) => NotificationViewModel()),
         ChangeNotifierProvider(create: (_) => ProfileViewModel()),
         ChangeNotifierProvider(create: (_) => PickupSchedulesViewModel()),
         ChangeNotifierProvider(create: (_) => MapViewModel()),
@@ -77,7 +105,8 @@ class MyApp extends StatelessWidget {
           title: 'Seiyun Reports App',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          themeMode: profileViewModel.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          themeMode:
+              profileViewModel.isDarkMode ? ThemeMode.dark : ThemeMode.light,
           home: StreamBuilder<User?>(
             stream: FirebaseAuth.instance.authStateChanges(),
             builder: (context, snapshot) {

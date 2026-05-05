@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/screens/news_tips/data/news_tips_model.dart';
 
@@ -30,22 +31,15 @@ class NewsCard extends StatelessWidget {
               color: Theme.of(context).scaffoldBackgroundColor,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            child: Image.network(
-                news.image ?? "", 
-                fit: BoxFit.cover,
-            
-            loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+            child: CachedNetworkImage(
+            imageUrl: news.image ?? "",
+            fit: BoxFit.cover,
+             // هذا الجزء بديل لـ loadingBuilder
+              placeholder: (context, url) => Center(
+              child: CircularProgressIndicator(),
+             ),
+  // هذا الجزء بديل لـ errorBuilder
+              errorWidget: (context, url, error) => _buildPlaceholder(),
               ),),
           Padding(
             padding: const EdgeInsets.all(15),

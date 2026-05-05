@@ -6,7 +6,9 @@ import 'package:seiyun_reports_app/screens/report/data/report_model.dart';
 import '../data/report_repository.dart';
 class ReportViewModel extends ChangeNotifier {
   final ReportRepository _repository;
-  ReportViewModel(this._repository);
+  ReportViewModel(this._repository){
+    fetchReportsFromLaravel();
+  }
 
   String _selectedCategory = 'نفايات';
   String get selectedCategory => _selectedCategory;
@@ -88,11 +90,14 @@ class ReportViewModel extends ChangeNotifier {
   bool get isUploading => _isUploading;
 
   //  دالة جلب البلاغات المستخدم  من قاعدة البيانات
-  Future<void> fetchReportsFromLaravel() async {
+  Future<void> fetchReportsFromLaravel({bool isRefresh = false}) async {
     _isLoadingReports = true;
     notifyListeners();
     try {
-      _reportsList = await _repository.fetchMyReports();//ياخذ البيانات من الريبوزتري 
+      //نحاول رفع أي بلاغات كانت مخزنة أوفلاين
+      await _repository.syncPendingReports();
+      //جلب القائمة (سواء من السيرفر أو الكاش حسب منطق الريبوزيتوري)
+      _reportsList = await _repository.fetchMyReports(isRefresh: isRefresh);//ياخذ البيانات من الريبوزتري 
     } catch (e) {
       debugPrint("خطأ في جلب البلاغات: $e");
     } finally {
@@ -104,14 +109,8 @@ class ReportViewModel extends ChangeNotifier {
   // دالة ارسال البلاغ 
   Future<void> sendNewReport(BuildContext context,String title, String description) async {
     //تحقق من وجود صورة
-    if (_image == null) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("الرجاء إرفاق صورة"), backgroundColor: Colors.orange));
-    return;
-  }
-
-  //  تحقق من العنوان والوصف
-  if (title.isEmpty || description.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("الرجاء كتابة العنوان والوصف"), backgroundColor: Colors.orange));
+    if (_image == null|| title.isEmpty || description.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("الرجاء إكمال جميع البيانات"), backgroundColor: Colors.orange));
     return;
   }
     
@@ -128,7 +127,7 @@ class ReportViewModel extends ChangeNotifier {
     lat = parts[0].trim();
     lng = parts[1].trim();
   } catch (e) {
-    debugPrint("خطأ في تحليل النص: $e");
+    debugPrint("خطأ في تحليل إحداثيات الموقع: $e");
   }
   //نستدعي الريبو عشان نرسل البيانات الى السيرفر 
     bool success = await _repository.sendNewReport(
@@ -145,12 +144,23 @@ class ReportViewModel extends ChangeNotifier {
     notifyListeners();
   // في حال نجح ارسال البلاغ نستدعي دالة جلب البلاغات لاجل ان تتحدث قائمة بلاغاتي ويوضع فيها البلاغ الجديد
     if (success) {
-      fetchReportsFromLaravel();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("تم الإرسال بنجاح"), backgroundColor: Colors.green));
+      await fetchReportsFromLaravel(isRefresh: true);  
+      String message = "تمت العملية بنجاح";
+      ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.green));
       Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("فشل الإرسال"), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "لا يوجد اتصال بالإنترنت حاليًا سيتم رفعه البلاغ عند توفر الشبكة.",
+          ),
+          backgroundColor: Colors.blueGrey, // لون هادئ يدل على الحفظ المحلي
+          duration: Duration(seconds: 5),
+        ),
+      );
+      // حتى لو فشل الإرسال للسيرفر، نقوم بتحديث القائمة لعرض البلاغ المخزن محلياً
+      fetchReportsFromLaravel();
+      Navigator.pop(context); // نغلق الصفحة لأن البلاغ "حُفظ" ولم يضع
     }
-  }
-  }
-}
+  }}}

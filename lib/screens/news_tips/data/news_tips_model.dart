@@ -55,4 +55,18 @@ class NewsModel {
       'created_at': createdAt,
     };
   }
+  factory NewsModel.fromMap(Map<String, dynamic> map) {
+  return NewsModel(
+    id: map['id'],
+    adminId: map['admin_id'],
+    title: map['title'],
+    content: map['content'],
+    image: map['image'],
+    isActive: map['is_active'] is bool ? (map['is_active'] ? 1 : 0) : map['is_active'],
+    type: map['type'],
+    category: map['category'],
+    publishDate: map['publish_date'],
+    createdAt: map['created_at'],
+  );
+}
 }

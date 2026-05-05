@@ -14,23 +14,20 @@ class CitizenReportsViewModel extends ChangeNotifier {
 
   String _searchQuery = '';
   String get searchQuery => _searchQuery;
-  ReportStatistics? _stats; 
-  ReportStatistics? get stats => _stats;// كائن ياخذ الاحصائيات القادمة من API
-
+  ReportStatistics? _stats;
+  ReportStatistics? get stats => _stats;
 
   CitizenReportsViewModel(this._repository) {
-    loadDashboardData(); // استدعاءلدالة الجلب الموحدة عند التشغيل
+    loadDashboardData(); // استدعاء لدالة الجلب  عند التشغيل
   }
-  
 
-   Future<void> loadDashboardData() async {
+  Future<void> loadDashboardData() async {
     _isLoading = true;
     notifyListeners();
-   try {
+    try {
       //  جلب البلاغات والاحصائيات من السيرفر
       _reports = await _repository.fetchReports();
       _stats = await _repository.getReportStats();
-
     } catch (e) {
       print("❌ فشل الجلب: $e");
     } finally {
@@ -38,31 +35,37 @@ class CitizenReportsViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-     
 
-  Future< void> toggleLike(int reportId) async{
+  Future<void> toggleLike(int reportId) async {
     final index = _reports.indexWhere((r) => r.id == reportId);
     if (index != -1) {
       final report = _reports[index];
       final oldStatus = report.isLiked;
+      final newStatus = !oldStatus;
+      final newLikesCount =
+          oldStatus ? report.likesCount - 1 : report.likesCount + 1;
 
       _reports[index] = report.copyWith(
-        isLiked:!oldStatus,
-        likesCount: oldStatus ? report.likesCount - 1 : report.likesCount + 1,
+        isLiked: newStatus,
+        likesCount: newLikesCount,
       );
       notifyListeners();
-      //ارسال التحديث حق اللايك للسيرفر
-      bool success = await _repository.updateLike(reportId);
 
-      //لو فشل السيرفر يرجع حالة اللايك نفس قبل 
-      if(!success){
-        _reports[index]= report.copyWith(
-          isLiked:  oldStatus,
+      // إرسال التحديث للسيرفر وللجهاز (التخزين المحلي)
+      bool success = await _repository.updateLike(
+        reportId,
+        newStatus,
+        newLikesCount,
+      );
+
+      // لو فشل التحديث، نرجع الحالة كما كانت
+      if (!success) {
+        _reports[index] = report.copyWith(
+          isLiked: oldStatus,
           likesCount: report.likesCount,
         );
         notifyListeners();
       }
-      
     }
   }
 
@@ -73,23 +76,29 @@ class CitizenReportsViewModel extends ChangeNotifier {
 
   List<CitizenReportModel> get filteredReports {
     if (_searchQuery.isEmpty) return _reports;
-    return _reports.where((r) => 
-      r.title.contains(_searchQuery) || 
-      r.description.contains(_searchQuery) ||
-      r.description.contains(_searchQuery)
-    ).toList();
-  }
-  //هنا يقرا البيانات من مودل الاحصائيات مالم يجدها هو يحسبها 
-  int get totalReports => _stats?.total?? _reports.length;
-  int get resolvedReports =>_stats?.resolved?? _reports.where((r) => r.status == 'تم الحل').length;
-  int get activeReports =>_stats?.active?? _reports.where((r) => r.status != 'تم الحل').length;
-  String get resolutionRate {
-    if (_stats != null) {
-    return _stats!.resolutionRate; 
+    return _reports
+        .where(
+          (r) =>
+              r.title.contains(_searchQuery) ||
+              r.description.contains(_searchQuery) ||
+              r.description.contains(_searchQuery),
+        )
+        .toList();
   }
 
+  //هنا يقرا البيانات من مودل الاحصائيات مالم يجدها هو يحسبها
+  int get totalReports => _stats?.total ?? _reports.length;
+  int get resolvedReports =>
+      _stats?.resolved ?? _reports.where((r) => r.status == 'تم الحل').length;
+  int get activeReports =>
+      _stats?.active ?? _reports.where((r) => r.status != 'تم الحل').length;
+  String get resolutionRate {
+    if (_stats != null) {
+      return _stats!.resolutionRate;
+    }
+
     if (_reports.isEmpty) return "0%";
-   double calculatedRate = (resolvedReports / totalReports) * 100;
-   return "${calculatedRate.toStringAsFixed(0)}%";
+    double calculatedRate = (resolvedReports / totalReports) * 100;
+    return "${calculatedRate.toStringAsFixed(0)}%";
   }
 }
