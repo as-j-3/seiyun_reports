@@ -29,7 +29,14 @@ class GoogleSignInButton extends StatelessWidget {
                           const Icon(Icons.g_mobiledata),
                 ),
                 const SizedBox(width: 8),
-                Text(text, style: const TextStyle(color: Colors.grey)),
+                Text(
+                  text, 
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
           ),

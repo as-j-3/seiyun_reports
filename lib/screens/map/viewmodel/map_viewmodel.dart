@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapViewModel extends ChangeNotifier {
   static const LatLng seiyunCenter = LatLng(15.9429, 48.7844);
-  final MapController mapController = MapController();
+  GoogleMapController? mapController;
 
   bool _showReports = true;
   bool get showReports => _showReports;
@@ -30,13 +29,29 @@ class MapViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+  }
+
   void moveToCenter() {
-    mapController.move(seiyunCenter, 14.0);
+    mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        const CameraPosition(target: seiyunCenter, zoom: 14.0),
+      ),
+    );
+  }
+
+  void focusOnLocation(LatLng location) {
+    mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: location, zoom: 18.0),
+      ),
+    );
   }
 
   @override
   void dispose() {
-    mapController.dispose();
+    mapController?.dispose();
     super.dispose();
   }
 }

@@ -72,7 +72,9 @@ class RecentReportsList extends StatelessWidget {
                   "عرض",
                   style: TextStyle(
                     fontSize: 11,
-                    color: AppTheme.secondaryColor,
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? Colors.white 
+                        : AppTheme.secondaryColor,
                   ),
                 ),
               ),
@@ -84,13 +86,21 @@ class RecentReportsList extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.circle, size: 8, color: AppTheme.primaryColor),
+                  Icon(
+                    Icons.circle, 
+                    size: 8, 
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? const Color(0xFF2ecc71) 
+                        : AppTheme.primaryColor
+                  ),
                   const SizedBox(width: 5),
                   Text(
                     data['status']!,
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppTheme.primaryColor,
+                      color: Theme.of(context).brightness == Brightness.dark 
+                          ? const Color(0xFF2ecc71) 
+                          : AppTheme.primaryColor,
                     ),
                   ),
                 ],

@@ -53,18 +53,31 @@ class AuthScreen extends StatelessWidget {
             child: Container(
               height: screenHeight * 0.8,
               padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
               ),
-              child:
-                  authVM.isLoading
-                      ? const Center(
+              child: Stack(
+                children: [
+                  const AuthForm(),
+                  if (authVM.isLoading)
+                    Container(
+                      color: Theme.of(context).cardColor.withValues(alpha: 0.7),
+                      child: const Center(
                         child: CircularProgressIndicator(
                           color: AppTheme.primaryGreen,
                         ),
-                      )
-                      : const AuthForm(),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ],

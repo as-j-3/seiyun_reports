@@ -14,7 +14,7 @@ class RewardsCard extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.titleSmall?.color ?? Colors.grey,
+            color: Theme.of(context).textTheme.titleLarge?.color,
           ),
         ),
         const SizedBox(height: 10),
@@ -23,6 +23,13 @@ class RewardsCard extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: AppTheme.rewardsGradient,
             borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.orange.withOpacity(0.2),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
           child: Column(
             children: [
@@ -47,14 +54,14 @@ class RewardsCard extends StatelessWidget {
                       ),
                       Text(
                         "2850",
-                        style: TextStyle(color: Colors.white, fontSize: 14),
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                     ],
                   ),
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: const Icon(
@@ -76,16 +83,20 @@ class RewardsCard extends StatelessWidget {
               const SizedBox(height: 20),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+                  color: Theme.of(context).brightness == Brightness.dark 
+                      ? Colors.black.withOpacity(0.3) 
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
                     "عرض المكافآت والانجازات",
                     style: TextStyle(
-                      color: Color(0xFFD48100),
+                      color: Theme.of(context).brightness == Brightness.dark 
+                          ? Colors.white 
+                          : const Color(0xFFD48100),
                       fontWeight: FontWeight.bold,
                     ),
                   ),

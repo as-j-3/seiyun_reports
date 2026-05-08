@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
@@ -25,10 +26,28 @@ class ReportViewModel extends ChangeNotifier {
   bool _isLoadingLocation = false;
   bool get isLoadingLocation => _isLoadingLocation;
 
+<<<<<<< main
   void setCategory(String category)  {
      _selectedCategory = category;
       notifyListeners();
        }
+=======
+  // Phone Verification State
+  String? _verificationId;
+  bool _isPhoneVerified = false;
+  bool get isPhoneVerified => _isPhoneVerified;
+  
+  bool _isVerifying = false;
+  bool get isVerifying => _isVerifying;
+
+  String? _phoneErrorMessage;
+  String? get phoneErrorMessage => _phoneErrorMessage;
+
+  void setCategory(String category) {
+    _selectedCategory = category;
+    notifyListeners();
+  }
+>>>>>>> main
 
   void setPriority(String priority) {
      _selectedPriority = priority;

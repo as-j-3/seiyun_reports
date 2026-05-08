@@ -11,6 +11,19 @@ class PrefHelper {
   static const String _userPhoneKey = 'user_phone';
   static const String _userAddressKey = 'user_address';
   static const String _isDarkModeKey = 'is_dark_mode';
+  static const String _isPhoneVerifiedKey = 'is_phone_verified';
+
+  /// حفظ حالة التحقق من رقم الهاتف
+  static Future<void> savePhoneVerified(bool verified) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_isPhoneVerifiedKey, verified);
+  }
+
+  /// جلب حالة التحقق من رقم الهاتف
+  static Future<bool> isPhoneVerified() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_isPhoneVerifiedKey) ?? false;
+  }
 
   /// حفظ التوكن
   static Future<void> saveToken(String token) async {

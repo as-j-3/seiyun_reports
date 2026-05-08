@@ -68,21 +68,44 @@ class AuthViewModel extends ChangeNotifier {
 
       final user = _auth.currentUser;
       if (user != null) {
+<<<<<<< main
         // تسجيل المستخدم في قاعدة بيانات السيرفر الخاص بالتطبيق
         await _authRepo.registerUser(
           role: 'citizens',
           name: (name != null && name.trim().isNotEmpty)
               ? name.trim()
               : (user.displayName ?? "User"),
+=======
+        final token = await user.getIdToken();
+        debugPrint("FIREBASE_TOKEN: $token");
+
+        // تحديد الدور بناءً على الإيميل (إيميل سحري للمشرف)
+        final String role = (user.email?.toLowerCase() == 'supervisor@app.com') ? 'supervisor' : 'citizens';
+
+        await _authRepo.registerUser(
+          role: role,
+          name:
+              (name != null && name.trim().isNotEmpty)
+                  ? name.trim()
+                  : (user.displayName ?? "User"),
+>>>>>>> main
         );
         _isLoading = false;
         notifyListeners();
         return true;
       }
     } on FirebaseAuthException catch (e) {
+<<<<<<< main
       _errorMessage = e.message ?? "حدث خطأ غير متوقع في Firebase";
     } catch (e) {
       _errorMessage = "فشل الربط مع الخادم، يرجى المحاولة لاحقاً";
+=======
+      _errorMessage = e.message ?? "حدث خطأ في المصادقة";
+    } catch (e) {
+      _errorMessage = e.toString().contains("Exception:") 
+          ? e.toString().replaceAll("Exception: ", "") 
+          : "فشل الربط مع الخادم: $e";
+>>>>>>> main
     }
 
     _isLoading = false;
@@ -119,8 +142,15 @@ class AuthViewModel extends ChangeNotifier {
         final finalName = user.displayName ??
             (user.email != null ? user.email!.split('@')[0] : "User");
 
+<<<<<<< main
         // تسجيل المستخدم في قاعدة بيانات السيرفر
         await _authRepo.registerUser(role: 'citizens', name: finalName);
+=======
+        // تحديد الدور بناءً على الإيميل (إيميل سحري للمشرف)
+        final String role = (user.email?.toLowerCase() == 'supervisor@app.com') ? 'supervisor' : 'citizens';
+
+        await _authRepo.registerUser(role: role, name: finalName);
+>>>>>>> main
         _isLoading = false;
         notifyListeners();
         return true;

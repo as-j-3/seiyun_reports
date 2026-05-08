@@ -35,7 +35,7 @@ class NotificationPage extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
               const SizedBox(height: 20),
-              if (notifVM.lastMessage != null)
+              if (notifVM.notifications.isNotEmpty)
                 Card(
                   elevation: 4,
                   margin: const EdgeInsets.all(8),
@@ -45,7 +45,7 @@ class NotificationPage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          notifVM.lastMessage!.notification?.title ?? "بدون عنوان",
+                          notifVM.notifications.first.title,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -53,7 +53,7 @@ class NotificationPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          notifVM.lastMessage!.notification?.body ?? "بدون محتوى",
+                          notifVM.notifications.first.body,
                           style: const TextStyle(fontSize: 16),
                         ),
                       ],

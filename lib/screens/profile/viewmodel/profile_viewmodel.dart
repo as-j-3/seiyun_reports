@@ -27,6 +27,19 @@ class ProfileViewModel extends ChangeNotifier {
   bool _isDarkMode = false;
   bool get isDarkMode => _isDarkMode;
 
+  bool _isPhoneVerified = false;
+  bool get isPhoneVerified => _isPhoneVerified;
+
+  bool _isVerifying = false;
+  bool get isVerifying => _isVerifying;
+
+  bool _otpSent = false;
+  bool get otpSent => _otpSent;
+
+  String? _verificationId;
+  String? _phoneErrorMessage;
+  String? get phoneErrorMessage => _phoneErrorMessage;
+
   ProfileViewModel() {
     _loadProfileData();
   }
@@ -45,8 +58,78 @@ class ProfileViewModel extends ChangeNotifier {
     _userPhone = await PrefHelper.getUserPhone();
     _userAddress = await PrefHelper.getUserAddress();
     _isDarkMode = await PrefHelper.isDarkMode();
+    _isPhoneVerified = await PrefHelper.isPhoneVerified();
 
     notifyListeners();
+  }
+
+  // --- Phone Verification Logic ---
+
+  Future<void> sendOTP(String phoneNumber) async {
+    _isVerifying = true;
+    _phoneErrorMessage = null;
+    notifyListeners();
+
+    try {
+      await _auth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          await _auth.signInWithCredential(credential);
+          _isPhoneVerified = true;
+          await PrefHelper.savePhoneVerified(true);
+          await PrefHelper.saveUserPhone(phoneNumber);
+          _userPhone = phoneNumber;
+          _isVerifying = false;
+          notifyListeners();
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          _phoneErrorMessage = e.message ?? "فشل إرسال الرمز";
+          _isVerifying = false;
+          notifyListeners();
+        },
+        codeSent: (String verId, int? resendToken) {
+          _verificationId = verId;
+          _otpSent = true;
+          _isVerifying = false;
+          notifyListeners();
+        },
+        codeAutoRetrievalTimeout: (String verId) {
+          _verificationId = verId;
+        },
+      );
+    } catch (e) {
+      _phoneErrorMessage = "خطأ غير متوقع";
+      _isVerifying = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> verifyOTP(String smsCode) async {
+    if (_verificationId == null) return false;
+    
+    _isVerifying = true;
+    _phoneErrorMessage = null;
+    notifyListeners();
+
+    try {
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: _verificationId!,
+        smsCode: smsCode,
+      );
+
+      await _auth.signInWithCredential(credential);
+      _isPhoneVerified = true;
+      _otpSent = false;
+      await PrefHelper.savePhoneVerified(true);
+      _isVerifying = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _phoneErrorMessage = "الرمز غير صحيح";
+      _isVerifying = false;
+      notifyListeners();
+      return false;
+    }
   }
 
   User? get currentUser => _auth.currentUser;

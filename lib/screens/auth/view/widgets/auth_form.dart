@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:seiyun_reports_app/screens/home/view/home_screen.dart';
+import 'package:seiyun_reports_app/screens/root/view/root_screen.dart';
 import 'package:seiyun_reports_app/screens/auth/viewmodel/auth_viewmodel.dart';
 import 'auth_text_field.dart';
 import 'auth_button.dart';
@@ -79,8 +79,9 @@ class _AuthFormState extends State<AuthForm> {
     if (!mounted) return;
 
     if (success) {
-      navigator.pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const RootScreen()),
+        (route) => false,
       );
     } else {
       if (authVM.errorMessage != null) {
@@ -100,8 +101,9 @@ class _AuthFormState extends State<AuthForm> {
     if (!mounted) return;
 
     if (success) {
-      navigator.pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const RootScreen()),
+        (route) => false,
       );
     } else {
       if (authVM.errorMessage != null) {
@@ -120,50 +122,53 @@ class _AuthFormState extends State<AuthForm> {
         children: [
           const Icon(
             Icons.forest_rounded,
-            color: AppTheme.primaryGreen,
+            color: AppTheme.accentGreen,
             size: 40,
           ),
           const SizedBox(height: 10),
           Text(
-            authVM.isSignupMode ? 'Get Started' : 'Welcome Back',
-            style: const TextStyle(
-              fontSize: 28,
+            authVM.isSignupMode ? 'إنشاء حساب جديد' : 'مرحباً بك مجدداً',
+            style: TextStyle(
+              fontSize: 26,
               fontWeight: FontWeight.bold,
-              color: AppTheme.primaryGreen,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 30),
           if (authVM.isSignupMode) ...[
             AuthTextField(
-              label: "Full Name",
-              hint: "Enter Full Name",
+              label: "الاسم الكامل",
+              hint: "أدخل اسمك بالكامل",
               controller: _nameController,
+              icon: Icons.person_outline,
             ),
             const SizedBox(height: 20),
           ],
           AuthTextField(
-            label: "Email",
-            hint: "Enter Email",
+            label: "البريد الإلكتروني",
+            hint: "example@mail.com",
             controller: _emailController,
+            icon: Icons.email_outlined,
           ),
           const SizedBox(height: 20),
           AuthTextField(
-            label: "Password",
-            hint: "Enter Password",
+            label: "كلمة المرور",
+            hint: "********",
             controller: _passwordController,
             isPassword: true,
+            icon: Icons.lock_outline,
           ),
           const SizedBox(height: 30),
           AuthButton(
-            text: authVM.isSignupMode ? 'Sign up' : 'Log in',
+            text: authVM.isSignupMode ? 'إنشاء حساب' : 'تسجيل الدخول',
             onPressed: _handleEmailAuth,
           ),
           const SizedBox(height: 25),
           GoogleSignInButton(
             text:
                 authVM.isSignupMode
-                    ? "Sign up with Google"
-                    : "Log in with Google",
+                    ? "تسجيل بواسطة Google"
+                    : "الدخول بواسطة Google",
             onTap: _handleGoogleSignIn,
           ),
           const SizedBox(height: 25),
@@ -172,15 +177,18 @@ class _AuthFormState extends State<AuthForm> {
             children: [
               Text(
                 authVM.isSignupMode
-                    ? "Already have an account? "
-                    : "Don't have an account? ",
+                    ? "لديك حساب بالفعل؟ "
+                    : "ليس لديك حساب؟ ",
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               GestureDetector(
                 onTap: () {
                   authVM.toggleSignupMode();
                 },
                 child: Text(
-                  authVM.isSignupMode ? "Log in" : "Sign up",
+                  authVM.isSignupMode ? "تسجيل الدخول" : "إنشاء حساب",
                   style: const TextStyle(
                     color: Colors.blue,
                     fontWeight: FontWeight.bold,
@@ -189,6 +197,15 @@ class _AuthFormState extends State<AuthForm> {
               ),
             ],
           ),
+          const SizedBox(height: 10),
+          if (!authVM.isSignupMode)
+            TextButton(
+              onPressed: () {},
+              child: Text(
+                "نسيت كلمة المرور؟",
+                style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+              ),
+            ),
         ],
       ),
     );

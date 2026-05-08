@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/screens/home/viewmodel/home_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
+import 'package:seiyun_reports_app/viewmodels/notification_viewmodel.dart';
+import 'package:seiyun_reports_app/screens/notifications/view/notifications_screen.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
@@ -10,6 +12,7 @@ class HomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final homeVM = context.watch<HomeViewModel>();
+    final notificationVM = context.watch<NotificationViewModel>();
     final User? user = homeVM.currentUser;
     String name = user?.displayName ?? "مستخدم";
 
@@ -55,33 +58,42 @@ class HomeHeader extends StatelessWidget {
                   ),
                 ],
               ),
-              Stack(
-                children: [
-                  const Icon(
-                    Icons.notifications_none,
-                    color: Colors.white,
-                    size: 30,
-                  ),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.orange,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Text(
-                        "3",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                  );
+                },
+                child: Stack(
+                  children: [
+                    const Icon(
+                      Icons.notifications_none,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                    if (notificationVM.unreadCount > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.orange,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            notificationVM.unreadCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -89,7 +101,7 @@ class HomeHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 15),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(15),
             ),
             child: const TextField(

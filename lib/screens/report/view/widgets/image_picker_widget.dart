@@ -6,39 +6,8 @@ import 'package:seiyun_reports_app/screens/report/viewmodel/report_viewmodel.dar
 class ImagePickerWidget extends StatelessWidget {
   const ImagePickerWidget({super.key});
 
-  void _showPicker(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-      ),
-      builder: (BuildContext bc) {
-        return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('المعرض'),
-                onTap: () {
-                  context.read<ReportViewModel>().pickImage(
-                    ImageSource.gallery,
-                  );
-                  Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_camera),
-                title: const Text('الكاميرا'),
-                onTap: () {
-                  context.read<ReportViewModel>().pickImage(ImageSource.camera);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
+  void _pickFromCamera(BuildContext context) {
+    context.read<ReportViewModel>().pickImage(ImageSource.camera);
   }
 
   @override
@@ -46,7 +15,7 @@ class ImagePickerWidget extends StatelessWidget {
     final reportVM = context.watch<ReportViewModel>();
 
     return GestureDetector(
-      onTap: () => _showPicker(context),
+      onTap: () => _pickFromCamera(context),
       child: Container(
         width: double.infinity,
         height: 200, // زيادة الطول قليلاً لعرض الصورة بشكل أوضح

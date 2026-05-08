@@ -2,78 +2,91 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
+import 'package:seiyun_reports_app/core/services/notification_service.dart';
+
+class AppNotification {
+  final String title;
+  final String body;
+  final DateTime time;
+  final bool isRead;
+
+  AppNotification({
+    required this.title,
+    required this.body,
+    required this.time,
+    this.isRead = false,
+  });
+}
 
 class NotificationViewModel extends ChangeNotifier {
   String? _token;
   String? get token => _token;
 
-  RemoteMessage? _lastMessage;
-  RemoteMessage? get lastMessage => _lastMessage;
+  final List<AppNotification> _notifications = [];
+  List<AppNotification> get notifications => _notifications;
 
-  bool _isSending = false;
-  bool get isSending => _isSending;
+  int get unreadCount => _notifications.where((n) => !n.isRead).length;
 
   NotificationViewModel() {
-    _initFCM();
-    _listenToMessages();
+    _init();
   }
 
-  Future<void> _initFCM() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
-    debugPrint("إذن الإشعارات: ${settings.authorizationStatus}");
-
-    try {
-      String? fcmToken = await messaging.getToken();
-      if (fcmToken != null) {
-        _token = fcmToken;
-        notifyListeners();
-        
-        debugPrint("FCM Token: $_token");
-        await _sendTokenToServer(fcmToken);
+  Future<void> _init() async {
+    await NotificationService.initialize();
+    _token = await NotificationService.getToken();
+    debugPrint("======== FCM TOKEN ========");
+    debugPrint(_token ?? "Failed to get token");
+    debugPrint("===========================");
+    
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        _addNotification(
+          message.notification!.title ?? "تنبيه جديد",
+          message.notification!.body ?? "",
+        );
       }
-    } catch (e) {
-      debugPrint("خطأ في جلب التوكن: $e");
+    });
+
+    notifyListeners();
+    if (_token != null) {
+      await _sendTokenToServer(_token!);
     }
   }
 
-  void _listenToMessages() {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint("رسالة جديدة: ${message.notification?.title}");
-      _lastMessage = message;
-      notifyListeners();
-    });
+  void _addNotification(String title, String body) {
+    _notifications.insert(0, AppNotification(
+      title: title,
+      body: body,
+      time: DateTime.now(),
+    ));
+    notifyListeners();
+  }
+
+  void markAsRead() {
+    if (unreadCount == 0) return;
+    
+    // منطق بسيط لتعليم الكل كمقروء عند فتح القائمة
+    for (var i = 0; i < _notifications.length; i++) {
+      _notifications[i] = AppNotification(
+        title: _notifications[i].title,
+        body: _notifications[i].body,
+        time: _notifications[i].time,
+        isRead: true,
+      );
+    }
+    notifyListeners();
   }
 
   Future<void> _sendTokenToServer(String fcmToken) async {
-    _isSending = true;
-    notifyListeners();
-    
     try {
-      final response = await http.post(
+      // تم الاحتفاظ بالكود القديم للتواصل مع السيرفر
+      await http.post(
         Uri.parse("https://60e573cbec47e8.lhr.life/api/update-fcm-token"),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: jsonEncode({
-          "fcm_token": fcmToken,
-          "idToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFjMzIxOTgzNGRhNTBlMjBmYWVhZWE3Yzg2Y2U3YjU1MzhmMTdiZTEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vcmVwb3J0cy1hcHAtZGMwNDYiLCJhdWQiOiJyZXBvcnRzLWFwcC1kYzA0NiIsImF1dGhfdGltZSI6MTc2OTQ1ODE5NSwidXNlcl9pZCI6IlJ3cG1Qb3ZQdHpSU1Jhc25CQ2ZMcU5WOTFxdjIiLCJzdWIiOiJSd3BtUG92UHR6UlNSYXNuQkNmTHFOVjkxcXYyIiwiaWF0IjoxNzY5NDU4MTk1LCJleHAiOjE3Njk0NjE3OTUsImVtYWlsIjoiYXNvam9icmFuM0BnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsiYXNvam9icmFuM0BnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.Biiqzul_GPgu4xc8JKyY7LrmFCfhMmcaKX2zmlrGblMc9qsxaHucKw54J8DaBLViROfgwsIGENW26A9HJAldWZ27UDYEUJudN4nkUif7PC59_-NZ-SMdZWiCwUq5Jd6YaC8Ej5PqS_HERXluUkqSxn7M5hUtXxaYRw6QaQeNm6EmdK4HrYhntjHvN8PpMllmZmf2HjqI8ALiaj1aXTYfiX5EcvNeNimlzEgE_qDLGbvKOKilye9aKRbUinnXyjEZyJ3v_Z4OL_QqTboRRoah5s0wDOqIMynb3eNUClra9hWaYA5JbmMcX-ItzxeKUWaKWCgc9StfLz3b3C1gcIDSMg", 
-        }),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"fcm_token": fcmToken}),
       );
-
-      debugPrint("رد السيرفر: ${response.body}");
     } catch (e) {
-      debugPrint("خطأ في الاتصال بالسيرفر: $e");
+      debugPrint("خطأ في تحديث التوكن بالسيرفر: $e");
     }
-    
-    _isSending = false;
-    notifyListeners();
   }
 }

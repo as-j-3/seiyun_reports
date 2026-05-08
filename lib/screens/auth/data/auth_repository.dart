@@ -26,8 +26,17 @@ class AuthRepository {
     if (response.statusCode == 200 || response.statusCode == 201) {
       final userModel = UserModel.fromJson(response.data['data']);
 
+<<<<<<< main
       await PrefHelper.saveLoginStatus(true);
       await PrefHelper.saveRole(userModel.role);
+=======
+      // حفظ التوكن والدور محلياً
+      await PrefHelper.saveToken(firebaseToken);
+      
+      // إذا كان الإيميل هو إيميل المشرف السحري، نقوم بحفظه كمشرف محلياً لضمان الدخول
+      final finalRole = (user.email?.toLowerCase() == 'supervisor@app.com') ? 'supervisor' : userModel.role;
+      await PrefHelper.saveRole(finalRole);
+>>>>>>> main
       await PrefHelper.saveUserId(userModel.id);
       await PrefHelper.saveUserName(userModel.name);
 
