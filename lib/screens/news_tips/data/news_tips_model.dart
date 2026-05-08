@@ -5,7 +5,7 @@ class NewsModel {
   final String content;
   final String? image;
   final int isActive;
-  final String type; // 'news' أو 'tips'
+  final String type;
   final String category;
   final String publishDate;
   final String createdAt;
@@ -23,23 +23,16 @@ class NewsModel {
     required this.createdAt,
   });
 
-  // تحويل الـ JSON القادم من Laravel (Postman) إلى كائن Dart
   factory NewsModel.fromJson(Map<String, dynamic> json) {
-    // 1. استخراج اسم الصورة من البيانات القادمة من السيرفر
-  String imageName = json['image'] ?? "";
-  
-  // 2. تجهيز متغير للرابط الكامل
-  String imageUrl = imageName.isNotEmpty 
-      ? "https://medicalhouse-ye.net/uploads/EnvironmentalTip/main/$imageName"
-      : "https://via.placeholder.com/150";
-   
   
     return NewsModel(
       id: json['id'] ?? 0,
       adminId: json['admin_id'] ?? 0,
       title: json['title'] ?? 'بدون عنوان',
       content: json['content'] ?? '',
-      image: imageUrl,
+      image: json['image'] != null && json['image'].toString().isNotEmpty 
+           ? json['image'].toString() 
+           : "https://via.placeholder.com/150",
       isActive: json['is_active'] ?? 0,
       type: json['type'] ?? 'news',
       category: json['category'] ?? 'عام',
@@ -48,7 +41,6 @@ class NewsModel {
     );
   }
 
-  // تحويل الكائن إلى Map (نحتاجه إذا أردنا حفظ البيانات في SQLite للمواطن)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -63,4 +55,18 @@ class NewsModel {
       'created_at': createdAt,
     };
   }
+  factory NewsModel.fromMap(Map<String, dynamic> map) {
+  return NewsModel(
+    id: map['id'],
+    adminId: map['admin_id'],
+    title: map['title'],
+    content: map['content'],
+    image: map['image'],
+    isActive: map['is_active'] is bool ? (map['is_active'] ? 1 : 0) : map['is_active'],
+    type: map['type'],
+    category: map['category'],
+    publishDate: map['publish_date'],
+    createdAt: map['created_at'],
+  );
+}
 }

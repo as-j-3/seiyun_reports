@@ -1,28 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
+import 'package:seiyun_reports_app/import.dart';
+import 'package:seiyun_reports_app/screens/news_tips/viewmodel/news_tips_viewmodel.dart';
 
 class NewsList extends StatelessWidget {
   const NewsList({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _newsItem(
-          "توسعة خدمات النظافة في الأحياء الجديدة",
-          "2023-11-25",
-          Icons.cleaning_services,
-          context,
-        ),
-        _newsItem(
-          "تحديث مواعيد جمع النفايات",
-          "2023-11-24",
-          Icons.event_available,
-          context,
-        ),
-      ],
-    );
-  }
+@override
+Widget build(BuildContext context) {
+  //للاستماع لبيانات الاخبار من السيرفر 
+  return Consumer<NewsTipsViewModel>(
+    builder: (context, viewModel, child) {
+      //مؤشر تحميل لين تجي البيانات من السيرفر
+      if (viewModel.isLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
+   // ياخذ اول خبرين فقط 
+      final newsOnly = viewModel.newsList.take(2).toList();
+      if (newsOnly.isEmpty) {
+        return const Center(child: Text("لا توجد أخبار جديدة حالياً"));
+      }
+
+      return Column(
+        children: newsOnly.map((news) {
+          return _newsItem(
+            news.title,
+            news.publishDate, 
+            Icons.newspaper,
+            context,
+          );
+        }).toList(),
+      );
+    },
+  );
+}
 
   Widget _newsItem(String title, String date, IconData icon, BuildContext context) {
     return Container(

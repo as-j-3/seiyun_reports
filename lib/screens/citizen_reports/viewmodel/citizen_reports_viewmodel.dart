@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:seiyun_reports_app/screens/citizen_reports/data/citizen_reports_repository.dart';
+import 'package:seiyun_reports_app/screens/citizen_reports/data/models/report_statistics.dart';
 import '../data/models/citizen_report_model.dart';
 
 class CitizenReportsViewModel extends ChangeNotifier {
+  final CitizenReportsRepository _repository;
+
   List<CitizenReportModel> _reports = [];
   List<CitizenReportModel> get reports => _reports;
 
@@ -10,71 +14,58 @@ class CitizenReportsViewModel extends ChangeNotifier {
 
   String _searchQuery = '';
   String get searchQuery => _searchQuery;
+  ReportStatistics? _stats;
+  ReportStatistics? get stats => _stats;
 
-  CitizenReportsViewModel() {
-    _fetchReports();
+  CitizenReportsViewModel(this._repository) {
+    loadDashboardData(); // استدعاء لدالة الجلب  عند التشغيل
   }
 
-  void _fetchReports() {
+  Future<void> loadDashboardData() async {
     _isLoading = true;
     notifyListeners();
-
-    // Mock data for now
-    _reports = [
-      CitizenReportModel(
-        id: '1',
-        title: 'تراكم القمامة في شارع الجزائر',
-        description: 'الحاوية في نهاية الشارع ممتلئة بشكل كامل منذ 3 أيام والنفايات بدأت تتراكم حولها',
-        location: 'شارع الجزائر بجانب سوق النساء',
-        date: '2025-11-26 09:30',
-        status: 'تم الإنجاز',
-        imageUrl: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?q=80&w=1000&auto=format&fit=crop',
-        category: 'البيئة',
-        authorName: 'خلود عصام',
-        authorImageUrl: 'https://i.pravatar.cc/150?u=1',
-        likesCount: 245,
-        commentsCount: 9,
-        sharesCount: 34,
-        viewsCount: 1200,
-        isLiked: true,
-        adminReply: 'تم توجيه فريق النظافة للموقع وسيتم الانتهاء من التنظيف قبل نهاية اليوم.',
-        latitude: 15.9430,
-        longitude: 48.7845,
-      ),
-      CitizenReportModel(
-        id: '2',
-        title: 'عطل في إنارة الشارع العام',
-        description: 'توجد أكثر من 5 أعمدة إنارة لا تعمل في المربع الخامس مما يسبب ظلام دامس في المساء',
-        location: 'حي القرن - المربع الخامس',
-        date: '2025-11-25 18:45',
-        status: 'قيد المعالجة',
-        imageUrl: 'https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?q=80&w=1000&auto=format&fit=crop',
-        category: 'الكهرباء',
-        authorName: 'عبدالله صالح',
-        authorImageUrl: 'https://i.pravatar.cc/150?u=2',
-        likesCount: 120,
-        commentsCount: 5,
-        sharesCount: 12,
-        viewsCount: 540,
-        isLiked: false,
-        latitude: 15.9450,
-        longitude: 48.7880,
-      ),
-    ];
-
-    _isLoading = false;
-    notifyListeners();
+    try {
+      //  جلب البلاغات والاحصائيات من السيرفر
+      _reports = await _repository.fetchReports();
+      _stats = await _repository.getReportStats();
+    } catch (e) {
+      print("❌ فشل الجلب: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  void toggleLike(String reportId) {
+  Future<void> toggleLike(int reportId) async {
     final index = _reports.indexWhere((r) => r.id == reportId);
     if (index != -1) {
       final report = _reports[index];
+      final oldStatus = report.isLiked;
+      final newStatus = !oldStatus;
+      final newLikesCount =
+          oldStatus ? report.likesCount - 1 : report.likesCount + 1;
+
       _reports[index] = report.copyWith(
-        isLiked: !report.isLiked,
-        likesCount: report.isLiked ? report.likesCount - 1 : report.likesCount + 1,
+        isLiked: newStatus,
+        likesCount: newLikesCount,
       );
       notifyListeners();
+
+      // إرسال التحديث للسيرفر وللجهاز (التخزين المحلي)
+      bool success = await _repository.updateLike(
+        reportId,
+        newStatus,
+        newLikesCount,
+      );
+
+      // لو فشل التحديث، نرجع الحالة كما كانت
+      if (!success) {
+        _reports[index] = report.copyWith(
+          isLiked: oldStatus,
+          likesCount: report.likesCount,
+        );
+        notifyListeners();
+      }
     }
   }
 
@@ -85,19 +76,29 @@ class CitizenReportsViewModel extends ChangeNotifier {
 
   List<CitizenReportModel> get filteredReports {
     if (_searchQuery.isEmpty) return _reports;
-    return _reports.where((r) => 
-      r.title.contains(_searchQuery) || 
-      r.description.contains(_searchQuery) ||
-      r.location.contains(_searchQuery)
-    ).toList();
+    return _reports
+        .where(
+          (r) =>
+              r.title.contains(_searchQuery) ||
+              r.description.contains(_searchQuery) ||
+              r.description.contains(_searchQuery),
+        )
+        .toList();
   }
 
-  int get totalReports => _reports.length;
-  int get resolvedReports => _reports.where((r) => r.status == 'تم الإنجاز').length;
-  int get activeReports => _reports.where((r) => r.status != 'تم الإنجاز').length;
-  
-  double get resolutionRate {
-    if (_reports.isEmpty) return 0.0;
-    return (resolvedReports / totalReports) * 100;
+  //هنا يقرا البيانات من مودل الاحصائيات مالم يجدها هو يحسبها
+  int get totalReports => _stats?.total ?? _reports.length;
+  int get resolvedReports =>
+      _stats?.resolved ?? _reports.where((r) => r.status == 'تم الحل').length;
+  int get activeReports =>
+      _stats?.active ?? _reports.where((r) => r.status != 'تم الحل').length;
+  String get resolutionRate {
+    if (_stats != null) {
+      return _stats!.resolutionRate;
+    }
+
+    if (_reports.isEmpty) return "0%";
+    double calculatedRate = (resolvedReports / totalReports) * 100;
+    return "${calculatedRate.toStringAsFixed(0)}%";
   }
 }

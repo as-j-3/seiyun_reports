@@ -2,14 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 
 class StatsCards extends StatelessWidget {
-  const StatsCards({super.key});
+  final int activeCount;
+  final int resolvedCount;
+    const StatsCards({
+      super.key,
+      required this.activeCount, 
+      required this.resolvedCount,  
+      });
+
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         _statCard(
-          "14",
+         // عرض البلاغات النشطة من API 
+          "$activeCount",
           "بلاغات نشطة",
           const Color(0xFFfee2e2),
           Theme.of(context).brightness == Brightness.dark ? const Color(0xFFfca5a5) : const Color(0xFF991b1b),
@@ -17,7 +25,8 @@ class StatsCards extends StatelessWidget {
         ),
         const SizedBox(width: 15),
         _statCard(
-          "64",
+         // عرض البلاغات المحلولة من API 
+          "$resolvedCount",
           "بلاغ تم إنجازه",
           const Color(0xFFe0f2fe),
           Theme.of(context).brightness == Brightness.dark ? const Color(0xFF7dd3fc) : const Color(0xFF075985),

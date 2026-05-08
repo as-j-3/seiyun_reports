@@ -1,5 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:seiyun_reports_app/screens/news_tips/data/models/news_tips_model.dart';
+import 'package:seiyun_reports_app/screens/news_tips/data/news_tips_model.dart';
 
 class NewsCard extends StatelessWidget {
   final NewsModel news;
@@ -30,12 +31,16 @@ class NewsCard extends StatelessWidget {
               color: Theme.of(context).scaffoldBackgroundColor,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            child: const Icon(
-              Icons.image_outlined,
-              size: 50,
-              color: Colors.grey,
-            ),
-          ),
+            child: CachedNetworkImage(
+            imageUrl: news.image ?? "",
+            fit: BoxFit.cover,
+             // هذا الجزء بديل لـ loadingBuilder
+              placeholder: (context, url) => Center(
+              child: CircularProgressIndicator(),
+             ),
+  // هذا الجزء بديل لـ errorBuilder
+              errorWidget: (context, url, error) => _buildPlaceholder(),
+              ),),
           Padding(
             padding: const EdgeInsets.all(15),
             child: Column(

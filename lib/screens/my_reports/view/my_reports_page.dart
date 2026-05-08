@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/screens/report/view/report_screen.dart';
-import 'package:seiyun_reports_app/screens/my_reports/viewmodel/my_reports_viewmodel.dart';
 import 'package:seiyun_reports_app/screens/my_reports/view/widgets/reports_header.dart';
 import 'package:seiyun_reports_app/screens/my_reports/view/widgets/empty_reports_state.dart';
 import 'package:seiyun_reports_app/screens/my_reports/view/widgets/reports_list.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
+import 'package:seiyun_reports_app/screens/report/viewmodel/report_viewmodel.dart';
 
 class MyReportsPage extends StatefulWidget {
   const MyReportsPage({super.key});
@@ -20,7 +20,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
     super.initState();
     // Fetch reports when the page is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MyReportsViewModel>().fetchReportsFromLaravel();
+      context.read<ReportViewModel>().fetchReportsFromLaravel();
     });
   }
 
@@ -34,9 +34,9 @@ class _MyReportsPageState extends State<MyReportsPage> {
           children: [
             const ReportsHeader(),
             Expanded(
-              child: Consumer<MyReportsViewModel>(
+              child: Consumer<ReportViewModel>(
                 builder: (context, viewModel, child) {
-                  if (viewModel.isLoading) {
+                  if (viewModel.isLoadingReports) {
                     return const Center(
                       child: CircularProgressIndicator(
                         color: AppTheme.accentGreen,

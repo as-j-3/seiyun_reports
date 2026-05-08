@@ -9,10 +9,9 @@ class CitizenReportsPage extends StatelessWidget {
   const CitizenReportsPage({Key? key}) : super(key: key);
 
   @override
+
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => CitizenReportsViewModel(),
-      child: Scaffold(
+   return Scaffold(
         body: Consumer<CitizenReportsViewModel>(
           builder: (context, viewModel, child) {
             return SingleChildScrollView(
@@ -60,8 +59,8 @@ class CitizenReportsPage extends StatelessWidget {
             );
           },
         ),
-      ),
-    );
+      );
+  
   }
 }
 

@@ -36,6 +36,10 @@ class PrefHelper {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_tokenKey);
   }
+  static Future<void> saveLoginStatus(bool status) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_isLoggedInKey, status);
+  }
   
   static Future<void> saveUserId(int userId) async {
     final prefs = await SharedPreferences.getInstance();
@@ -145,5 +149,17 @@ class PrefHelper {
   static Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+  }
+
+  /// دالة عامة لحفظ أي نص (نستخدمها للمزامنة)
+  static Future<void> setString(String key, String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(key, value);
+  }
+
+  /// دالة عامة لجلب أي نص (نستخدمها للمزامنة)
+  static Future<String?> getString(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(key);
   }
 }

@@ -4,7 +4,7 @@ class CitizenReportsStats extends StatelessWidget {
   final int total;
   final int resolved;
   final int active;
-  final double rate;
+  final String rate;
 
   const CitizenReportsStats({
     Key? key,
@@ -24,7 +24,7 @@ class CitizenReportsStats extends StatelessWidget {
           _StatCard(label: 'إجمالي', value: '$total', color: Colors.blue[50]!, textColor: Colors.blue),
           _StatCard(label: 'محلولة', value: '$resolved', color: Colors.green[50]!, textColor: Colors.green),
           _StatCard(label: 'نشطة', value: '$active', color: Colors.orange[50]!, textColor: Colors.orange),
-          _StatCard(label: 'معدل الحل', value: '${rate.toStringAsFixed(0)}%', color: Colors.pink[50]!, textColor: Colors.pink),
+          _StatCard(label: 'معدل الحل', value: rate, color: Colors.pink[50]!, textColor: Colors.pink),
         ],
       ),
     );

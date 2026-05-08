@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:seiyun_reports_app/screens/news_tips/data/models/news_tips_model.dart';
+import 'package:seiyun_reports_app/screens/news_tips/data/news_tips_model.dart';
 
 class TipItem extends StatelessWidget {
   final NewsModel tip;

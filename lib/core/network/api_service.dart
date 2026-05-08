@@ -1,12 +1,13 @@
 import 'package:dio/dio.dart';
 import 'dio_client.dart';
 
+/// كلاس وسيط لإجراء طلبات الـ API باستخدام مكتبة Dio
 class ApiService {
   final Dio _dio;
 
   ApiService(DioClient dioClient) : _dio = dioClient.dio;
 
-  // 1. جلب البيانات 
+  /// دالة لجلب البيانات (GET)
   Future<Response> get(String path, {
     Map<String, dynamic>? query,
     Map<String, dynamic>? headers, 
@@ -18,7 +19,8 @@ class ApiService {
     );
   }
 
-  // إرسال بيانات جديدة 
+  /// دالة لإرسال بيانات جديدة (POST)
+  /// تدعم إرسال النصوص (JSON) أو الملفات (FormData)
   Future<Response> post(String path, {
     dynamic data, 
     Map<String, dynamic>? headers, 
@@ -26,11 +28,15 @@ class ApiService {
     return await _dio.post(
       path, 
       data: data, 
-      options: Options(headers: headers), 
+      options: Options(
+        headers: headers,
+        // تحديد نوع المحتوى تلقائياً بناءً على البيانات المرسلة
+        contentType: data is FormData ? 'multipart/form-data' : 'application/json',
+      ), 
     );
   }
 
-  // تعديل بيانات موجودة 
+  /// دالة لتعديل بيانات موجودة (PUT)
   Future<Response> put(String path, {
     dynamic data, 
     Map<String, dynamic>? headers, 
@@ -42,7 +48,7 @@ class ApiService {
     );
   }
 
-  //  حذف بيانات 
+  /// دالة لحذف بيانات (DELETE)
   Future<Response> delete(String path, {
     Map<String, dynamic>? data,
     Map<String, dynamic>? headers, 
@@ -53,4 +59,4 @@ class ApiService {
       options: Options(headers: headers), 
     );
   }
-}
+}

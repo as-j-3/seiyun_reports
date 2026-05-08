@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:seiyun_reports_app/screens/my_reports/data/models/report_model.dart';
 import 'package:seiyun_reports_app/screens/my_reports/view/widgets/report_card.dart';
+import 'package:seiyun_reports_app/screens/report/data/report_model.dart';
 
 class ReportsList extends StatelessWidget {
   final List<ReportModel> reports;

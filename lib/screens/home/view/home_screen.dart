@@ -16,6 +16,8 @@ import 'package:seiyun_reports_app/screens/map/view/map_screen.dart';
 import 'package:seiyun_reports_app/screens/news_tips/view/news_tips_screen.dart';
 import 'package:seiyun_reports_app/screens/profile/view/profile_screen.dart';
 
+import '../../citizen_reports/viewmodel/citizen_reports_viewmodel.dart';
+
 const sectionTitleStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
 class HomeScreen extends StatefulWidget {
@@ -80,7 +82,15 @@ class _HomeContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  StatsCards(),
+                  Consumer<CitizenReportsViewModel>(
+                  builder: (context, reportsVM, child) {
+                    return StatsCards(
+                       // ربطها بالبيانات الحقيقية القادمة من السيرفر 
+                      activeCount: reportsVM.activeReports,
+                      resolvedCount: reportsVM.resolvedReports, 
+                    );
+                  },
+                ),
                   SizedBox(height: 20),
                   NextPickupCard(),
                   SizedBox(height: 20),
