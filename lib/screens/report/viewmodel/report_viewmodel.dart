@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:seiyun_reports_app/screens/report/data/report_model.dart';
+import 'package:seiyun_reports_app/screens/report/models/report_model.dart';
 import '../data/report_repository.dart';
 class ReportViewModel extends ChangeNotifier {
   final ReportRepository _repository;
@@ -26,12 +26,6 @@ class ReportViewModel extends ChangeNotifier {
   bool _isLoadingLocation = false;
   bool get isLoadingLocation => _isLoadingLocation;
 
-<<<<<<< main
-  void setCategory(String category)  {
-     _selectedCategory = category;
-      notifyListeners();
-       }
-=======
   // Phone Verification State
   String? _verificationId;
   bool _isPhoneVerified = false;
@@ -47,7 +41,6 @@ class ReportViewModel extends ChangeNotifier {
     _selectedCategory = category;
     notifyListeners();
   }
->>>>>>> main
 
   void setPriority(String priority) {
      _selectedPriority = priority;

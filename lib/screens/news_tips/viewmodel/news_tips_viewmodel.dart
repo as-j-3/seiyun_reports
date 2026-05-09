@@ -4,9 +4,9 @@ import 'package:seiyun_reports_app/core/database/news_local_service.dart';
 import 'package:seiyun_reports_app/core/network/api_service.dart';
 import 'package:seiyun_reports_app/core/network/dio_client.dart';
 import 'package:seiyun_reports_app/core/network/network_info.dart';
-import 'package:seiyun_reports_app/screens/news_tips/data/NewsService.dart';
-import 'package:seiyun_reports_app/screens/news_tips/data/news_tips_model.dart';
-import '../data/NewsRepository.dart';
+import 'package:seiyun_reports_app/screens/news_tips/data/news_service.dart';
+import 'package:seiyun_reports_app/screens/news_tips/models/news_tips_model.dart';
+import '../data/news_repository.dart';
 
 class NewsTipsViewModel extends ChangeNotifier {
   late NewsRepository _newsRepository;

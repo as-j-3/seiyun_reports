@@ -1,6 +1,6 @@
 import 'package:seiyun_reports_app/screens/citizen_reports/data/citizen_reports_service.dart';
-import 'package:seiyun_reports_app/screens/citizen_reports/data/models/citizen_report_model.dart';
-import 'package:seiyun_reports_app/screens/citizen_reports/data/models/report_statistics.dart';
+import 'package:seiyun_reports_app/screens/citizen_reports/models/citizen_report_model.dart';
+import 'package:seiyun_reports_app/screens/citizen_reports/models/report_statistics.dart';
 import 'package:seiyun_reports_app/core/database/reports_local_service.dart';
 import 'package:seiyun_reports_app/core/network/network_info.dart';
 

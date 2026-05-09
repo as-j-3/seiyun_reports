@@ -879,7 +879,7 @@ packages:
       sha256: "5095f0fc6e3f71d08adef8feccc8cea4f12eec18a2e31c2e8d82cb6019f4b097"
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.5+1"
+    version: "4.1.0"
   rxdart:
     dependency: transitive
     description:
@@ -888,7 +888,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
-    version: "4.1.0"
   sanitize_html:
     dependency: transitive
     description:

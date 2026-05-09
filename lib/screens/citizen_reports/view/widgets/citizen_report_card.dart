@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../data/models/citizen_report_model.dart';
+import '../../models/citizen_report_model.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 
 class CitizenReportCard extends StatelessWidget {

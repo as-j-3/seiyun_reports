@@ -6,7 +6,7 @@ import 'package:seiyun_reports_app/core/database/reports_local_service.dart';
 import 'package:seiyun_reports_app/core/network/network_info.dart';
 import 'package:seiyun_reports_app/core/utils/pref_helper.dart';
 import 'package:seiyun_reports_app/core/utils/update_helper.dart';
-import 'package:seiyun_reports_app/screens/report/data/report_model.dart';
+import 'package:seiyun_reports_app/screens/report/models/report_model.dart';
 import 'package:seiyun_reports_app/screens/report/data/report_service.dart';
 
 class ReportRepository {

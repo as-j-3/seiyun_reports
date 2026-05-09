@@ -154,6 +154,7 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    await PrefHelper.clear();
     await _auth.signOut();
     notifyListeners();
   }

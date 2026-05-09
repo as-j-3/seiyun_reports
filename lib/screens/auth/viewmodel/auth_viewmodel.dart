@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:seiyun_reports_app/screens/auth/data/auth_repository.dart';
+import 'package:seiyun_reports_app/core/utils/pref_helper.dart';
 
 /// كلاس إدارة حالة المصادقة (تسجيل الدخول، إنشاء حساب، تسجيل جوجل)
 class AuthViewModel extends ChangeNotifier {
@@ -68,44 +69,33 @@ class AuthViewModel extends ChangeNotifier {
 
       final user = _auth.currentUser;
       if (user != null) {
-<<<<<<< main
-        // تسجيل المستخدم في قاعدة بيانات السيرفر الخاص بالتطبيق
-        await _authRepo.registerUser(
-          role: 'citizens',
-          name: (name != null && name.trim().isNotEmpty)
-              ? name.trim()
-              : (user.displayName ?? "User"),
-=======
         final token = await user.getIdToken();
         debugPrint("FIREBASE_TOKEN: $token");
 
         // تحديد الدور بناءً على الإيميل (إيميل سحري للمشرف)
         final String role = (user.email?.toLowerCase() == 'supervisor@app.com') ? 'supervisor' : 'citizens';
+        
+        await PrefHelper.saveRole(role);
 
+        // تسجيل المستخدم في قاعدة بيانات السيرفر الخاص بالتطبيق
         await _authRepo.registerUser(
           role: role,
-          name:
-              (name != null && name.trim().isNotEmpty)
-                  ? name.trim()
-                  : (user.displayName ?? "User"),
->>>>>>> main
+          name: (name != null && name.trim().isNotEmpty)
+              ? name.trim()
+              : (user.displayName ?? "User"),
+          token: token,
+          email: user.email,
         );
         _isLoading = false;
         notifyListeners();
         return true;
       }
     } on FirebaseAuthException catch (e) {
-<<<<<<< main
-      _errorMessage = e.message ?? "حدث خطأ غير متوقع في Firebase";
-    } catch (e) {
-      _errorMessage = "فشل الربط مع الخادم، يرجى المحاولة لاحقاً";
-=======
       _errorMessage = e.message ?? "حدث خطأ في المصادقة";
     } catch (e) {
       _errorMessage = e.toString().contains("Exception:") 
           ? e.toString().replaceAll("Exception: ", "") 
           : "فشل الربط مع الخادم: $e";
->>>>>>> main
     }
 
     _isLoading = false;
@@ -142,15 +132,18 @@ class AuthViewModel extends ChangeNotifier {
         final finalName = user.displayName ??
             (user.email != null ? user.email!.split('@')[0] : "User");
 
-<<<<<<< main
-        // تسجيل المستخدم في قاعدة بيانات السيرفر
-        await _authRepo.registerUser(role: 'citizens', name: finalName);
-=======
+        final token = await user.getIdToken();
         // تحديد الدور بناءً على الإيميل (إيميل سحري للمشرف)
         final String role = (user.email?.toLowerCase() == 'supervisor@app.com') ? 'supervisor' : 'citizens';
+        
+        await PrefHelper.saveRole(role);
 
-        await _authRepo.registerUser(role: role, name: finalName);
->>>>>>> main
+        await _authRepo.registerUser(
+          role: role, 
+          name: finalName,
+          token: token,
+          email: user.email,
+        );
         _isLoading = false;
         notifyListeners();
         return true;

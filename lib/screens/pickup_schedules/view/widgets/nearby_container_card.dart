@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:seiyun_reports_app/screens/pickup_schedules/data/models/pickup_schedule_model.dart';
+import 'package:seiyun_reports_app/screens/pickup_schedules/models/pickup_schedule_model.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 
 class NearbyContainerCard extends StatelessWidget {

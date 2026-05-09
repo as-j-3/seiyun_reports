@@ -118,33 +118,20 @@ class MapScreen extends StatelessWidget {
       for (var report in reportsProvider.reports) {
         markers.add(
           Marker(
-           // مؤقت غيرته عشان يشتغل البرنامج 
-            point: LatLng(15.9430 + (report.id * 0.0012),   48.7845 + (report.id * 0.0015),),
-            width: 45,
-            height: 45,
-            child: MapMarkerItem(
-              icon: Icons.location_on,
-              color: Colors.blue,
-              onTap:
-                  () => MapInfoBottomSheet.show(
-                    context,
-                    report.title,
-                    'الحالة: ${report.status}\nبواسطة : ${report.user_name}',
-                    report.report_image
-                  ),
             markerId: MarkerId('report_${report.id}'),
             position: LatLng(report.latitude, report.longitude),
             icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
             onTap: () => MapInfoBottomSheet.show(
               context,
               report.title,
-              'الحالة: ${report.status}\nالموقع: ${report.location}\nبواسطة: ${report.authorName}',
-              report.imageUrl,
+              'الحالة: ${report.status}\nبواسطة: ${report.user_name}',
+              report.report_image,
             ),
           ),
         );
       }
     }
+
 
     // Add Container Markers
     if (mapVM.showContainers) {

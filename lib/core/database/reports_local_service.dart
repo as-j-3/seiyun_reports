@@ -1,6 +1,6 @@
 import 'package:seiyun_reports_app/import.dart';
-import 'package:seiyun_reports_app/screens/report/data/report_model.dart';
-import 'package:seiyun_reports_app/screens/citizen_reports/data/models/citizen_report_model.dart';
+import 'package:seiyun_reports_app/screens/report/models/report_model.dart';
+import 'package:seiyun_reports_app/screens/citizen_reports/models/citizen_report_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'database_helper.dart';
 

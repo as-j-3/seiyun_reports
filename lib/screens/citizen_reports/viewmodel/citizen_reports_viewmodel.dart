@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/data/citizen_reports_repository.dart';
-import 'package:seiyun_reports_app/screens/citizen_reports/data/models/report_statistics.dart';
-import '../data/models/citizen_report_model.dart';
+import 'package:seiyun_reports_app/screens/citizen_reports/models/report_statistics.dart';
+import '../models/citizen_report_model.dart';
 
 class CitizenReportsViewModel extends ChangeNotifier {
   final CitizenReportsRepository _repository;

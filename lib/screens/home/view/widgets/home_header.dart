@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/screens/home/viewmodel/home_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
-import 'package:seiyun_reports_app/viewmodels/notification_viewmodel.dart';
+import 'package:seiyun_reports_app/screens/notifications/viewmodel/notification_viewmodel.dart';
 import 'package:seiyun_reports_app/screens/notifications/view/notifications_screen.dart';
 
 class HomeHeader extends StatelessWidget {

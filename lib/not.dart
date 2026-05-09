@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:seiyun_reports_app/viewmodels/notification_viewmodel.dart';
+import 'package:seiyun_reports_app/screens/notifications/viewmodel/notification_viewmodel.dart';
 
 class NotificationPage extends StatelessWidget {
   const NotificationPage({super.key});
@@ -8,23 +8,28 @@ class NotificationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final notifVM = context.watch<NotificationViewModel>();
-    
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("إشعارات النظام"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("إشعارات النظام"), centerTitle: true),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.notifications_active, size: 80, color: Colors.green),
+              const Icon(
+                Icons.notifications_active,
+                size: 80,
+                color: Colors.green,
+              ),
               const SizedBox(height: 20),
               Text(
-                notifVM.token == null ? "جاري جلب التوكن من Firebase..." : "تم جلب التوكن بنجاح",
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                notifVM.token == null
+                    ? "جاري جلب التوكن من Firebase..."
+                    : "تم جلب التوكن بنجاح",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),

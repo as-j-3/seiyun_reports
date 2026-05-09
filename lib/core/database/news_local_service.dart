@@ -1,4 +1,4 @@
-import 'package:seiyun_reports_app/screens/news_tips/data/news_tips_model.dart';
+import 'package:seiyun_reports_app/screens/news_tips/models/news_tips_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'database_helper.dart';
 

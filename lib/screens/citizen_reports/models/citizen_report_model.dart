@@ -11,6 +11,8 @@ class CitizenReportModel {
   final String created_at;
   final String user_name; 
   final String user_profile; 
+  final double latitude;
+  final double longitude;
   bool isLiked; // سنستخدمها للتعامل مع زر اللايك محلياً
 
   CitizenReportModel({
@@ -26,6 +28,8 @@ class CitizenReportModel {
     required this.created_at,
     required this.user_name,
     required this.user_profile,
+    this.latitude = 0.0,
+    this.longitude = 0.0,
     this.isLiked = false,
   });
 
@@ -43,6 +47,8 @@ class CitizenReportModel {
       created_at: json['created_at'] ?? "",
       user_name: json['user_name'] ?? "مواطن",
       user_profile: json['user_profile'] ?? "",
+      latitude: json['lat'] != null ? double.parse(json['lat'].toString()) : 0.0,
+      longitude: json['lng'] != null ? double.parse(json['lng'].toString()) : 0.0,
     );
   }
    // يمكن اغيرها في حال استخدمت sqlite  خلوها مؤقتا 
@@ -61,6 +67,8 @@ class CitizenReportModel {
       created_at: created_at,
       user_name: user_name,
       user_profile: user_profile,
+      latitude: latitude,
+      longitude: longitude,
       isLiked: isLiked ?? this.isLiked,
     );
   }
@@ -97,6 +105,8 @@ class CitizenReportModel {
       created_at: map['created_at'] ?? "",
       user_name: map['user_name'] ?? "مواطن",
       user_profile: map['user_profile'] ?? "",
+      latitude: map['latitude'] ?? 0.0,
+      longitude: map['longitude'] ?? 0.0,
       isLiked: map['isLiked'] == 1,
     );
   }

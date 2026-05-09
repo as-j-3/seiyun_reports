@@ -137,102 +137,64 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-<<<<<<< main
-
- Widget _buildSubmitButton(BuildContext context) {
-  final reportVM = context.watch<ReportViewModel>();
-
-  return ElevatedButton(
-    // في حال ضغط الزر يصير تحميل عشان مايضغط اكثر من مره ويعلق
-     onPressed: reportVM.isUploading 
-        ? null 
-        : () {
-          // الدالة المسؤولة عن ارسال البلاغات للسيرفر 
-            reportVM.sendNewReport(
-              context, 
-              "بلاغ جديد ", //هنا عدلي واضيفي textField  عشان يدخل العنوان 
-              _descriptionController.text,
-            //  هنا ارسلنا البيانات النصية كبرامتر بينما بقية البيانات زي الموقع والصورة والنوع هي مخزنة مسبقا داخل الفيو مودل كحالة 
-
-            );
-          },
-=======
   Widget _buildSubmitButton(BuildContext context) {
     final reportVM = context.watch<ReportViewModel>();
     final profileVM = context.read<ProfileViewModel>();
     final homeVM = context.read<HomeViewModel>();
 
     return ElevatedButton(
-      onPressed: () {
-        if (!profileVM.isPhoneVerified) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("يرجى التحقق من رقم الهاتف في الملف الشخصي أولاً"),
-              duration: Duration(seconds: 3),
-            ),
-          );
-          // Redirect to profile
-          homeVM.setPage(3); // Index 3 is Profile
-          Navigator.pop(context);
-          return;
-        }
+      onPressed: reportVM.isUploading
+          ? null
+          : () {
+              if (!profileVM.isPhoneVerified) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("يرجى التحقق من رقم الهاتف في الملف الشخصي أولاً"),
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+                // Redirect to profile
+                homeVM.setPage(3); // Index 3 is Profile
+                Navigator.pop(context);
+                return;
+              }
 
-        if (_titleController.text.trim().isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("يرجى إدخال عنوان للبلاغ")),
-          );
-          return;
-        }
+              if (_titleController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("يرجى إدخال عنوان للبلاغ")),
+                );
+                return;
+              }
 
-        debugPrint(
-          "Sending: ${_titleController.text}, "
-          "Cat: ${reportVM.selectedCategory}, "
-          "Phone: ${profileVM.userPhone}",
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Colors.green,
-            content: Text("تم إرسال البلاغ بنجاح"),
-          ),
-        );
-        Navigator.pop(context);
-      },
->>>>>>> main
+              reportVM.sendNewReport(
+                context,
+                _titleController.text.trim(),
+                _descriptionController.text.trim(),
+              );
+            },
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF27ae60),
-        disabledBackgroundColor: const Color(0xFF27ae60).withOpacity(0.6), // لون باهت عند التحميل
+        disabledBackgroundColor: const Color(0xFF27ae60).withOpacity(0.6),
         minimumSize: const Size(double.infinity, 65),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
-<<<<<<< main
-      //اظهار علامة تحميل 
       child: reportVM.isUploading
-        ? const SizedBox(
-            width: 25,
-            height: 25,
-            child: CircularProgressIndicator(
-              color: Colors.white,
-              strokeWidth: 2,
+          ? const SizedBox(
+              width: 25,
+              height: 25,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+          : const Text(
+              "إرسال البلاغ للصندوق",
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
-          )
-   
-           : const Text(
-          "إرسال البلاغ للصندوق",
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-=======
-      child: const Text(
-        "إرسال البلاغ للصندوق",
-        style: TextStyle(
-          fontSize: 17,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
     );
   }
 
@@ -245,7 +207,7 @@ class _ReportScreenState extends State<ReportScreen> {
         hintText: "صف المشكلة بدقة لمساعدة الفريق الميداني...",
         hintStyle: TextStyle(
           color: Theme.of(context).textTheme.bodySmall?.color,
->>>>>>> main
+          fontSize: 13,
         ),
         filled: true,
         fillColor: Theme.of(context).cardColor,

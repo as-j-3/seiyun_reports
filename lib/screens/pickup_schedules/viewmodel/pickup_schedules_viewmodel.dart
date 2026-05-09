@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/models/pickup_schedule_model.dart';
+import '../models/pickup_schedule_model.dart';
 
 class PickupSchedulesViewModel extends ChangeNotifier {
   List<PickupScheduleModel> _schedules = [];

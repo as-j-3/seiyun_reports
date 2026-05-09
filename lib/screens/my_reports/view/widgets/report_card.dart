@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:seiyun_reports_app/screens/report/data/report_model.dart';
+import 'package:seiyun_reports_app/screens/report/models/report_model.dart';
 
 class ReportCard extends StatelessWidget {
   final ReportModel report;
