@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seiyun_reports_app/core/services/location_service.dart';
 import '../models/pickup_schedule_model.dart';
 
 class PickupSchedulesViewModel extends ChangeNotifier {
@@ -11,6 +12,9 @@ class PickupSchedulesViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  String _currentLocationName = 'جاري تحديد الموقع...';
+  String get currentLocationName => _currentLocationName;
+
   PickupSchedulesViewModel() {
     _fetchData();
   }
@@ -18,6 +22,14 @@ class PickupSchedulesViewModel extends ChangeNotifier {
   Future<void> _fetchData() async {
     _isLoading = true;
     notifyListeners();
+
+    // Fetch actual location
+    try {
+      final area = await LocationService.getCurrentAreaName();
+      _currentLocationName = area;
+    } catch (e) {
+      _currentLocationName = 'موقعك غير محدد';
+    }
 
     // Mocking Laravel API response
     await Future.delayed(const Duration(milliseconds: 800));
@@ -52,24 +64,39 @@ class PickupSchedulesViewModel extends ChangeNotifier {
 
     _nearbyContainers = [
       NearbyContainerModel(
-        id: 'c1',
-        name: 'حاوية شارع الجزائر',
-        address: 'شارع الجزائر - بجانب مسجد النور',
-        distance: 30,
-        status: 'full',
+        id: '15',
+        locationName: 'حاوية المسجد القريبة جداً',
+        nameStreet: 'شارع تجريبي 1',
+        classification: 'رئيسي',
+        distance: '110 متر',
+        walkingTime: '2 دقيقة مشياً',
+        areaName: 'السحيل',
+        period: 'مسائية',
+        areaStartTime: '05:00 AM',
+        areaEndTime: '07:00 AM',
+        statusText: 'هدأ',
+        collectionDay: 'الثلاثاء و الاثنين',
         latitude: 15.9429,
         longitude: 48.7844,
       ),
       NearbyContainerModel(
-        id: 'c2',
-        name: 'حاوية حي السحيل',
-        address: 'السحيل الغربية - بجانب مسجد الفتح',
-        distance: 50,
-        status: 'half',
+        id: '16',
+        locationName: 'حاوية حي السحيل',
+        nameStreet: 'السحيل الغربية - بجانب مسجد الفتح',
+        classification: 'فرعي',
+        distance: '50 متر',
+        walkingTime: '1 دقيقة مشياً',
+        areaName: 'السحيل',
+        period: 'صباحية',
+        areaStartTime: '08:00 AM',
+        areaEndTime: '10:00 AM',
+        statusText: 'ممتلئة',
+        collectionDay: 'الأحد و الأربعاء',
         latitude: 15.9400,
         longitude: 48.7800,
       ),
     ];
+
 
     _isLoading = false;
     notifyListeners();

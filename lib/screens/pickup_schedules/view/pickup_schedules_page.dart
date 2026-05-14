@@ -20,8 +20,8 @@ class PickupSchedulesPage extends StatelessWidget {
             return SingleChildScrollView(
               child: Column(
                 children: [
-                  const PickupSchedulesHeader(
-                    currentLocation: 'شارع الجزائر - بجانب مسجد النور',
+                  PickupSchedulesHeader(
+                    currentLocation: viewModel.currentLocationName,
                   ),
                   PickupSummaryStats(
                     nearbyCount: viewModel.totalNearbyContainers,

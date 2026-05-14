@@ -24,7 +24,7 @@ class ReportRepository {
     required String priority,
     required String lat,
     required String lng,
-    required File imageFile, 
+    File? imageFile, 
   }) async {
     bool isConnected = await _networkInfo.isConnected ;
 
@@ -32,7 +32,7 @@ class ReportRepository {
       try {
         int? userId = await PrefHelper.getUserId();
         
-        FormData formData = FormData.fromMap({
+        Map<String, dynamic> formDataMap = {
           "citizen_id": userId,
           "title": title,
           "description": description,
@@ -40,12 +40,17 @@ class ReportRepository {
           "priority": priority,
           "lat": lat,
           "lng": lng,
-          "image": await MultipartFile.fromFile(
+        };
+
+        if (imageFile != null) {
+          formDataMap["image"] = await MultipartFile.fromFile(
             imageFile.path, 
             filename: imageFile.path.split('/').last,
             contentType: DioMediaType("image", "jpeg"),
-          ),
-        });
+          );
+        }
+
+        FormData formData = FormData.fromMap(formDataMap);
 
         final response = await _reportService.createReport(formData);
 
@@ -56,7 +61,7 @@ class ReportRepository {
         debugPrint("--- SERVER ERROR DETAILS ---");
       }
     }
-       await _saveLocally(title, description, type, priority, lat, lng, imageFile.path);
+       await _saveLocally(title, description, type, priority, lat, lng, imageFile?.path ?? '');
        return isConnected ? false : true; 
      }
       
@@ -142,7 +147,9 @@ class ReportRepository {
         priority: data['priority'] ?? 'متوسطة',
         lat: data['lat'],
         lng: data['lng'],
-        imageFile: File(data['image_path']),
+        imageFile: (data['image_path'] != null && data['image_path'].toString().isNotEmpty) 
+            ? File(data['image_path']) 
+            : null,
       );
 
       if (success) {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 import 'supervisor_task_detail_screen.dart';
-import 'package:seiyun_reports_app/screens/map/view/map_screen.dart';
+import 'package:seiyun_reports_app/screens/map/view/map_zones_screen.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class SupervisorTasksScreen extends StatefulWidget {
@@ -70,7 +70,7 @@ class _SupervisorTasksScreenState extends State<SupervisorTasksScreen> with Sing
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MapScreen(
+        builder: (context) => MapZonesScreen(
           initialLocation: LatLng(task['lat'], task['lng']),
           initialTitle: task['title'],
         ),

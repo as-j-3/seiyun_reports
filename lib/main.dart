@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +34,16 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           locale: const Locale('ar', 'YE'),
+          supportedLocales: const [Locale('ar', 'YE'), Locale('en', 'US')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          builder: (context, child) => Directionality(
+            textDirection: TextDirection.rtl,
+            child: child!,
+          ),
           title: 'Seiyun Reports App',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,

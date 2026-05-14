@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 import 'package:seiyun_reports_app/screens/supervisor/view/supervisor_tasks_screen.dart';
 import 'package:seiyun_reports_app/screens/supervisor/view/supervisor_profile_screen.dart';
+import 'package:seiyun_reports_app/screens/map/view/map_zones_screen.dart';
 
 class SupervisorMainScreen extends StatefulWidget {
   const SupervisorMainScreen({Key? key}) : super(key: key);
@@ -16,6 +17,7 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
 
   final List<Widget> _screens = [
     const SupervisorTasksScreen(),
+    const MapZonesScreen(),
     const SupervisorProfileScreen(),
   ];
 
@@ -55,6 +57,11 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
               icon: Icon(CupertinoIcons.list_bullet),
               activeIcon: Icon(CupertinoIcons.list_bullet),
               label: 'المهام',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.map),
+              activeIcon: Icon(CupertinoIcons.map_fill),
+              label: 'الخريطة',
             ),
             BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.person),

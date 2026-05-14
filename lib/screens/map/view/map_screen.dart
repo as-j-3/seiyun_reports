@@ -143,13 +143,10 @@ class MapScreen extends StatelessWidget {
             icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
             onTap: () => MapInfoBottomSheet.show(
               context,
-              container.name,
-              'العنوان: ${container.address}\nالمسافة: ${container.distance.toStringAsFixed(0)} متر\nالحالة: ${container.status == "full"
-                  ? "ممتلئة"
-                  : container.status == "half"
-                  ? "متوسطة"
-                  : "فارغة"}',
+              container.locationName,
+              'العنوان: ${container.nameStreet}\nالمسافة: ${container.distance}\nالحالة: ${container.statusText}',
               null,
+
             ),
           ),
         );

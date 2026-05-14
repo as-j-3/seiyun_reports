@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -11,8 +13,11 @@ class ReportViewModel extends ChangeNotifier {
     fetchReportsFromLaravel();
   }
 
-  String _selectedCategory = 'نفايات';
+  String _selectedCategory = 'تراكم_نفايات';
   String get selectedCategory => _selectedCategory;
+
+  String? _selectedSubType;
+  String? get selectedSubType => _selectedSubType;
 
   String _selectedPriority = 'مرتفعة';
   String get selectedPriority => _selectedPriority;
@@ -39,6 +44,12 @@ class ReportViewModel extends ChangeNotifier {
 
   void setCategory(String category) {
     _selectedCategory = category;
+    _selectedSubType = null; // reset sub-type on category change
+    notifyListeners();
+  }
+
+  void setSubType(String? subType) {
+    _selectedSubType = subType;
     notifyListeners();
   }
 
@@ -120,9 +131,9 @@ class ReportViewModel extends ChangeNotifier {
 
   // دالة ارسال البلاغ 
   Future<void> sendNewReport(BuildContext context,String title, String description) async {
-    //تحقق من وجود صورة
-    if (_image == null|| title.isEmpty || description.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("الرجاء إكمال جميع البيانات"), backgroundColor: Colors.orange));
+    //تحقق من وجود عنوان للبلاغ
+    if (title.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("الرجاء إكمال البيانات الأساسية المطلوبة"), backgroundColor: Colors.orange));
     return;
   }
     
@@ -133,23 +144,47 @@ class ReportViewModel extends ChangeNotifier {
     String lng = "0.0";
   //هذا لضمان ارسال بيانات الاحداثيات صحيحة يقبلها السيرفر
     if (_locationStatus.contains(":") && _locationStatus.contains(",")) {
-  try {
-   //تقص النص عشان ناخذ الارقام ونخزنها في المتغيرات 
-    var parts = _locationStatus.split(":")[1].split(",");
-    lat = parts[0].trim();
-    lng = parts[1].trim();
-  } catch (e) {
-    debugPrint("خطأ في تحليل إحداثيات الموقع: $e");
-  }
+      try {
+       //تقص النص عشان ناخذ الارقام ونخزنها في المتغيرات 
+        var parts = _locationStatus.split(":")[1].split(",");
+        lat = parts[0].trim();
+        lng = parts[1].trim();
+      } catch (e) {
+        debugPrint("خطأ في تحليل إحداثيات الموقع: $e");
+      }
+    }
+
+    // التحقق من أن الموقع داخل نطاق مدينة سيئون
+    if (lat != "0.0" && lng != "0.0") {
+      bool isInside = await _isLocationInServiceArea(double.parse(lat), double.parse(lng));
+      if (!isInside) {
+        _isUploading = false;
+        notifyListeners();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("عفواً، الموقع المحدد خارج نطاق الخدمة المسموح به (مدينة سيئون)."),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 4),
+          ),
+        );
+        return; // منع إرسال البلاغ
+      }
+    }
+
   //نستدعي الريبو عشان نرسل البيانات الى السيرفر 
+    // نبني نوع البلاغ مع النوع الفرعي إن وُجد
+    final String fullType = _selectedSubType != null && _selectedSubType!.isNotEmpty
+        ? '$_selectedCategory - $_selectedSubType'
+        : _selectedCategory;
+
     bool success = await _repository.sendNewReport(
       title: title,
-      description: description,
-      type: _selectedCategory,
+      description: description.isEmpty ? "لا يوجد وصف" : description,
+      type: fullType,
       priority: _selectedPriority,
       lat: lat,
       lng: lng,
-      imageFile: _image!,
+      imageFile: _image, // imageFile is nullable in sendNewReport? Let's check!
     );
 
     _isUploading = false;
@@ -175,4 +210,35 @@ class ReportViewModel extends ChangeNotifier {
       fetchReportsFromLaravel();
       Navigator.pop(context); // نغلق الصفحة لأن البلاغ "حُفظ" ولم يضع
     }
-  }}}
+  }
+
+  // خوارزمية Ray-Casting للتحقق مما إذا كانت النقطة داخل مضلع (Polygon) سيئون
+  Future<bool> _isLocationInServiceArea(double lat, double lng) async {
+    try {
+      final String jsonString = await rootBundle.loadString('json/boundary_sayun.json');
+      final Map<String, dynamic> geoJson = jsonDecode(jsonString);
+      
+      final List<dynamic> coordinates = geoJson['features'][0]['geometry']['coordinates'][0];
+      
+      bool isInside = false;
+      int i, j = coordinates.length - 1;
+      for (i = 0; i < coordinates.length; i++) {
+        double polyLngI = coordinates[i][0];
+        double polyLatI = coordinates[i][1];
+        double polyLngJ = coordinates[j][0];
+        double polyLatJ = coordinates[j][1];
+        
+        if (((polyLatI > lat) != (polyLatJ > lat)) &&
+            (lng < (polyLngJ - polyLngI) * (lat - polyLatI) / (polyLatJ - polyLatI) + polyLngI)) {
+          isInside = !isInside;
+        }
+        j = i;
+      }
+      return isInside;
+    } catch (e) {
+      debugPrint("Error checking boundary: \$e");
+      // في حالة وجود خطأ في قراءة الملف، نسمح بمرور البلاغ لتجنب تعطيل التطبيق
+      return true;
+    }
+  }
+}

@@ -6,8 +6,37 @@ import 'package:seiyun_reports_app/screens/report/viewmodel/report_viewmodel.dar
 class ImagePickerWidget extends StatelessWidget {
   const ImagePickerWidget({super.key});
 
-  void _pickFromCamera(BuildContext context) {
-    context.read<ReportViewModel>().pickImage(ImageSource.camera);
+  void _showPickerOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext bc) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('المعرض (Gallery)'),
+                onTap: () {
+                  context.read<ReportViewModel>().pickImage(ImageSource.gallery);
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('الكاميرا (Camera)'),
+                onTap: () {
+                  context.read<ReportViewModel>().pickImage(ImageSource.camera);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -15,7 +44,7 @@ class ImagePickerWidget extends StatelessWidget {
     final reportVM = context.watch<ReportViewModel>();
 
     return GestureDetector(
-      onTap: () => _pickFromCamera(context),
+      onTap: () => _showPickerOptions(context),
       child: Container(
         width: double.infinity,
         height: 200, // زيادة الطول قليلاً لعرض الصورة بشكل أوضح
@@ -43,7 +72,7 @@ class ImagePickerWidget extends StatelessWidget {
                     ),
                     SizedBox(height: 12),
                     Text(
-                      "اضغط لالتقاط صورة للمخالفة",
+                      "اضغط لإرفاق صورة للمشكلة",
                       style: TextStyle(color: Color(0xFF94a3b8), fontSize: 14),
                     ),
                   ],
