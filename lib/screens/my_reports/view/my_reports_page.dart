@@ -44,11 +44,11 @@ class _MyReportsPageState extends State<MyReportsPage> {
                     );
                   }
 
-                  if (viewModel.reportsList.isEmpty) {
+                  if (viewModel.filteredReports.isEmpty) {
                     return const EmptyReportsState();
                   }
 
-                  return ReportsList(reports: viewModel.reportsList);
+                  return ReportsList(reports: viewModel.filteredReports);
                 },
               ),
             ),

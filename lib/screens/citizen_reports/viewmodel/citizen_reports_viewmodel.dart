@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seiyun_reports_app/core/services/notification_service.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/data/citizen_reports_repository.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/models/report_statistics.dart';
 import '../models/citizen_report_model.dart';
@@ -14,22 +15,43 @@ class CitizenReportsViewModel extends ChangeNotifier {
 
   String _searchQuery = '';
   String get searchQuery => _searchQuery;
+
   ReportStatistics? _stats;
   ReportStatistics? get stats => _stats;
 
   CitizenReportsViewModel(this._repository) {
-    loadDashboardData(); // استدعاء لدالة الجلب  عند التشغيل
+    loadDashboardData();
   }
 
   Future<void> loadDashboardData() async {
     _isLoading = true;
     notifyListeners();
     try {
-      //  جلب البلاغات والاحصائيات من السيرفر
+      // حفظ نسخة من الحالات القديمة قبل تحديث البيانات
+      final Map<int, String> oldStatuses = {
+        for (final r in _reports) r.id: r.status,
+      };
+
+      // جلب البيانات الجديدة من السيرفر
       _reports = await _repository.fetchReports();
       _stats = await _repository.getReportStats();
+
+      // ── كشف تغيير الحالة وإطلاق إشعار فوري ──────────────────────────────────
+      if (oldStatuses.isNotEmpty) {
+        for (final report in _reports) {
+          final old = oldStatuses[report.id];
+          if (old != null && old != report.status) {
+            // الحالة تغيرت → أرسل إشعاراً فورياً
+            await NotificationService.showStatusChangedNotification(
+              reportTitle: report.title,
+              oldStatus: old,
+              newStatus: report.status,
+            );
+          }
+        }
+      }
     } catch (e) {
-      print("❌ فشل الجلب: $e");
+      debugPrint("❌ فشل الجلب: $e");
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -80,23 +102,19 @@ class CitizenReportsViewModel extends ChangeNotifier {
         .where(
           (r) =>
               r.title.contains(_searchQuery) ||
-              r.description.contains(_searchQuery) ||
               r.description.contains(_searchQuery),
         )
         .toList();
   }
 
-  //هنا يقرا البيانات من مودل الاحصائيات مالم يجدها هو يحسبها
+  // هنا يقرأ البيانات من مودل الاحصائيات، مالم يجدها يحسبها
   int get totalReports => _stats?.total ?? _reports.length;
   int get resolvedReports =>
       _stats?.resolved ?? _reports.where((r) => r.status == 'تم الحل').length;
   int get activeReports =>
       _stats?.active ?? _reports.where((r) => r.status != 'تم الحل').length;
   String get resolutionRate {
-    if (_stats != null) {
-      return _stats!.resolutionRate;
-    }
-
+    if (_stats != null) return _stats!.resolutionRate;
     if (_reports.isEmpty) return "0%";
     double calculatedRate = (resolvedReports / totalReports) * 100;
     return "${calculatedRate.toStringAsFixed(0)}%";

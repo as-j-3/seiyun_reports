@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 import 'package:seiyun_reports_app/screens/notifications/viewmodel/notification_viewmodel.dart';
 import 'package:seiyun_reports_app/screens/notifications/view/notifications_screen.dart';
+import 'package:seiyun_reports_app/screens/report/view/report_screen.dart';
+import 'package:seiyun_reports_app/screens/pickup_schedules/view/pickup_schedules_page.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
@@ -20,11 +22,7 @@ class HomeHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.only(top: 60, left: 25, right: 25, bottom: 30),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppTheme.accentGreen, AppTheme.darkGreen],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppTheme.headerGradient,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(35),
           bottomRight: Radius.circular(35),
@@ -62,7 +60,9 @@ class HomeHeader extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationsScreen(),
+                    ),
                   );
                 },
                 child: Stack(
@@ -104,15 +104,66 @@ class HomeHeader extends StatelessWidget {
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: const TextField(
-              decoration: InputDecoration(
-                hintText: "ابحث في الخدمات...",
-                hintStyle: TextStyle(color: Colors.white70),
+            child: TextField(
+              onChanged: (v) => homeVM.setServiceSearchQuery(v),
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                hintText: "ابحث في الخدمات (خريطة، بلاغ، مواعيد)...",
+                hintStyle: TextStyle(color: Colors.white70, fontSize: 14),
                 border: InputBorder.none,
                 icon: Icon(Icons.search, color: Colors.white70),
               ),
             ),
           ),
+          // عرض نتائج البحث عن الخدمات
+          if (homeVM.serviceSearchQuery.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.only(top: 10),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black26, blurRadius: 10),
+                ],
+              ),
+              child: Column(
+                children:
+                    homeVM.filteredServices.map((service) {
+                      return ListTile(
+                        leading: Icon(
+                          service['icon'] as IconData,
+                          color: AppTheme.primaryColor,
+                        ),
+                        title: Text(
+                          service['title'] as String,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        onTap: () {
+                          homeVM.setServiceSearchQuery("");
+                          final page = service['page'];
+                          if (page is int) {
+                            homeVM.setPage(page);
+                          } else if (page == 'report') {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ReportScreen(),
+                              ),
+                            );
+                          } else if (page == 'pickup') {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => const PickupSchedulesPage(),
+                              ),
+                            );
+                          }
+                        },
+                      );
+                    }).toList(),
+              ),
+            ),
         ],
       ),
     );

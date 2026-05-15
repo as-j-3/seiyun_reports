@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/screens/profile/viewmodel/profile_viewmodel.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 import 'package:seiyun_reports_app/screens/profile/view/widgets/profile_header.dart';
-import 'package:seiyun_reports_app/screens/profile/view/widgets/rewards_card.dart';
 import 'package:seiyun_reports_app/screens/profile/view/widgets/settings_item.dart';
 import 'package:seiyun_reports_app/screens/profile/view/widgets/logout_button.dart';
 import 'package:seiyun_reports_app/screens/my_reports/view/my_reports_page.dart';
+import 'package:seiyun_reports_app/core/services/notification_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -29,8 +29,6 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const RewardsCard(),
-                  const SizedBox(height: 30),
                   const _SectionTitle(title: "نشاطاتي"),
                   const SizedBox(height: 15),
                   SettingsItem(
@@ -87,6 +85,21 @@ class ProfileScreen extends StatelessWidget {
                       onChanged: (v) => viewModel.toggleTheme(v),
                     ),
                     onTap: () {},
+                  ),
+                  SettingsItem(
+                    icon: Icons.notification_important_outlined,
+                    title: "اختبار التنبيهات",
+                    subtitle: "اضغط لإرسال تنبيه تجريبي لهاتفك",
+                    onTap: () {
+                      NotificationService.showStatusChangedNotification(
+                        reportTitle: "بلاغ تجريبي",
+                        oldStatus: "قيد الانتظار",
+                        newStatus: "تم الحل (تجربة)",
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("تم إرسال التنبيه التجريبي")),
+                      );
+                    },
                   ),
                   const SizedBox(height: 25),
                   const _SectionTitle(title: "الدعم والمساعدة"),

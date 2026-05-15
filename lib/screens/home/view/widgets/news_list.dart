@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
-import 'package:seiyun_reports_app/import.dart';
+import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/screens/news_tips/viewmodel/news_tips_viewmodel.dart';
 
 class NewsList extends StatelessWidget {

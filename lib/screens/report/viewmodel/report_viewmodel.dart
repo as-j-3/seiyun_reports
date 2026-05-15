@@ -106,6 +106,22 @@ class ReportViewModel extends ChangeNotifier {
   List<ReportModel> _reportsList = []; 
   List<ReportModel> get reportsList => _reportsList;
 
+  String _searchQuery = "";
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    notifyListeners();
+  }
+
+  List<ReportModel> get filteredReports {
+    if (_searchQuery.isEmpty) return _reportsList;
+    return _reportsList.where((report) {
+      final query = _searchQuery.toLowerCase();
+      return report.title.toLowerCase().contains(query) || 
+             report.description.toLowerCase().contains(query) ||
+             report.status.toLowerCase().contains(query);
+    }).toList();
+  }
+
   bool _isLoadingReports = false; // حالة تحميل القائمة
   bool get isLoadingReports => _isLoadingReports;
 

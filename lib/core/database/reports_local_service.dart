@@ -1,8 +1,8 @@
-import 'package:seiyun_reports_app/import.dart';
+import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:seiyun_reports_app/screens/report/models/report_model.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/models/citizen_report_model.dart';
-import 'package:sqflite/sqflite.dart';
-import 'database_helper.dart';
+import 'package:seiyun_reports_app/core/database/database_helper.dart';
 
 class ReportsLocalService {
   final DatabaseHelper _dbHelper = DatabaseHelper();

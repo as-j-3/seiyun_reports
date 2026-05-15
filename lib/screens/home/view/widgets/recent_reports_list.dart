@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
-import 'package:seiyun_reports_app/import.dart';
+import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/viewmodel/citizen_reports_viewmodel.dart';
 
 class RecentReportsList extends StatelessWidget {
   const RecentReportsList({super.key});
 
   @override
-@override
   Widget build(BuildContext context) {
     //نفس الشيء ربطناها بالفيو مودل الخاص ببلاغات المواطنين 
     return Consumer<CitizenReportsViewModel>(
@@ -16,15 +15,22 @@ class RecentReportsList extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (viewModel.reports.isEmpty) {
-          return const Center(child: Text("لا توجد بلاغات حالياً"));
+        // إذا كان هناك بحث، نعرض كل النتائج المطابقة، وإلا نعرض آخر 3 بلاغات فقط
+        final reportsToShow = viewModel.searchQuery.isEmpty 
+            ? viewModel.reports.take(3).toList() 
+            : viewModel.filteredReports;
+
+        if (reportsToShow.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Text("لا توجد بلاغات تطابق بحثك"),
+            ),
+          );
         }
 
-        //  ياخذ آخر 3 بلاغات فقط للعرض في الهوم
-        final recentReports = viewModel.reports.take(3).toList();
-
         return Column(
-          children: recentReports.map((report) {
+          children: reportsToShow.map((report) {
             //ياخد البيانات من المودل 
             final reportData = {
               "title": report.title,
@@ -37,7 +43,7 @@ class RecentReportsList extends StatelessWidget {
       },
     );
   }
-  Widget _reportItem(Map<String, String> data, BuildContext context) {
+  Widget _reportItem(Map<String, dynamic> data, BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(15),

@@ -18,17 +18,11 @@ class AppTheme {
   static const Color darkScaffoldBg = Color(0xFF121212);
   static const Color darkCardBg = Color(0xFF1E1E1E);
 
-  // تدرجات الألوان لشاشة الملف الشخصي
+  // التدرج الموحد للهيدر في جميع الصفحات
   static const LinearGradient headerGradient = LinearGradient(
-    colors: [Color(0xFF2E7D32), Color(0xFF43A047)],
-    begin: Alignment.topRight,
-    end: Alignment.bottomLeft,
-  );
-
-  static const LinearGradient rewardsGradient = LinearGradient(
-    colors: [Color(0xFFD48100), Color(0xFFE6A700)],
-    begin: Alignment.centerLeft,
-    end: Alignment.centerRight,
+    colors: [accentGreen, darkGreen],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 
   static const Color creamColor = Color(0xFFFDF5E6);
