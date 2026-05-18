@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:seiyun_reports_app/core/network/api_service.dart';
-import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/view/models/confirmation_model.dart';
+import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/models/confirmation_model.dart';
 
 class AssignmentService {
   final ApiService _apiService;

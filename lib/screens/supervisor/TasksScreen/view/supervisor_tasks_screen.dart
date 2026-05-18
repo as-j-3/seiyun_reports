@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'supervisor_task_completion_detail_screen.dart';
 import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/viewmodel/supervisor_tasks_viewmodel.dart';
-import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/view/models/assignment_model.dart';
+import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/models/assignment_model.dart';
 
 class SupervisorTasksScreen extends StatefulWidget {
   const SupervisorTasksScreen({Key? key}) : super(key: key);

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/view/data/assignment_repository.dart';
-import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/view/models/assignment_model.dart';
-import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/view/models/confirmation_model.dart';
+import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/data/assignment_repository.dart';
+import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/models/assignment_model.dart';
+import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/models/confirmation_model.dart';
 import 'package:seiyun_reports_app/core/database/assignment_local_service.dart';
 
 class SupervisorTasksViewModel extends ChangeNotifier {

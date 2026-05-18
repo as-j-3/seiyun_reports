@@ -8,8 +8,8 @@ import 'package:seiyun_reports_app/core/network/api_service.dart';
 import 'package:seiyun_reports_app/core/network/dio_client.dart';
 import 'package:seiyun_reports_app/core/network/network_info.dart';
 import 'package:seiyun_reports_app/core/database/assignment_local_service.dart';
-import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/view/data/assignment_service.dart';
-import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/view/data/assignment_repository.dart';
+import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/data/assignment_service.dart';
+import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/data/assignment_repository.dart';
 import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/viewmodel/supervisor_tasks_viewmodel.dart';
 
 import 'package:seiyun_reports_app/screens/auth/viewmodel/auth_viewmodel.dart';

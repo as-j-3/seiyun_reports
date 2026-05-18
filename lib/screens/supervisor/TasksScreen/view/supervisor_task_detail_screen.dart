@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
-import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/view/models/assignment_model.dart';
+import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/models/assignment_model.dart';
 import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/viewmodel/supervisor_tasks_viewmodel.dart';
 
 class SupervisorTaskDetailScreen extends StatefulWidget {
