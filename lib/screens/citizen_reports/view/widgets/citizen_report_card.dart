@@ -5,14 +5,12 @@ import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 
 class CitizenReportCard extends StatelessWidget {
   final CitizenReportModel report;
-  final VoidCallback onLike;
   final VoidCallback onComment;
   final VoidCallback onShare;
 
   const CitizenReportCard({
     Key? key,
     required this.report,
-    required this.onLike,
     required this.onComment,
     required this.onShare,
   }) : super(key: key);
@@ -130,12 +128,6 @@ class CitizenReportCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _ActionButton(
-                  icon: report.isLiked ? Icons.favorite : Icons.favorite_border,
-                  label: '${report.likesCount}',
-                  color: report.isLiked ? Colors.red : Colors.grey[600]!,
-                  onTap: onLike,
-                ),
                 _ActionButton(
                   icon: Icons.chat_bubble_outline,
                   label: '${report.commentsCount}',

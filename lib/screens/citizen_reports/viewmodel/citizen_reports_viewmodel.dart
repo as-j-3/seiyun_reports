@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/data/citizen_reports_repository.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/models/report_statistics.dart';
+import 'package:seiyun_reports_app/screens/citizen_reports/models/comment_model.dart';
 import '../models/citizen_report_model.dart';
 
 class CitizenReportsViewModel extends ChangeNotifier {
@@ -8,6 +9,9 @@ class CitizenReportsViewModel extends ChangeNotifier {
 
   List<CitizenReportModel> _reports = [];
   List<CitizenReportModel> get reports => _reports;
+
+  List<CommentModel> _comments = [];
+  List<CommentModel> get comments => _comments;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -25,10 +29,13 @@ class CitizenReportsViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      //  جلب البلاغات والاحصائيات من السيرفر
+      // 1. جلب البلاغات والاحصائيات من السيرفر
       _reports = await _repository.fetchReports();
       _stats = await _repository.getReportStats();
-    } catch (e) {
+      
+      // 2. زيادة المشاهدات لكل البلاغات التي ظهرت للمستخدم في الخلفية
+      _incrementViewsForLoadedReports();
+          } catch (e) {
       print("❌ فشل الجلب: $e");
     } finally {
       _isLoading = false;
@@ -36,37 +43,16 @@ class CitizenReportsViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> toggleLike(int reportId) async {
-    final index = _reports.indexWhere((r) => r.id == reportId);
-    if (index != -1) {
-      final report = _reports[index];
-      final oldStatus = report.isLiked;
-      final newStatus = !oldStatus;
-      final newLikesCount =
-          oldStatus ? report.likesCount - 1 : report.likesCount + 1;
-
-      _reports[index] = report.copyWith(
-        isLiked: newStatus,
-        likesCount: newLikesCount,
-      );
-      notifyListeners();
-
-      // إرسال التحديث للسيرفر وللجهاز (التخزين المحلي)
-      bool success = await _repository.updateLike(
-        reportId,
-        newStatus,
-        newLikesCount,
-      );
-
-      // لو فشل التحديث، نرجع الحالة كما كانت
-      if (!success) {
-        _reports[index] = report.copyWith(
-          isLiked: oldStatus,
-          likesCount: report.likesCount,
-        );
-        notifyListeners();
-      }
+  void _incrementViewsForLoadedReports() {
+    for (int i = 0; i < _reports.length; i++) {
+      final report = _reports[i];
+      // تحديث السيرفر وقاعدة البيانات المحلية في الخلفية
+      _repository.addView(report.id, report.viewsCount);
+      
+      // تحديث القائمة الحالية في الذاكرة ليظهر التغيير فوراً في الواجهة
+      _reports[i] = report.copyWith(viewsCount: report.viewsCount + 1);
     }
+    notifyListeners();
   }
 
   void setSearchQuery(String query) {
@@ -100,5 +86,39 @@ class CitizenReportsViewModel extends ChangeNotifier {
     if (_reports.isEmpty) return "0%";
     double calculatedRate = (resolvedReports / totalReports) * 100;
     return "${calculatedRate.toStringAsFixed(0)}%";
+  }
+
+  Future<bool> addComment(int reportId, String commentText) async {
+    if (commentText.trim().isEmpty) return false;
+    try {
+      final success = await _repository.addComment(reportId, commentText.trim());
+      if (success) {
+        // تحديث عداد التعليقات فوراً في الواجهة
+        final index = _reports.indexWhere((r) => r.id == reportId);
+        if (index != -1) {
+          _reports[index] = _reports[index].copyWith(
+            commentsCount: _reports[index].commentsCount + 1,
+          );
+          // يمكننا إعادة جلب التعليقات لتظهر فوراً
+          fetchComments(reportId);
+          notifyListeners();
+        }
+      }
+      return success;
+    } catch (e) {
+      print("خطأ في ViewModel عند إضافة تعليق: $e");
+      return false;
+    }
+  }
+
+  Future<void> fetchComments(int reportId) async {
+    _comments = []; // تصفير القائمة لمنع ظهور تعليقات البلاغ السابق
+    notifyListeners();
+    try {
+      _comments = await _repository.fetchComments(reportId);
+      notifyListeners();
+    } catch (e) {
+      print("خطأ في جلب التعليقات في ViewModel: $e");
+    }
   }
 }

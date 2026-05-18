@@ -6,13 +6,17 @@ class AuthService {
 
   AuthService(this._apiService);
 
-  Future<Response> createUser({
+  Future<Response> login({
     required String role,
-    required String name,
+    String? name,
   }) async {
     return await _apiService.post(
-      '/createUser',
-      data: { 'role': role, 'name': name},
+      '/login',
+      data: { 
+        'role': role, 
+        if (name != null) 'name': name,
+        // ملاحظة: التوكن (idToken) يتم إضافته تلقائياً بواسطة DioClient Interceptor
+      },
     );
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:seiyun_reports_app/screens/map/view/map_screen.dart';
 import 'package:seiyun_reports_app/screens/report/viewmodel/report_viewmodel.dart';
 
 class LocationCard extends StatelessWidget {
@@ -34,10 +36,12 @@ class LocationCard extends StatelessWidget {
                 Text(
                   reportVM.locationStatus,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).textTheme.titleSmall?.color,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   "الموقع الحالي للمخالفة",
@@ -49,31 +53,88 @@ class LocationCard extends StatelessWidget {
               ],
             ),
           ),
-          reportVM.isLoadingLocation
-              ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-              : TextButton(
-                onPressed:
-                    () => context.read<ReportViewModel>().getCurrentLocation(),
-                style: TextButton.styleFrom(
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+          const SizedBox(width: 8),
+          if (reportVM.isLoadingLocation)
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            Column(
+              children: [
+                // زر GPS
+                _LocationButton(
+                  label: "GPS",
+                  icon: Icons.my_location,
+                  onPressed: () => context.read<ReportViewModel>().getCurrentLocation(),
                 ),
-                child: Text(
-                  "تحديد",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                const SizedBox(height: 4),
+                // زر الخريطة
+                _LocationButton(
+                  label: "خريطة",
+                  icon: Icons.map_outlined,
+                  onPressed: () async {
+                    final LatLng? picked = await Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, _, __) => const MapScreen(isPicker: true),
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
+                      ),
+                    );
+                    if (picked != null && context.mounted) {
+                      context.read<ReportViewModel>().setLocationFromMap(
+                        picked.latitude,
+                        picked.longitude,
+                      );
+                    }
+                  },
                 ),
-              ),
+              ],
+            ),
         ],
+      ),
+    );
+  }
+}
+
+class _LocationButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const _LocationButton({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: Theme.of(context).primaryColor),
+            const SizedBox(width: 3),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

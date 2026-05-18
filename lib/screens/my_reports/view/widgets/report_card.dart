@@ -150,8 +150,7 @@ class ReportCard extends StatelessWidget {
                       const SizedBox(width: 5),
                       Expanded(
                         child: Text(
-                          // بالباك اند عندنا احداثيات الموقع مفترض نحدد اسم الموقع 
-                          "الموقع: ${report.lat ?? '0.0'}, ${report.lng ?? '0.0'}",
+                          "المنطقة: ${report.areaId == null || report.areaId!.isEmpty ? 'غير محددة' : report.areaId}",
                           style: TextStyle(
                             fontSize: 11,
                             color: Theme.of(context).textTheme.bodyMedium?.color,

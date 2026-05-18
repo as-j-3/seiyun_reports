@@ -1,13 +1,25 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:seiyun_reports_app/core/utils/pref_helper.dart';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:seiyun_reports_app/core/services/location_service.dart';
+import '../models/profile_model.dart';
+import '../data/profile_repository.dart';
 
 class ProfileViewModel extends ChangeNotifier {
+  final ProfileRepository _repository;
+  final LocationService _locationService;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ImagePicker _picker = ImagePicker();
+
+  ProfileModel? _profile;
+  ProfileModel? get profile => _profile;
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
   File? _profileImage;
   File? get profileImage => _profileImage;
@@ -40,8 +52,101 @@ class ProfileViewModel extends ChangeNotifier {
   String? _phoneErrorMessage;
   String? get phoneErrorMessage => _phoneErrorMessage;
 
-  ProfileViewModel() {
+  ProfileViewModel(this._repository, this._locationService) {
     _loadProfileData();
+    fetchProfile();
+  }
+
+  Future<void> fetchProfile() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _profile = await _repository.getProfile();
+      if (_profile != null) {
+        _userName = _profile!.fullName;
+        _userPhone = _profile!.phone;
+        _userAddress = _profile!.areaName;
+        
+        await PrefHelper.saveUserName(_profile!.fullName);
+        await PrefHelper.saveUserPhone(_profile!.phone);
+        await PrefHelper.saveUserAddress(_profile!.areaName);
+        await PrefHelper.saveUserLocation(_profile!.latitude, _profile!.longitude);
+      }
+    } catch (e) {
+      debugPrint("Error fetching profile: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateLocationAutomatically() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      
+      if (permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always) {
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high
+        );
+        
+        // جلب اسم المنطقة محلياً في حالة فشل الاتصال بالإنترنت
+        final localAreaName = await _locationService.getCurrentAreaName();
+        
+        try {
+          final updatedProfile = await _repository.updateProfile(
+            latitude: position.latitude,
+            longitude: position.longitude,
+          );
+          if (updatedProfile != null) {
+            _profile = updatedProfile;
+            _userAddress = updatedProfile.areaName;
+            await PrefHelper.saveUserAddress(updatedProfile.areaName);
+            await PrefHelper.saveUserLocation(updatedProfile.latitude, updatedProfile.longitude);
+          }
+        } catch (apiError) {
+          debugPrint("API update failed, using local area name: $apiError");
+          _userAddress = localAreaName;
+          await PrefHelper.saveUserAddress(localAreaName);
+          await PrefHelper.saveUserLocation(position.latitude, position.longitude);
+        }
+      }
+    } catch (e) {
+      debugPrint("Error updating location automatically: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateLocationManually(double lat, double lng) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final updatedProfile = await _repository.updateProfile(
+        latitude: lat,
+        longitude: lng,
+      );
+      if (updatedProfile != null) {
+        _profile = updatedProfile;
+        _userAddress = updatedProfile.areaName;
+        await PrefHelper.saveUserAddress(updatedProfile.areaName);
+        await PrefHelper.saveUserLocation(updatedProfile.latitude, updatedProfile.longitude);
+      }
+    } catch (e) {
+      debugPrint("Error updating location manually: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> _loadProfileData() async {
@@ -144,6 +249,15 @@ class ProfileViewModel extends ChangeNotifier {
       );
 
       if (pickedFile != null) {
+        // تحديث الصورة في السيرفر أيضاً
+        final updatedProfile = await _repository.updateProfile(
+          imagePath: pickedFile.path,
+        );
+        
+        if (updatedProfile != null) {
+           _profile = updatedProfile;
+        }
+
         _profileImage = File(pickedFile.path);
         await PrefHelper.saveProfileImagePath(pickedFile.path);
         notifyListeners();
@@ -168,12 +282,18 @@ class ProfileViewModel extends ChangeNotifier {
   Future<void> updateUserName(String name) async {
     _userName = name;
     await PrefHelper.saveUserName(name);
+    
+    // تحديث في السيرفر
+    await _repository.updateProfile(name: name);
     notifyListeners();
   }
 
   Future<void> updateUserPhone(String phone) async {
     _userPhone = phone;
     await PrefHelper.saveUserPhone(phone);
+    
+    // تحديث في السيرفر
+    await _repository.updateProfile(phone: phone);
     notifyListeners();
   }
 

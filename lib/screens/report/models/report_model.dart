@@ -3,7 +3,7 @@ class ReportModel {
   final int id;
   final int citizenId;
   final String title;
-  final int? areaId;
+  final String? areaId;
   final String description;
   final String image;
   final String status;
@@ -33,7 +33,7 @@ class ReportModel {
       id: json['id'] != null ? int.parse(json['id'].toString()) : 0,
       citizenId: json['citizen_id'] ?? 0,
       title: json['title'] ?? 'بلاغ بدون عنوان',
-      areaId: json['area_id']?? 0,
+      areaId: json['area_id'] != null && json['area_id'].toString() != '0' ? json['area_id'].toString() : null,
       description: json['description'] ?? '',
       image: json['image'] != null && json['image'].toString().isNotEmpty 
            ? json['image'].toString() 

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:seiyun_reports_app/import.dart';
 
 class DioClient {
@@ -25,34 +26,36 @@ class DioClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           try {
-            // جلب المستخدم الحالي من Firebase
-            User? user = FirebaseAuth.instance.currentUser;
+            final prefs = await SharedPreferences.getInstance();
+            String? laravelToken = prefs.getString('access_token');
 
-            if (user != null) {
-              // جلب الـ ID Token الخاص بالمستخدم لمصادقة الطلبات
-              String? token = await user.getIdToken(true);
-
-              if (token != null) {
-                // إضافة التوكن في الـ Header للطلبات التي تستخدم Bearer Token
-                options.headers['Authorization'] = 'Bearer $token';
-
-                // إضافة التوكن كحقل idToken في طلبات الـ POST (بناءً على متطلبات السيرفر الحالي)
-                if (options.method == 'POST') {
-                  if (options.data is FormData) {
-                    (options.data as FormData).fields.add(
-                      MapEntry("idToken", token),
-                    );
-                  } else {
-                    options.data = FormData.fromMap({
-                      "idToken": token,
-                      ...?options.data as Map<String, dynamic>?,
-                    });
+            if (laravelToken != null && laravelToken.isNotEmpty) {
+              // إذا كان لدينا توكن من لارفيل، نستخدمه مباشرة
+              options.headers['Authorization'] = 'Bearer $laravelToken';
+            } else {
+              // إذا لم يوجد توكن لارفيل، نحاول جلب توكن فيربيس (لأغراض تسجيل الدخول/الإنشاء)
+              User? user = FirebaseAuth.instance.currentUser;
+              if (user != null) {
+                String? firebaseToken = await user.getIdToken();
+                if (firebaseToken != null) {
+                  // نرسل توكن فيربيس في الهيدر كاحتياط
+                  options.headers['Authorization'] = 'Bearer $firebaseToken';
+                  
+                  // إذا كان الطلب POST (مثل تسجيل الدخول)، نرسل التوكن في الجسم أيضاً
+                  if (options.method == 'POST') {
+                    if (options.data is FormData) {
+                      (options.data as FormData).fields.add(MapEntry("idToken", firebaseToken));
+                    } else if (options.data is Map) {
+                      options.data['idToken'] = firebaseToken;
+                    } else {
+                      options.data = {"idToken": firebaseToken};
+                    }
                   }
                 }
               }
             }
           } catch (e) {
-            debugPrint("خطأ في معترض الطلبات (Interceptor): $e");
+            debugPrint("Error in Dio Interceptor: $e");
           }
           return handler.next(options);
         },

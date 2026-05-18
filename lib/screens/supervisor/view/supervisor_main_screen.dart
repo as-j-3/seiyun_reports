@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
-import 'package:seiyun_reports_app/screens/supervisor/view/supervisor_tasks_screen.dart';
-import 'package:seiyun_reports_app/screens/supervisor/view/supervisor_profile_screen.dart';
+import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/view/supervisor_tasks_screen.dart';
+import 'package:seiyun_reports_app/screens/supervisor/Profile/view/supervisor_profile_screen.dart';
 import 'package:seiyun_reports_app/screens/map/view/map_zones_screen.dart';
 
 class SupervisorMainScreen extends StatefulWidget {

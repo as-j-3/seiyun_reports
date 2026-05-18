@@ -33,7 +33,7 @@ class CustomBottomNavBar extends StatelessWidget {
             const SizedBox(width: 40), // مساحة للزر العائم
             _navItem(
               Icons.newspaper_outlined,
-              "الأخبار والنصائح",
+              "الأخبار",
               currentIndex == 2,
               () => onTap(2),
             ),

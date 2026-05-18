@@ -4,7 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 import 'package:seiyun_reports_app/core/utils/pref_helper.dart';
+import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/screens/auth/view/auth_screen.dart';
+import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/viewmodel/supervisor_tasks_viewmodel.dart';
 
 class SupervisorProfileScreen extends StatefulWidget {
   const SupervisorProfileScreen({Key? key}) : super(key: key);
@@ -16,6 +18,7 @@ class SupervisorProfileScreen extends StatefulWidget {
 class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
   String? _userName;
   String? _userRole;
+  String? _userEmail;
   String? _qrData;
 
   @override
@@ -29,11 +32,13 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
   Future<void> _loadProfileData() async {
     final name = await PrefHelper.getUserName() ?? FirebaseAuth.instance.currentUser?.displayName ?? "مشرف ميداني";
     final role = await PrefHelper.getRole();
+    final email = await PrefHelper.getUserEmail();
 
     if (mounted) {
       setState(() {
         _userName = name;
         _userRole = role;
+        _userEmail = email;
         _qrData = name; // الباركود يمثل اسم المشرف كما طلب المستخدم
       });
     }
@@ -146,7 +151,17 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 8),
+          if (_userEmail != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              _userEmail!,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white.withOpacity(0.8),
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
@@ -168,12 +183,31 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
   }
 
   Widget _buildStatsRow(bool isDark) {
-    return Row(
-      children: [
-        _buildStatCard('المهام اليومية', '12', CupertinoIcons.doc_text, Colors.blue, isDark),
-        const SizedBox(width: 15),
-        _buildStatCard('تم إنجازها', '08', CupertinoIcons.check_mark_circled, Colors.green, isDark),
-      ],
+    return Consumer<SupervisorTasksViewModel>(
+      builder: (context, viewModel, child) {
+        final pendingCount = viewModel.pendingTasks.length;
+        final completedCount = viewModel.completedTasks.length;
+
+        return Row(
+          children: [
+            _buildStatCard(
+              'المهام اليومية',
+              pendingCount.toString().padLeft(2, '0'),
+              CupertinoIcons.doc_text,
+              Colors.blue,
+              isDark,
+            ),
+            const SizedBox(width: 15),
+            _buildStatCard(
+              'تم إنجازها',
+              completedCount.toString().padLeft(2, '0'),
+              CupertinoIcons.check_mark_circled,
+              Colors.green,
+              isDark,
+            ),
+          ],
+        );
+      },
     );
   }
 

@@ -5,7 +5,7 @@ import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 import 'package:seiyun_reports_app/screens/map/view/map_screen.dart';
 
 class NearbyContainerCard extends StatelessWidget {
-  final NearbyContainerModel container;
+  final PickupScheduleModel container;
 
   const NearbyContainerCard({Key? key, required this.container})
     : super(key: key);
@@ -35,12 +35,12 @@ class NearbyContainerCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: _getStatusColor(container.statusText).withOpacity(0.1),
+                color: _getStatusColor(container.status).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
                 Icons.delete_outline,
-                color: _getStatusColor(container.statusText),
+                color: _getStatusColor(container.status),
                 size: 28,
               ),
             ),
@@ -57,7 +57,7 @@ class NearbyContainerCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    container.nameStreet,
+                    container.nameStreet ?? '',
                     style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color, fontSize: 13),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -88,14 +88,14 @@ class NearbyContainerCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (container.collectionDay.isNotEmpty) ...[
+                  if (container.scheduleDays.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
                         Icon(Icons.calendar_today, size: 12, color: Colors.orange),
                         const SizedBox(width: 4),
                         Text(
-                          container.collectionDay,
+                          container.scheduleDays,
                           style: TextStyle(color: Colors.orange, fontSize: 11),
                         ),
                       ],
@@ -142,12 +142,12 @@ class NearbyContainerCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(container.statusText).withOpacity(0.1),
+                    color: _getStatusColor(container.status).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(
                     Icons.delete_outline,
-                    color: _getStatusColor(container.statusText),
+                    color: _getStatusColor(container.status),
                     size: 32,
                   ),
                 ),
@@ -164,7 +164,7 @@ class NearbyContainerCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        container.nameStreet,
+                        container.nameStreet ?? '',
                         style: TextStyle(color: Colors.grey[600], fontSize: 14),
                       ),
                     ],
@@ -174,11 +174,10 @@ class NearbyContainerCard extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             _buildDetailItem(context, Icons.location_on_outlined, 'المنطقة', container.areaName),
-            _buildDetailItem(context, Icons.category_outlined, 'التصنيف', container.classification),
             _buildDetailItem(context, Icons.wb_sunny_outlined, 'الفترة', container.period),
             _buildDetailItem(context, Icons.access_time, 'وقت الرفع المتوقع', '${container.areaStartTime} - ${container.areaEndTime}'),
-            _buildDetailItem(context, Icons.info_outline, 'الحالة الحالية', container.statusText, 
-              valueColor: _getStatusColor(container.statusText)),
+            _buildDetailItem(context, Icons.info_outline, 'الحالة الحالية', container.status, 
+              valueColor: _getStatusColor(container.status)),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,

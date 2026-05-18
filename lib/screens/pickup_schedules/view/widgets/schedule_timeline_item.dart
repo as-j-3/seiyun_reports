@@ -45,70 +45,60 @@ class ScheduleTimelineItem extends StatelessWidget {
                   ),
                 ],
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildDayInfo(context, isDark),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTimeInfo(context),
-                const SizedBox(height: 12),
-                _buildLocationsInfo(context, isDark),
-              ],
-            ),
+          const SizedBox(height: 16),
+          _buildTimeInfo(context),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1),
           ),
+          _buildLocationsInfo(context, isDark),
         ],
       ),
     );
   }
 
   Widget _buildDayInfo(BuildContext context, bool isDark) {
-    return Column(
+    return Row(
       children: [
         if (schedule.isToday || schedule.isTomorrow)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            margin: const EdgeInsets.only(left: 12),
             decoration: BoxDecoration(
               color: AppTheme.primaryGreen,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               schedule.isToday ? 'اليوم' : 'غداً',
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 10,
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: isDark ? Colors.black26 : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Theme.of(context).dividerColor.withOpacity(0.2),
-            ),
-          ),
+        Expanded(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 schedule.day,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                  fontSize: 17,
+                  color: Theme.of(context).textTheme.titleLarge?.color,
                 ),
               ),
+              const SizedBox(height: 2),
               Text(
-                schedule.date.split(' ')[0],
+                schedule.date,
                 style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                   color: AppTheme.primaryGreen,
                 ),
               ),
@@ -122,15 +112,16 @@ class ScheduleTimelineItem extends StatelessWidget {
   Widget _buildTimeInfo(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.access_time_filled, size: 18, color: Colors.orange),
-        const SizedBox(width: 8),
-        Text(
-          '${schedule.startTime} - ${schedule.endTime}',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.titleMedium?.color,
-            letterSpacing: 0.5,
+        const Icon(Icons.access_time_filled, size: 16, color: Colors.orange),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            '${schedule.startTime} - ${schedule.endTime}',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).textTheme.titleMedium?.color,
+            ),
           ),
         ),
       ],

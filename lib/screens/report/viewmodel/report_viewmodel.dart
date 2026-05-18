@@ -102,6 +102,12 @@ class ReportViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// تعيين الموقع من خريطة الاختيار
+  void setLocationFromMap(double lat, double lng) {
+    _locationStatus = "إحداثيات: ${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}";
+    notifyListeners();
+  }
+
   
   List<ReportModel> _reportsList = []; 
   List<ReportModel> get reportsList => _reportsList;

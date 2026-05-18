@@ -15,32 +15,44 @@ class AuthRepository {
 
   Future<UserModel> registerUser({
     required String role,
-    required String name,
+    String? name,
     String? token,
     String? email,
   }) async {
 
-    final response = await _authService.createUser(
+    final response = await _authService.login(
       role: role,
       name: name,
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      final userModel = UserModel.fromJson(response.data['data']);
+      final data = response.data['data'];
+      final userData = data['user'];
+      final serverRole = data['role']?.toString() ?? 'citizens';
+      final laravelToken = data['token']?.toString();
+
+      // إنشاء موديل المستخدم مع دمج الدور من مستوى أعلى
+      final userModel = UserModel(
+        id: userData['id'],
+        name: userData['name'] ?? '',
+        email: userData['email'] ?? '',
+        role: serverRole,
+      );
 
       await PrefHelper.saveLoginStatus(true);
       
-      // حفظ التوكن والدور محلياً
-      if (token != null) {
-        await PrefHelper.saveToken(token);
+      // حفظ التوكن القادم من لارفيل (مهم جداً للطلبات القادمة)
+      if (laravelToken != null) {
+        await PrefHelper.saveToken(laravelToken);
       }
       
-      // إذا كان الإيميل هو إيميل المشرف السحري، نقوم بحفظه كمشرف محلياً لضمان الدخول
-      final finalRole = (email?.toLowerCase() == 'supervisor@app.com') ? 'supervisor' : userModel.role;
-      await PrefHelper.saveRole(finalRole);
+      // حفظ الدور القادم من السيرفر
+      await PrefHelper.saveRole(serverRole);
 
+      // حفظ بيانات المستخدم في التخزين المحلي لجميع المستخدمين
       await PrefHelper.saveUserId(userModel.id);
       await PrefHelper.saveUserName(userModel.name);
+      await PrefHelper.saveUserEmail(userModel.email);
 
       return userModel;
     } else {

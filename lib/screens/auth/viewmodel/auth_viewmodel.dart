@@ -72,17 +72,16 @@ class AuthViewModel extends ChangeNotifier {
         final token = await user.getIdToken();
         debugPrint("FIREBASE_TOKEN: $token");
 
-        // تحديد الدور بناءً على الإيميل (إيميل سحري للمشرف)
-        final String role = (user.email?.toLowerCase() == 'supervisor@app.com') ? 'supervisor' : 'citizens';
-        
-        await PrefHelper.saveRole(role);
+        // دور افتراضي، سيتم تجاوزه بالدور الحقيقي من استجابة السيرفر
+        const String role = 'citizens';
 
-        // تسجيل المستخدم في قاعدة بيانات السيرفر الخاص بالتطبيق
+        // تسجيل المستخدم في قاعدة بيانات السيرفر الخاص بالتطبيق والحصول على الدور الحقيقي من الاستجابة
         await _authRepo.registerUser(
           role: role,
-          name: (name != null && name.trim().isNotEmpty)
-              ? name.trim()
-              : (user.displayName ?? "User"),
+          // نرسل الاسم فقط في حالة إنشاء حساب جديد لتجنب تغيير الاسم الحقيقي في السيرفر بكلمة "User"
+          name: _isSignupMode 
+              ? ((name != null && name.trim().isNotEmpty) ? name.trim() : (user.displayName ?? "User"))
+              : null,
           token: token,
           email: user.email,
         );
@@ -133,14 +132,14 @@ class AuthViewModel extends ChangeNotifier {
             (user.email != null ? user.email!.split('@')[0] : "User");
 
         final token = await user.getIdToken();
-        // تحديد الدور بناءً على الإيميل (إيميل سحري للمشرف)
-        final String role = (user.email?.toLowerCase() == 'supervisor@app.com') ? 'supervisor' : 'citizens';
-        
-        await PrefHelper.saveRole(role);
+        // دور افتراضي
+        const String role = 'citizens';
 
+        // تسجيل المستخدم والحصول على الدور النهائي من السيرفر
         await _authRepo.registerUser(
           role: role, 
-          name: finalName,
+          // في جوجل، نرسل الاسم فقط إذا لم يكن "User" لضمان عدم الكتابة فوق الاسم الحقيقي
+          name: finalName != "User" ? finalName : null,
           token: token,
           email: user.email,
         );

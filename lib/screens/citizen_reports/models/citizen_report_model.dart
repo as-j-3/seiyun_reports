@@ -3,7 +3,6 @@ class CitizenReportModel {
   final String title;
   final String description;
   final String status;
-  final int likesCount;
   final int viewsCount;
   final int commentsCount;
   final String report_image; 
@@ -13,14 +12,12 @@ class CitizenReportModel {
   final String user_profile; 
   final double latitude;
   final double longitude;
-  bool isLiked; // سنستخدمها للتعامل مع زر اللايك محلياً
 
   CitizenReportModel({
     required this.id,
     required this.title,
     required this.description,
     required this.status,
-    required this.likesCount,
     required this.viewsCount,
     required this.commentsCount,
     required this.report_image,
@@ -30,7 +27,6 @@ class CitizenReportModel {
     required this.user_profile,
     this.latitude = 0.0,
     this.longitude = 0.0,
-    this.isLiked = false,
   });
 
   factory CitizenReportModel.fromJson(Map<String, dynamic> json) {
@@ -39,7 +35,6 @@ class CitizenReportModel {
       title: json['title'] ?? "",
       description: json['description'] ?? "",
       status: json['status'] ?? "",
-      likesCount: json['likes'] ?? 0,
       viewsCount: json['views'] ?? 0,
       commentsCount: json['comments'] ?? 0,
       report_image: json['report_image'] ?? "",
@@ -52,16 +47,19 @@ class CitizenReportModel {
     );
   }
    // يمكن اغيرها في حال استخدمت sqlite  خلوها مؤقتا 
-  // نحتاج هذه الدالة لتحديث حالة اللايك في الـ ViewModel
-  CitizenReportModel copyWith({bool? isLiked, int? likesCount}) {
+  // نحتاج هذه الدالة لتحديث الحالة في الـ ViewModel بشكل مرن
+  CitizenReportModel copyWith({
+    int? commentsCount,
+    int? viewsCount,
+    String? status,
+  }) {
     return CitizenReportModel(
       id: id,
       title: title,
       description: description,
-      status: status,
-      likesCount: likesCount ?? this.likesCount,
-      viewsCount: viewsCount,
-      commentsCount: commentsCount,
+      status: status ?? this.status,
+      viewsCount: viewsCount ?? this.viewsCount,
+      commentsCount: commentsCount ?? this.commentsCount,
       report_image: report_image,
       imageAfterProcessing: imageAfterProcessing,
       created_at: created_at,
@@ -69,7 +67,6 @@ class CitizenReportModel {
       user_profile: user_profile,
       latitude: latitude,
       longitude: longitude,
-      isLiked: isLiked ?? this.isLiked,
     );
   }
 
@@ -79,7 +76,6 @@ class CitizenReportModel {
       'title': title,
       'description': description,
       'status': status,
-      'likesCount': likesCount,
       'viewsCount': viewsCount,
       'commentsCount': commentsCount,
       'report_image': report_image,
@@ -87,7 +83,6 @@ class CitizenReportModel {
       'created_at': created_at,
       'user_name': user_name,
       'user_profile': user_profile,
-      'isLiked': isLiked ? 1 : 0,
     };
   }
 
@@ -97,7 +92,6 @@ class CitizenReportModel {
       title: map['title'] ?? "",
       description: map['description'] ?? "",
       status: map['status'] ?? "",
-      likesCount: map['likesCount'] ?? 0,
       viewsCount: map['viewsCount'] ?? 0,
       commentsCount: map['commentsCount'] ?? 0,
       report_image: map['report_image'] ?? "",
@@ -107,7 +101,6 @@ class CitizenReportModel {
       user_profile: map['user_profile'] ?? "",
       latitude: map['latitude'] ?? 0.0,
       longitude: map['longitude'] ?? 0.0,
-      isLiked: map['isLiked'] == 1,
     );
   }
 }
