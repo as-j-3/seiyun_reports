@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/core/services/location_service.dart';
 import 'package:seiyun_reports_app/core/utils/pref_helper.dart';
+import 'package:seiyun_reports_app/core/services/notification_service.dart';
 import '../models/pickup_schedule_model.dart';
 import '../data/pickup_schedules_repository.dart';
+
 
 class PickupSchedulesViewModel extends ChangeNotifier {
   final PickupSchedulesRepository _repository;
@@ -85,6 +87,66 @@ class PickupSchedulesViewModel extends ChangeNotifier {
         _isLoading = false;
       }
       notifyListeners();
+    _isLoading = false;
+    notifyListeners();
+
+    // ── إطلاق وجدولة إشعارات مواعيد الرفع ──────────────────────────────────
+    _managePickupNotifications();
+  }
+
+  /// يدير الإشعارات الفورية والمجدولة
+  Future<void> _managePickupNotifications() async {
+    // إلغاء الإشعارات المجدولة القديمة لتجنب التكرار
+    await NotificationService.cancelAllNotifications();
+
+    for (final schedule in _schedules) {
+      // 1. إشعار فوري إذا كان الموعد اليوم أو غداً (تنبيه عند فتح التطبيق)
+      if (schedule.isToday || schedule.isTomorrow) {
+        NotificationService.showPickupReminderNotification(
+          day: schedule.day,
+          date: schedule.date,
+          startTime: schedule.startTime,
+          endTime: schedule.endTime,
+          locations: schedule.locations,
+          isToday: schedule.isToday,
+        );
+      }
+
+      // 2. جدولة إشعار مستقبلي إذا كان الموعد غداً (مثلاً قبل الموعد بـ 30 دقيقة)
+      if (schedule.isTomorrow) {
+        _scheduleFuturePickup(schedule);
+      }
+    }
+  }
+
+  void _scheduleFuturePickup(PickupScheduleModel schedule) {
+    try {
+      // استخراج الوقت (نفترض تنسيق HH:mm مثل 05:00)
+      final parts = schedule.startTime.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+
+      // حساب وقت الإشعار: غداً في نفس وقت البداية (أو قبله بمدة)
+      final now = DateTime.now();
+      var scheduledDate = DateTime(
+        now.year,
+        now.month,
+        now.day + 1,
+        hour,
+        minute,
+      ).subtract(const Duration(minutes: 30)); // تنبيه قبل الموعد بـ 30 دقيقة
+
+      // إذا كان الوقت المحسوب قد مضى فعلاً اليوم (في حال كان الوقت مبكراً جداً)
+      if (scheduledDate.isBefore(now)) return;
+
+      NotificationService.schedulePickupNotification(
+        id: int.tryParse(schedule.id) ?? 100 + schedule.hashCode,
+        title: '🚛 تذكير: موعد الرفع يقترب',
+        body: 'سيبدأ رفع النفايات في ${schedule.startTime} في مناطق: ${schedule.locations.take(2).join(", ")}',
+        scheduledDate: scheduledDate,
+      );
+    } catch (e) {
+      debugPrint('⚠️ خطأ في جدولة الإشعار: $e');
     }
   }
 

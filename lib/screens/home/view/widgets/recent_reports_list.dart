@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
+import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/viewmodel/citizen_reports_viewmodel.dart';
 
 class RecentReportsList extends StatelessWidget {
@@ -14,15 +15,28 @@ class RecentReportsList extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (viewModel.reports.isEmpty) {
-          return const Center(child: Text("لا توجد بلاغات حالياً"));
-        }
+        // إذا كان هناك بحث، نعرض كل النتائج المطابقة، وإلا نعرض آخر 3 بلاغات فقط
+        final reportsToShow = viewModel.searchQuery.isEmpty 
+            ? viewModel.reports.take(3).toList() 
+            : viewModel.filteredReports;
 
         // ياخذ آخر 3 بلاغات فقط للعرض في الهوم
         final recentReports = viewModel.reports.take(3).toList();
 
         return Column(
           children: recentReports.map((report) {
+        if (reportsToShow.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Text("لا توجد بلاغات تطابق بحثك"),
+            ),
+          );
+        }
+
+        return Column(
+          children: reportsToShow.map((report) {
+            //ياخد البيانات من المودل 
             final reportData = {
               "title": report.title,
               "date": report.created_at,

@@ -10,11 +10,7 @@ class ReportHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.only(top: 60, left: 25, right: 25, bottom: 30),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppTheme.accentGreen, AppTheme.primaryGreen],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppTheme.headerGradient,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(35),
           bottomRight: Radius.circular(35),

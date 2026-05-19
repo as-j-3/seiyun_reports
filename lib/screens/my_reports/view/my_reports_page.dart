@@ -60,6 +60,22 @@ class _MyReportsPageState extends State<MyReportsPage> {
                     return ReportsList(reports: viewModel.reportsList);
                   },
                 ),
+              child: Consumer<ReportViewModel>(
+                builder: (context, viewModel, child) {
+                  if (viewModel.isLoadingReports) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: AppTheme.accentGreen,
+                      ),
+                    );
+                  }
+
+                  if (viewModel.filteredReports.isEmpty) {
+                    return const EmptyReportsState();
+                  }
+
+                  return ReportsList(reports: viewModel.filteredReports);
+                },
               ),
             ),
           ],

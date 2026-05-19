@@ -8,7 +8,6 @@ import 'package:seiyun_reports_app/screens/report/view/widgets/category_grid.dar
 import 'package:seiyun_reports_app/screens/report/view/widgets/priority_selector.dart';
 import 'package:seiyun_reports_app/screens/report/view/widgets/location_card.dart';
 import 'package:seiyun_reports_app/screens/report/view/widgets/image_picker_widget.dart';
-import 'package:seiyun_reports_app/screens/report/view/widgets/points_info.dart';
 
 const sectionTitleStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
@@ -43,6 +42,8 @@ class _ReportScreenState extends State<ReportScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const ReportHeader(),
+              if (!context.watch<ProfileViewModel>().isPhoneVerified)
+                _buildVerificationWarning(context, context.read<HomeViewModel>()),
               Padding(
                 padding: const EdgeInsets.all(25.0),
                 child: Column(
@@ -104,8 +105,6 @@ class _ReportScreenState extends State<ReportScreen> {
                     const SizedBox(height: 15),
                     _buildDescriptionField(),
                     const SizedBox(height: 35),
-                    const PointsInfo(),
-                    const SizedBox(height: 35),
                     _buildSubmitButton(context),
                     const SizedBox(height: 100),
                   ],
@@ -113,6 +112,65 @@ class _ReportScreenState extends State<ReportScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVerificationWarning(BuildContext context, HomeViewModel homeVM) {
+    return GestureDetector(
+      onTap: () {
+        homeVM.setPage(3); // الانتقال لصفحة الملف الشخصي
+        Navigator.pop(context);
+      },
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(25, 20, 25, 0),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.orange.shade50,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: Colors.orange.shade200, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.orange.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade100,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 24),
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    "تنبيه: الحساب غير مفعل",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFD35400),
+                      fontSize: 14,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "يجب التحقق من رقم الهاتف لتتمكن من إرسال البلاغ. اضغط هنا للتحقق الآن.",
+                    style: TextStyle(fontSize: 12, color: Colors.black87),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_back_ios_new, size: 14, color: Colors.orange),
+          ],
         ),
       ),
     );

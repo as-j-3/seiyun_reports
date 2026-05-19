@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 
 class PickupSchedulesHeader extends StatelessWidget {
   final String currentLocation;
@@ -11,11 +12,7 @@ class PickupSchedulesHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.only(top: 60, left: 20, right: 20, bottom: 40),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF2E7D32), Color(0xFF1B5E20), Color(0xFF3E2723)],
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-        ),
+        gradient: AppTheme.headerGradient,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(40),
           bottomRight: Radius.circular(40),

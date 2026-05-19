@@ -91,5 +91,27 @@ class HomeViewModel extends ChangeNotifier {
   void dispose() {
     _autoRefreshTimer?.cancel();
     super.dispose();
+  // --- منطق البحث عن الخدمات ---
+  String _serviceSearchQuery = "";
+  String get serviceSearchQuery => _serviceSearchQuery;
+
+  final List<Map<String, dynamic>> _allServices = [
+    {'title': 'تقديم بلاغ جديد', 'icon': Icons.add_chart, 'page': 'report'},
+    {'title': 'خريطة الحاويات', 'icon': Icons.map_outlined, 'page': 1},
+    {'title': 'مواعيد رفع النفايات', 'icon': Icons.local_shipping_outlined, 'page': 'pickup'},
+    {'title': 'أخبار وتحديثات سيئون', 'icon': Icons.newspaper, 'page': 2},
+    {'title': 'الملف الشخصي', 'icon': Icons.person_outline, 'page': 3},
+  ];
+
+  void setServiceSearchQuery(String query) {
+    _serviceSearchQuery = query;
+    notifyListeners();
+  }
+
+  List<Map<String, dynamic>> get filteredServices {
+    if (_serviceSearchQuery.isEmpty) return [];
+    return _allServices.where((s) => 
+      s['title'].toString().toLowerCase().contains(_serviceSearchQuery.toLowerCase())
+    ).toList();
   }
 }
