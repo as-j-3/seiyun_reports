@@ -6,6 +6,8 @@ import 'package:seiyun_reports_app/screens/profile/view/widgets/profile_header.d
 import 'package:seiyun_reports_app/screens/profile/view/widgets/settings_item.dart';
 import 'package:seiyun_reports_app/screens/profile/view/widgets/logout_button.dart';
 import 'package:seiyun_reports_app/screens/my_reports/view/my_reports_page.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'location_picker_screen.dart';
 import 'package:seiyun_reports_app/core/services/notification_service.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -19,6 +21,103 @@ class ProfileScreen extends StatelessWidget {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: viewModel.isLoading && viewModel.profile == null
+            ? const Center(child: CircularProgressIndicator())
+            : RefreshIndicator(
+                onRefresh: () => viewModel.fetchProfile(),
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    ProfileHeader(viewModel: viewModel),
+                    const SizedBox(height: 80),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const RewardsCard(),
+                          const SizedBox(height: 30),
+                          const _SectionTitle(title: "نشاطاتي"),
+                          const SizedBox(height: 15),
+                          SettingsItem(
+                            icon: Icons.assignment_outlined,
+                            title: "بلاغاتي",
+                            subtitle: "عرض ومتابعة البلاغات التي قمت برفعها",
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const MyReportsPage(),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 25),
+                          const _SectionTitle(title: "الإعدادات العامة"),
+                          const SizedBox(height: 15),
+                          SettingsItem(
+                            icon: Icons.phone_android_outlined,
+                            title: "رقم الهاتف",
+                            subtitle: viewModel.isPhoneVerified 
+                              ? (viewModel.userPhone ?? "تم التحقق") 
+                              : "لم يتم التحقق - اضغط للتحقق الآن",
+                            trailing: Icon(
+                              viewModel.isPhoneVerified ? Icons.verified : Icons.error_outline,
+                              color: viewModel.isPhoneVerified ? Colors.green : Colors.orange,
+                            ),
+                            onTap: () => _showPhoneVerificationDialog(context, viewModel),
+                          ),
+                          SettingsItem(
+                            icon: Icons.notifications_active_outlined,
+                            title: "تنبيهات التطبيق",
+                            subtitle: "تلقي تحديثات حول البلاغات الجديدة",
+                            trailing: Switch.adaptive(
+                              value: viewModel.notificationsEnabled,
+                              onChanged: (v) => viewModel.toggleNotifications(v),
+                              activeColor: AppTheme.primaryColor,
+                            ),
+                            onTap: () {},
+                          ),
+                          SettingsItem(
+                            icon: Icons.language_outlined,
+                            title: "لغة التطبيق",
+                            subtitle: "العربية (اليمن)",
+                            onTap: () {},
+                          ),
+                          SettingsItem(
+                            icon: Icons.dark_mode_outlined,
+                            title: "الوضع الليلي",
+                            subtitle: "تفعيل السمات الداكنة",
+                            trailing: Switch.adaptive(
+                              value: viewModel.isDarkMode,
+                              onChanged: (v) => viewModel.toggleTheme(v),
+                            ),
+                            onTap: () {},
+                          ),
+                          const SizedBox(height: 25),
+                          const _SectionTitle(title: "الدعم والمساعدة"),
+                          const SizedBox(height: 15),
+                          SettingsItem(
+                            icon: Icons.help_outline,
+                            title: "مركز المساعدة",
+                            subtitle: "الأسئلة الشائعة وطرق الاستخدام",
+                            onTap: () {},
+                          ),
+                          SettingsItem(
+                            icon: Icons.info_outline,
+                            title: "حول التطبيق",
+                            subtitle: "معلومات الإصدار وسياسة الخصوصية",
+                            onTap: () {},
+                          ),
+                          const SizedBox(height: 30),
+                          LogoutButton(viewModel: viewModel),
+                          const SizedBox(height: 100),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
         body: ListView(
           padding: EdgeInsets.zero,
           children: [
@@ -121,9 +220,6 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 100),
                 ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

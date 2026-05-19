@@ -4,20 +4,33 @@ import '../viewmodel/pickup_schedules_viewmodel.dart';
 import 'widgets/pickup_schedules_header.dart';
 import 'widgets/pickup_summary_stats.dart';
 import 'widgets/nearby_container_card.dart';
-import 'widgets/schedule_timeline_item.dart';
 import 'widgets/pickup_tips_card.dart';
 
-class PickupSchedulesPage extends StatelessWidget {
+class PickupSchedulesPage extends StatefulWidget {
   const PickupSchedulesPage({Key? key}) : super(key: key);
 
   @override
+  State<PickupSchedulesPage> createState() => _PickupSchedulesPageState();
+}
+
+class _PickupSchedulesPageState extends State<PickupSchedulesPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PickupSchedulesViewModel>().fetchData();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => PickupSchedulesViewModel(),
-      child: Scaffold(
-        body: Consumer<PickupSchedulesViewModel>(
-          builder: (context, viewModel, child) {
-            return SingleChildScrollView(
+    return Scaffold(
+      body: Consumer<PickupSchedulesViewModel>(
+        builder: (context, viewModel, child) {
+          return RefreshIndicator(
+            onRefresh: () => viewModel.fetchData(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 children: [
                   PickupSchedulesHeader(
@@ -25,7 +38,7 @@ class PickupSchedulesPage extends StatelessWidget {
                   ),
                   PickupSummaryStats(
                     nearbyCount: viewModel.totalNearbyContainers,
-                    nextPickupDay: 'غداً',
+                    nextPickupDay: viewModel.nextPickupDayLabel,
                   ),
                   if (viewModel.isLoading)
                     const Padding(
@@ -40,18 +53,14 @@ class PickupSchedulesPage extends StatelessWidget {
                         children: viewModel.nearbyContainers.map((c) => NearbyContainerCard(container: c)).toList(),
                       ),
                     ),
-                    _buildSectionHeader(context, 'جدول مواعيد الرفع'),
-                    Column(
-                      children: viewModel.schedules.map((s) => ScheduleTimelineItem(schedule: s)).toList(),
-                    ),
                     const PickupTipsCard(),
                     const SizedBox(height: 30),
                   ],
                 ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

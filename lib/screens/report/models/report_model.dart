@@ -3,7 +3,9 @@ class ReportModel {
   final int id;
   final int citizenId;
   final String title;
-  final int? areaId;
+  final String? areaId;
+  final String? areaName;
+  final String? squareName;
   final String description;
   final String image;
   final String status;
@@ -17,6 +19,8 @@ class ReportModel {
     required this.citizenId,
     required this.title,
     this.areaId,
+    this.areaName,
+    this.squareName,
     required this.description,
     required this.image,
     required this.status,
@@ -33,7 +37,9 @@ class ReportModel {
       id: json['id'] != null ? int.parse(json['id'].toString()) : 0,
       citizenId: json['citizen_id'] ?? 0,
       title: json['title'] ?? 'بلاغ بدون عنوان',
-      areaId: json['area_id']?? 0,
+      areaId: json['area_id'] != null && json['area_id'].toString() != '0' ? json['area_id'].toString() : null,
+      areaName: json['area_name']?.toString(),
+      squareName: json['square_name']?.toString(),
       description: json['description'] ?? '',
       image: json['image'] != null && json['image'].toString().isNotEmpty 
            ? json['image'].toString() 
@@ -65,6 +71,8 @@ Map<String, dynamic> toMap() {
     'citizen_id': citizenId,
     'title': title,
     'area_id': areaId,
+    'area_name': areaName,
+    'square_name': squareName,
     'description': description,
     'image': image,
     'status': status,
@@ -81,6 +89,8 @@ factory ReportModel.fromMap(Map<String, dynamic> map) {
     citizenId: map['citizen_id'],
     title: map['title'],
     areaId: map['area_id'],
+    areaName: map['area_name'],
+    squareName: map['square_name'],
     description: map['description'],
     image: map['image'],
     status: map['status'],

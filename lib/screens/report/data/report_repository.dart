@@ -96,8 +96,8 @@ class ReportRepository {
       bool hasInternet = await _networkInfo.isConnected;
 
       if (shouldSync && hasInternet) {
-        if (cachedReports.isEmpty) {
-          await _syncReportsWithServer(); // الانتظار في حالة أول تشغيل
+        if (cachedReports.isEmpty || isRefresh) {
+          await _syncReportsWithServer(); // الانتظار في حالة أول تشغيل أو التحديث اليدوي
           cachedReports = await _localService.getLocalReports(); // إعادة الجلب بعد المزامنة
         } else {
           _syncReportsWithServer(); // مزامنة في الخلفية

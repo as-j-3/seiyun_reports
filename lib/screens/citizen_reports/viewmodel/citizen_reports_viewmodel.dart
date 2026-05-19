@@ -1,14 +1,20 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/core/services/notification_service.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/data/citizen_reports_repository.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/models/report_statistics.dart';
+import 'package:seiyun_reports_app/screens/citizen_reports/models/comment_model.dart';
 import '../models/citizen_report_model.dart';
 
 class CitizenReportsViewModel extends ChangeNotifier {
   final CitizenReportsRepository _repository;
+  Timer? _autoRefreshTimer;
 
   List<CitizenReportModel> _reports = [];
   List<CitizenReportModel> get reports => _reports;
+
+  List<CommentModel> _comments = [];
+  List<CommentModel> get comments => _comments;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -20,19 +26,24 @@ class CitizenReportsViewModel extends ChangeNotifier {
   ReportStatistics? get stats => _stats;
 
   CitizenReportsViewModel(this._repository) {
-    loadDashboardData();
+    loadDashboardData(); // استدعاء لدالة الجلب عند التشغيل
+    _startAutoRefresh();
   }
 
-  Future<void> loadDashboardData() async {
-    _isLoading = true;
-    notifyListeners();
-    try {
-      // حفظ نسخة من الحالات القديمة قبل تحديث البيانات
-      final Map<int, String> oldStatuses = {
-        for (final r in _reports) r.id: r.status,
-      };
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      loadDashboardData(showLoading: false);
+    });
+  }
 
-      // جلب البيانات الجديدة من السيرفر
+  Future<void> loadDashboardData({bool showLoading = true}) async {
+    if (showLoading) {
+      _isLoading = true;
+      notifyListeners();
+    }
+    try {
+      // 1. جلب البلاغات والاحصائيات من السيرفر
       _reports = await _repository.fetchReports();
       _stats = await _repository.getReportStats();
 
@@ -53,41 +64,26 @@ class CitizenReportsViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint("❌ فشل الجلب: $e");
     } finally {
-      _isLoading = false;
+      if (showLoading) {
+        _isLoading = false;
+      }
       notifyListeners();
     }
   }
 
-  Future<void> toggleLike(int reportId) async {
-    final index = _reports.indexWhere((r) => r.id == reportId);
-    if (index != -1) {
-      final report = _reports[index];
-      final oldStatus = report.isLiked;
-      final newStatus = !oldStatus;
-      final newLikesCount =
-          oldStatus ? report.likesCount - 1 : report.likesCount + 1;
-
-      _reports[index] = report.copyWith(
-        isLiked: newStatus,
-        likesCount: newLikesCount,
-      );
-      notifyListeners();
-
-      // إرسال التحديث للسيرفر وللجهاز (التخزين المحلي)
-      bool success = await _repository.updateLike(
-        reportId,
-        newStatus,
-        newLikesCount,
-      );
-
-      // لو فشل التحديث، نرجع الحالة كما كانت
-      if (!success) {
-        _reports[index] = report.copyWith(
-          isLiked: oldStatus,
-          likesCount: report.likesCount,
-        );
+  Future<void> incrementReportView(CitizenReportModel report) async {
+    try {
+      // تحديث السيرفر وقاعدة البيانات المحلية في الخلفية
+      await _repository.addView(report.id, report.viewsCount);
+      
+      // تحديث القائمة الحالية في الذاكرة ليظهر التغيير فوراً في الواجهة
+      final index = _reports.indexWhere((r) => r.id == report.id);
+      if (index != -1) {
+        _reports[index] = _reports[index].copyWith(viewsCount: _reports[index].viewsCount + 1);
         notifyListeners();
       }
+    } catch (e) {
+      print("❌ فشل زيادة مشاهدة البلاغ ${report.id}: $e");
     }
   }
 
@@ -118,5 +114,45 @@ class CitizenReportsViewModel extends ChangeNotifier {
     if (_reports.isEmpty) return "0%";
     double calculatedRate = (resolvedReports / totalReports) * 100;
     return "${calculatedRate.toStringAsFixed(0)}%";
+  }
+
+  Future<bool> addComment(int reportId, String commentText) async {
+    if (commentText.trim().isEmpty) return false;
+    try {
+      final success = await _repository.addComment(reportId, commentText.trim());
+      if (success) {
+        // تحديث عداد التعليقات فوراً في الواجهة
+        final index = _reports.indexWhere((r) => r.id == reportId);
+        if (index != -1) {
+          _reports[index] = _reports[index].copyWith(
+            commentsCount: _reports[index].commentsCount + 1,
+          );
+          // يمكننا إعادة جلب التعليقات لتظهر فوراً
+          fetchComments(reportId);
+          notifyListeners();
+        }
+      }
+      return success;
+    } catch (e) {
+      print("خطأ في ViewModel عند إضافة تعليق: $e");
+      return false;
+    }
+  }
+
+  Future<void> fetchComments(int reportId) async {
+    _comments = []; // تصفير القائمة لمنع ظهور تعليقات البلاغ السابق
+    notifyListeners();
+    try {
+      _comments = await _repository.fetchComments(reportId);
+      notifyListeners();
+    } catch (e) {
+      print("خطأ في جلب التعليقات في ViewModel: $e");
+    }
+  }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
   }
 }

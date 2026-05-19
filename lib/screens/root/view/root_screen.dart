@@ -70,10 +70,10 @@ class _RootScreenState extends State<RootScreen> {
       );
     }
 
-    if (_userRole == 'supervisor') {
+    if (_userRole == 'supervisors') {
       return const SupervisorMainScreen();
     } else {
-      // Default to citizens / normal users
+      // الافتراضي هو واجهة المواطن
       return HomeScreen();
     }
   }

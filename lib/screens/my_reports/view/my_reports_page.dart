@@ -34,6 +34,32 @@ class _MyReportsPageState extends State<MyReportsPage> {
           children: [
             const ReportsHeader(),
             Expanded(
+              child: RefreshIndicator(
+                color: AppTheme.accentGreen,
+                onRefresh: () => context.read<ReportViewModel>().fetchReportsFromLaravel(isRefresh: true),
+                child: Consumer<ReportViewModel>(
+                  builder: (context, viewModel, child) {
+                    if (viewModel.isLoadingReports) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: AppTheme.accentGreen,
+                        ),
+                      );
+                    }
+            
+                    if (viewModel.reportsList.isEmpty) {
+                      return ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: const [
+                          SizedBox(height: 100),
+                          EmptyReportsState(),
+                        ],
+                      );
+                    }
+            
+                    return ReportsList(reports: viewModel.reportsList);
+                  },
+                ),
               child: Consumer<ReportViewModel>(
                 builder: (context, viewModel, child) {
                   if (viewModel.isLoadingReports) {

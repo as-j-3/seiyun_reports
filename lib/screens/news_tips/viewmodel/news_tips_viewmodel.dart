@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/core/database/news_local_service.dart';
@@ -8,9 +9,11 @@ import 'package:seiyun_reports_app/screens/news_tips/data/news_service.dart';
 import 'package:seiyun_reports_app/screens/news_tips/models/news_tips_model.dart';
 import '../data/news_repository.dart';
 
-class NewsTipsViewModel extends ChangeNotifier {
+ class NewsTipsViewModel extends ChangeNotifier {
   late NewsRepository _newsRepository;
- NewsTipsViewModel(this._newsRepository) {
+  Timer? _autoRefreshTimer;
+  
+  NewsTipsViewModel(this._newsRepository) {
   // 1. تجهيز الأدوات الأساسية (التي كانت ناقصة عندك)
     final dioClient = DioClient();
     final apiService = ApiService(dioClient);
@@ -23,6 +26,14 @@ class NewsTipsViewModel extends ChangeNotifier {
       networkInfo,
     );
     loadContent();
+    _startAutoRefresh();
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      loadContent();
+    });
   }
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -41,22 +52,22 @@ class NewsTipsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future <void> loadContent() async {
+  Future <void> loadContent({bool isRefresh = true}) async {
     //اذا كانت القائمة فارغة تماما يظهر حق
   if (_allContent.isEmpty) {
       _isLoading = true;
       notifyListeners();
     }
     try{
-      //يجيب من الكاش اول مره 
-      _allContent = await _newsRepository.fetchAllContent();
+      //يجيب من الكاش اول مره ويجبر السيرفر على جلب البيانات الجديدة
+      _allContent = await _newsRepository.fetchAllContent(isRefresh: isRefresh);
       _isLoading = false;
       notifyListeners();
 
       // انتظار بسيط للسماح للمزامنة الخلفية بالانتهاء
       await Future.delayed(const Duration(seconds: 2));
 
-      _allContent = await _newsRepository.fetchAllContent();
+      _allContent = await _newsRepository.fetchAllContent(isRefresh: false);
       notifyListeners();
 
    
@@ -67,4 +78,10 @@ class NewsTipsViewModel extends ChangeNotifier {
       notifyListeners(); 
     }
   }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
   }
+}

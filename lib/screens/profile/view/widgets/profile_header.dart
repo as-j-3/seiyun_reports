@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 import 'package:seiyun_reports_app/screens/profile/viewmodel/profile_viewmodel.dart';
+import 'package:seiyun_reports_app/screens/map/view/map_screen.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class ProfileHeader extends StatelessWidget {
   final ProfileViewModel viewModel;
@@ -169,7 +172,52 @@ class ProfileHeader extends StatelessWidget {
                   ),
                   TextField(
                     controller: addressController,
-                    decoration: const InputDecoration(labelText: "العنوان"),
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: "العنوان",
+                      suffixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.my_location, color: AppTheme.primaryColor),
+                            onPressed: () async {
+                              addressController.text = "جاري التحديد...";
+                              await viewModel.updateLocationAutomatically();
+                              addressController.text = viewModel.userAddress ?? "موقع غير محدد";
+                            },
+                            tooltip: "تلقائي",
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.map_outlined, color: AppTheme.primaryColor),
+                            onPressed: () async {
+                              final LatLng? pickedLocation = await Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (context, animation, secondaryAnimation) => MapScreen(
+                                    isPicker: true,
+                                    initialLocation: LatLng(
+                                      viewModel.profile?.latitude ?? 0.0,
+                                      viewModel.profile?.longitude ?? 0.0,
+                                    ),
+                                  ),
+                                  transitionDuration: Duration.zero,
+                                  reverseTransitionDuration: Duration.zero,
+                                ),
+                              );
+
+                              if (pickedLocation != null) {
+                                await viewModel.updateLocationManually(
+                                  pickedLocation.latitude,
+                                  pickedLocation.longitude,
+                                );
+                                addressController.text = viewModel.userAddress ?? "";
+                              }
+                            },
+                            tooltip: "من الخريطة",
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -263,18 +311,19 @@ class ProfileHeader extends StatelessWidget {
           child: CircleAvatar(
             radius: 46,
             backgroundColor: AppTheme.primaryColor.withOpacity(0.05),
-            backgroundImage:
-                viewModel.profileImage != null
-                    ? FileImage(viewModel.profileImage!)
-                    : null,
-            child:
-                viewModel.profileImage == null
-                    ? const Icon(
-                      Icons.person,
-                      size: 50,
-                      color: AppTheme.primaryColor,
-                    )
-                    : null,
+            backgroundImage: viewModel.profileImage != null
+                ? FileImage(viewModel.profileImage!)
+                : (viewModel.profile?.profileImage != null
+                    ? NetworkImage(viewModel.profile!.profileImage!)
+                    : null) as ImageProvider?,
+            child: (viewModel.profileImage == null &&
+                    viewModel.profile?.profileImage == null)
+                ? const Icon(
+                    Icons.person,
+                    size: 50,
+                    color: AppTheme.primaryColor,
+                  )
+                : null,
           ),
         ),
         Positioned(

@@ -101,25 +101,12 @@ class ReportsLocalService {
   ) async {
     final db = await _dbHelper.database;
 
-    // جلب الايدي للبلاغات  الي سوينا لها لايك  محلياً
-    final List<Map<String, dynamic>> likedLocal = await db.query(
-      'citizen_reports',
-      columns: ['id'],
-      where: 'isLiked = ?',
-      whereArgs: [1],
-    );
-    Set<int> likedIds = likedLocal.map((m) => m['id'] as int).toSet();
-
     Batch batch = db.batch();
 
     // مسح البيانات القديمة )
     batch.delete('citizen_reports');
 
     for (var report in remoteReports) {
-      // 3. إذا كان البلاغ موجوداً في قائمة الإعجابات المحلية، نقوم بتحديث حالته قبل الحفظ
-      if (likedIds.contains(report.id)) {
-        report.isLiked = true;
-      }
       batch.insert(
         'citizen_reports',
         report.toMap(),
@@ -128,21 +115,6 @@ class ReportsLocalService {
     }
 
     await batch.commit(noResult: true);
-  }
-
-  /// تحديث حالة الإعجاب لبلاغ معين في قاعدة البيانات المحلية
-  Future<void> updateCitizenReportLike(
-    int reportId,
-    bool isLiked,
-    int newLikesCount,
-  ) async {
-    final db = await _dbHelper.database;
-    await db.update(
-      'citizen_reports',
-      {'isLiked': isLiked ? 1 : 0, 'likesCount': newLikesCount},
-      where: 'id = ?',
-      whereArgs: [reportId],
-    );
   }
 
   /// زيادة عدد المشاهدات لبلاغ معين محلياً
@@ -178,7 +150,6 @@ class ReportsLocalService {
           title: "خطأ",
           description: "",
           status: "error",
-          likesCount: 0,
           viewsCount: 0,
           commentsCount: 0,
           report_image: "",

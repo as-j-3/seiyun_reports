@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/viewmodel/citizen_reports_viewmodel.dart';
@@ -8,7 +9,6 @@ class RecentReportsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //نفس الشيء ربطناها بالفيو مودل الخاص ببلاغات المواطنين 
     return Consumer<CitizenReportsViewModel>(
       builder: (context, viewModel, child) {
         if (viewModel.isLoading) {
@@ -20,6 +20,11 @@ class RecentReportsList extends StatelessWidget {
             ? viewModel.reports.take(3).toList() 
             : viewModel.filteredReports;
 
+        // ياخذ آخر 3 بلاغات فقط للعرض في الهوم
+        final recentReports = viewModel.reports.take(3).toList();
+
+        return Column(
+          children: recentReports.map((report) {
         if (reportsToShow.isEmpty) {
           return const Center(
             child: Padding(
@@ -34,7 +39,7 @@ class RecentReportsList extends StatelessWidget {
             //ياخد البيانات من المودل 
             final reportData = {
               "title": report.title,
-              "date": report.created_at, 
+              "date": report.created_at,
               "status": report.status,
             };
             return _reportItem(reportData, context);
@@ -43,7 +48,8 @@ class RecentReportsList extends StatelessWidget {
       },
     );
   }
-  Widget _reportItem(Map<String, dynamic> data, BuildContext context) {
+
+  Widget _reportItem(Map<String, String> data, BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(15),
@@ -73,13 +79,12 @@ class RecentReportsList extends StatelessWidget {
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                //هنا خليه يعرض البلاغ 
                 child: Text(
                   "عرض",
                   style: TextStyle(
                     fontSize: 11,
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? Colors.white 
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
                         : AppTheme.secondaryColor,
                   ),
                 ),
@@ -93,26 +98,26 @@ class RecentReportsList extends StatelessWidget {
               Row(
                 children: [
                   Icon(
-                    Icons.circle, 
-                    size: 8, 
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? const Color(0xFF2ecc71) 
-                        : AppTheme.primaryColor
+                      Icons.circle,
+                      size: 8,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF2ecc71)
+                          : AppTheme.primaryColor
                   ),
                   const SizedBox(width: 5),
                   Text(
                     data['status']!,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context).brightness == Brightness.dark 
-                          ? const Color(0xFF2ecc71) 
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF2ecc71)
                           : AppTheme.primaryColor,
                     ),
                   ),
                 ],
               ),
               Text(
-                data['date']!,
+                data['date']!.split('T')[0],
                 style: const TextStyle(fontSize: 11, color: Colors.grey),
               ),
             ],

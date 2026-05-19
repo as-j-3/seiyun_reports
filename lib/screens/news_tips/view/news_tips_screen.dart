@@ -39,6 +39,7 @@ class _NewsTipsScreenState extends State<NewsTipsScreen> {
                 : RefreshIndicator(
                   onRefresh: () => viewModel.loadContent(),
                   child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     child: Column(
                       children: [
                         NewsTipsHeader(

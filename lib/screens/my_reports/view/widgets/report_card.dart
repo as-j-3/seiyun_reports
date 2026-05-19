@@ -149,15 +149,28 @@ class ReportCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 5),
                       Expanded(
-                        child: Text(
-                          // بالباك اند عندنا احداثيات الموقع مفترض نحدد اسم الموقع 
-                          "الموقع: ${report.lat ?? '0.0'}, ${report.lng ?? '0.0'}",
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Theme.of(context).textTheme.bodyMedium?.color,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        child: Builder(
+                          builder: (context) {
+                            String areaDisplay = 'غير محددة';
+                            if (report.areaName != null && report.areaName!.isNotEmpty) {
+                              if (report.squareName != null && report.squareName!.isNotEmpty && report.squareName != report.areaName) {
+                                areaDisplay = "${report.areaName} - ${report.squareName}";
+                              } else {
+                                areaDisplay = report.areaName!;
+                              }
+                            } else if (report.areaId != null && report.areaId!.isNotEmpty) {
+                              areaDisplay = report.areaId!;
+                            }
+                            return Text(
+                              "المنطقة: $areaDisplay",
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Theme.of(context).textTheme.bodyMedium?.color,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            );
+                          }
                         ),
                       ),
                     ],

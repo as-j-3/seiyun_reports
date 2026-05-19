@@ -16,7 +16,7 @@ class HomeHeader extends StatelessWidget {
     final homeVM = context.watch<HomeViewModel>();
     final notificationVM = context.watch<NotificationViewModel>();
     final User? user = homeVM.currentUser;
-    String name = user?.displayName ?? "مستخدم";
+    String name = homeVM.userName;
 
     return Container(
       width: double.infinity,

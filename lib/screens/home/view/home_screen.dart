@@ -71,55 +71,71 @@ class _HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final homeVM = context.watch<HomeViewModel>();
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            HomeHeader(),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Consumer<CitizenReportsViewModel>(
-                  builder: (context, reportsVM, child) {
-                    return StatsCards(
-                       // ربطها بالبيانات الحقيقية القادمة من السيرفر 
-                      activeCount: reportsVM.activeReports,
-                      resolvedCount: reportsVM.resolvedReports, 
-                    );
-                  },
+      child: RefreshIndicator(
+        onRefresh: () async {
+          await homeVM.refreshData();
+          if (context.mounted) {
+            await context.read<CitizenReportsViewModel>().loadDashboardData();
+          }
+        },
+        color: AppTheme.primaryColor,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              const HomeHeader(),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
                 ),
-                  SizedBox(height: 20),
-                  NextPickupCard(),
-                  SizedBox(height: 20),
-                  OrderServiceBanner(),
-                  SizedBox(height: 25),
-                  SectionHeader(title: "البلاغات الأخيرة", action: "عرض الكل"),
-                  SizedBox(height: 15),
-                  RecentReportsList(),
-                  SizedBox(height: 25),
-                  SectionHeader(
-                    title: "الأخبار والتحديثات",
-                    action: "عرض الكل",
-                  ),
-                  SizedBox(height: 15),
-                  NewsList(),
-                  SizedBox(height: 25),
-                  Text(
-                    "نصائح مفيدة",
-                    style: sectionTitleStyle.copyWith(
-                      color: Theme.of(context).textTheme.titleLarge?.color,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Consumer<CitizenReportsViewModel>(
+                      builder: (context, reportsVM, child) {
+                        return StatsCards(
+                          activeCount: reportsVM.activeReports,
+                          resolvedCount: reportsVM.resolvedReports,
+                        );
+                      },
                     ),
-                  ),
-                  SizedBox(height: 15),
-                  TipsGrid(),
-                  SizedBox(height: 100), // مساحة للزر العائم
-                ],
+                    const SizedBox(height: 20),
+                    const NextPickupCard(),
+                    const SizedBox(height: 20),
+                    const OrderServiceBanner(),
+                    const SizedBox(height: 25),
+                    const SectionHeader(
+                      title: "البلاغات الأخيرة",
+                      action: "عرض الكل",
+                    ),
+                    const SizedBox(height: 15),
+                    const RecentReportsList(),
+                    const SizedBox(height: 25),
+                    const SectionHeader(
+                      title: "الأخبار والتحديثات",
+                      action: "عرض الكل",
+                    ),
+                    const SizedBox(height: 15),
+                    const NewsList(),
+                    const SizedBox(height: 25),
+                    Text(
+                      "نصائح مفيدة",
+                      style: sectionTitleStyle.copyWith(
+                        color: Theme.of(context).textTheme.titleLarge?.color,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    const TipsGrid(),
+                    const SizedBox(height: 100), // مساحة للزر العائم
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

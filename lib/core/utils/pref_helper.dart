@@ -15,7 +15,10 @@ class PrefHelper {
   static const String _notificationsEnabledKey = 'notifications_enabled';
   static const String _userNameKey = 'user_name';
   static const String _userPhoneKey = 'user_phone';
+  static const String _userEmailKey = 'user_email';
   static const String _userAddressKey = 'user_address';
+  static const String _userLatKey = 'user_lat';
+  static const String _userLngKey = 'user_lng';
   static const String _isDarkModeKey = 'is_dark_mode';
   static const String _isPhoneVerifiedKey = 'is_phone_verified';
 
@@ -120,6 +123,18 @@ class PrefHelper {
     return prefs.getString(_userPhoneKey);
   }
 
+  /// حفظ البريد الإلكتروني للمستخدم
+  static Future<void> saveUserEmail(String email) async {
+    final prefs = _prefs!;
+    await prefs.setString(_userEmailKey, email);
+  }
+
+  /// جلب البريد الإلكتروني للمستخدم
+  static Future<String?> getUserEmail() async {
+    final prefs = _prefs!;
+    return prefs.getString(_userEmailKey);
+  }
+
   /// حفظ عنوان المستخدم
   static Future<void> saveUserAddress(String address) async {
     final prefs = _prefs!;
@@ -142,6 +157,25 @@ class PrefHelper {
   static Future<bool> isDarkMode() async {
     final prefs = _prefs!;
     return prefs.getBool(_isDarkModeKey) ?? false;
+  }
+
+  /// حفظ الإحداثيات
+  static Future<void> saveUserLocation(double lat, double lng) async {
+    final prefs = _prefs!;
+    await prefs.setDouble(_userLatKey, lat);
+    await prefs.setDouble(_userLngKey, lng);
+  }
+
+  /// جلب خط العرض
+  static Future<double?> getUserLat() async {
+    final prefs = _prefs!;
+    return prefs.getDouble(_userLatKey);
+  }
+
+  /// جلب خط الطول
+  static Future<double?> getUserLng() async {
+    final prefs = _prefs!;
+    return prefs.getDouble(_userLngKey);
   }
 
   /// التحقق من حالة الدخول
