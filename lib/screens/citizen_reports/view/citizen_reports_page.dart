@@ -96,8 +96,11 @@ class _CommentsSheetState extends State<_CommentsSheet> {
   @override
   void initState() {
     super.initState();
-    // جلب التعليقات عند فتح النافذة
-    Future.microtask(() => widget.viewModel.fetchComments(widget.report.id));
+    // جلب التعليقات وزيادة عدد المشاهدات لهذا البلاغ فقط عند فتح النافذة
+    Future.microtask(() {
+      widget.viewModel.fetchComments(widget.report.id);
+      widget.viewModel.incrementReportView(widget.report);
+    });
   }
 
   @override

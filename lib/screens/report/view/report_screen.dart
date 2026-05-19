@@ -49,15 +49,6 @@ class _ReportScreenState extends State<ReportScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "عنوان البلاغ *",
-                      style: sectionTitleStyle.copyWith(
-                        color: Theme.of(context).textTheme.titleLarge?.color,
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    _buildTitleField(), // حقل عنوان البلاغ الجديد
-                    const SizedBox(height: 30),
-                    Text(
                       "نوع البلاغ *",
                       style: sectionTitleStyle.copyWith(
                         color: Theme.of(context).textTheme.titleLarge?.color,
@@ -65,6 +56,17 @@ class _ReportScreenState extends State<ReportScreen> {
                     ),
                     const SizedBox(height: 15),
                     const CategoryGrid(),
+                    if (reportVM.selectedCategory == 'أخرى') ...[
+                      const SizedBox(height: 30),
+                      Text(
+                        "عنوان البلاغ *",
+                        style: sectionTitleStyle.copyWith(
+                          color: Theme.of(context).textTheme.titleLarge?.color,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      _buildTitleField(),
+                    ],
                     const SizedBox(height: 30),
                     Text(
                       "الأولوية *",
@@ -159,7 +161,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 return;
               }
 
-              if (_titleController.text.trim().isEmpty) {
+              if (reportVM.selectedCategory == 'أخرى' && _titleController.text.trim().isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("يرجى إدخال عنوان للبلاغ")),
                 );
@@ -168,8 +170,10 @@ class _ReportScreenState extends State<ReportScreen> {
 
               reportVM.sendNewReport(
                 context,
-                _titleController.text.trim(),
                 _descriptionController.text.trim(),
+                customTitle: reportVM.selectedCategory == 'أخرى'
+                    ? _titleController.text.trim()
+                    : null,
               );
             },
       style: ElevatedButton.styleFrom(

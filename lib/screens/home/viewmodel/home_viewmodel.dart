@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/core/services/location_service.dart';
@@ -9,6 +10,7 @@ import '../data/home_repository.dart';
 class HomeViewModel extends ChangeNotifier {
   final HomeRepository _repository;
   final LocationService _locationService;
+  Timer? _autoRefreshTimer;
 
   User? _currentUser;
   User? get currentUser => _currentUser;
@@ -35,12 +37,20 @@ class HomeViewModel extends ChangeNotifier {
     _fetchUser();
     _fetchLocation();
     _fetchNextCollection();
+    _startAutoRefresh();
     FirebaseAuth.instance.userChanges().listen((User? user) {
       _currentUser = user;
       if (user != null) {
         _fetchNextCollection();
       }
       notifyListeners();
+    });
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      refreshData();
     });
   }
 
@@ -76,5 +86,10 @@ class HomeViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint("Error fetching next collection: $e");
     }
+  }
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
   }
 }

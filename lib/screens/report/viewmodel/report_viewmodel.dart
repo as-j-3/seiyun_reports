@@ -5,8 +5,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:seiyun_reports_app/screens/citizen_reports/viewmodel/citizen_reports_viewmodel.dart';
 import 'package:seiyun_reports_app/screens/report/models/report_model.dart';
 import '../data/report_repository.dart';
+
 class ReportViewModel extends ChangeNotifier {
   final ReportRepository _repository;
   ReportViewModel(this._repository){
@@ -136,13 +139,7 @@ class ReportViewModel extends ChangeNotifier {
   }
 
   // دالة ارسال البلاغ 
-  Future<void> sendNewReport(BuildContext context,String title, String description) async {
-    //تحقق من وجود عنوان للبلاغ
-    if (title.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("الرجاء إكمال البيانات الأساسية المطلوبة"), backgroundColor: Colors.orange));
-    return;
-  }
-    
+  Future<void> sendNewReport(BuildContext context, String description, {String? customTitle}) async {
     _isUploading = true;
     notifyListeners();
    // قيم افتراضية للاحداثيات 
@@ -177,20 +174,40 @@ class ReportViewModel extends ChangeNotifier {
       }
     }
 
-  //نستدعي الريبو عشان نرسل البيانات الى السيرفر 
-    // نبني نوع البلاغ مع النوع الفرعي إن وُجد
-    final String fullType = _selectedSubType != null && _selectedSubType!.isNotEmpty
-        ? '$_selectedCategory - $_selectedSubType'
-        : _selectedCategory;
+    // تحديد عنوان البلاغ بناءً على خيار التصنيف والقسم الفرعي
+    String categoryLabel = 'أخرى';
+    if (_selectedCategory == 'تراكم_نفايات') {
+      categoryLabel = 'تراكم نفايات';
+    } else if (_selectedCategory == 'نظافة_شوارع') {
+      categoryLabel = 'نظافة الشوارع';
+    } else if (_selectedCategory == 'تشويه_بصري') {
+      categoryLabel = 'التشوه البصري';
+    }
+
+    final String generatedTitle = (customTitle != null && customTitle.isNotEmpty)
+        ? customTitle
+        : (_selectedSubType != null && _selectedSubType!.isNotEmpty
+            ? '$categoryLabel - $_selectedSubType'
+            : categoryLabel);
+
+    // تحديد نوع البلاغ (رفع / كنس / اخرى)
+    String mappedType = 'اخرى';
+    if (_selectedCategory == 'تراكم_نفايات') {
+      mappedType = 'رفع';
+    } else if (_selectedCategory == 'نظافة_شوارع') {
+      mappedType = 'كنس';
+    } else {
+      mappedType = 'اخرى';
+    }
 
     bool success = await _repository.sendNewReport(
-      title: title,
+      title: generatedTitle,
       description: description.isEmpty ? "لا يوجد وصف" : description,
-      type: fullType,
+      type: mappedType,
       priority: _selectedPriority,
       lat: lat,
       lng: lng,
-      imageFile: _image, // imageFile is nullable in sendNewReport? Let's check!
+      imageFile: _image,
     );
 
     _isUploading = false;
@@ -198,6 +215,16 @@ class ReportViewModel extends ChangeNotifier {
   // في حال نجح ارسال البلاغ نستدعي دالة جلب البلاغات لاجل ان تتحدث قائمة بلاغاتي ويوضع فيها البلاغ الجديد
     if (success) {
       await fetchReportsFromLaravel(isRefresh: true);  
+      
+      // تحديث إحصائيات البلاغات العامة وقائمة البلاغات الأخيرة فوراً
+      try {
+        if (context.mounted) {
+          Provider.of<CitizenReportsViewModel>(context, listen: false).loadDashboardData();
+        }
+      } catch (e) {
+        debugPrint("Error updating CitizenReportsViewModel stats: $e");
+      }
+
       String message = "تمت العملية بنجاح";
       ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.green));

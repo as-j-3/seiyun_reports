@@ -75,7 +75,12 @@ class _HomeContent extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: RefreshIndicator(
-        onRefresh: homeVM.refreshData,
+        onRefresh: () async {
+          await homeVM.refreshData();
+          if (context.mounted) {
+            await context.read<CitizenReportsViewModel>().loadDashboardData();
+          }
+        },
         color: AppTheme.primaryColor,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),

@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/core/services/location_service.dart';
 import 'package:seiyun_reports_app/core/utils/pref_helper.dart';
@@ -8,6 +9,7 @@ import '../data/pickup_schedules_repository.dart';
 class PickupSchedulesViewModel extends ChangeNotifier {
   final PickupSchedulesRepository _repository;
   final LocationService _locationService;
+  Timer? _autoRefreshTimer;
 
   List<PickupScheduleModel> _containers = [];
   List<PickupScheduleModel> get containers => _containers;
@@ -32,11 +34,21 @@ class PickupSchedulesViewModel extends ChangeNotifier {
 
   PickupSchedulesViewModel(this._repository, this._locationService) {
     fetchData();
+    _startAutoRefresh();
   }
 
-  Future<void> fetchData() async {
-    _isLoading = true;
-    notifyListeners();
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      fetchData(showLoading: false);
+    });
+  }
+
+  Future<void> fetchData({bool showLoading = true}) async {
+    if (showLoading) {
+      _isLoading = true;
+      notifyListeners();
+    }
 
     try {
       // 1. محاولة الحصول على الموقع المحفوظ من البروفايل أولاً
@@ -69,8 +81,16 @@ class PickupSchedulesViewModel extends ChangeNotifier {
       print("Error fetching pickup schedules: $e");
       _currentLocationName = 'حدث خطأ أثناء جلب البيانات';
     } finally {
-      _isLoading = false;
+      if (showLoading) {
+        _isLoading = false;
+      }
       notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
   }
 }

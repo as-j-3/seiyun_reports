@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/data/citizen_reports_repository.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/models/report_statistics.dart';
@@ -6,6 +7,7 @@ import '../models/citizen_report_model.dart';
 
 class CitizenReportsViewModel extends ChangeNotifier {
   final CitizenReportsRepository _repository;
+  Timer? _autoRefreshTimer;
 
   List<CitizenReportModel> _reports = [];
   List<CitizenReportModel> get reports => _reports;
@@ -22,37 +24,50 @@ class CitizenReportsViewModel extends ChangeNotifier {
   ReportStatistics? get stats => _stats;
 
   CitizenReportsViewModel(this._repository) {
-    loadDashboardData(); // استدعاء لدالة الجلب  عند التشغيل
+    loadDashboardData(); // استدعاء لدالة الجلب عند التشغيل
+    _startAutoRefresh();
   }
 
-  Future<void> loadDashboardData() async {
-    _isLoading = true;
-    notifyListeners();
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      loadDashboardData(showLoading: false);
+    });
+  }
+
+  Future<void> loadDashboardData({bool showLoading = true}) async {
+    if (showLoading) {
+      _isLoading = true;
+      notifyListeners();
+    }
     try {
       // 1. جلب البلاغات والاحصائيات من السيرفر
       _reports = await _repository.fetchReports();
       _stats = await _repository.getReportStats();
-      
-      // 2. زيادة المشاهدات لكل البلاغات التي ظهرت للمستخدم في الخلفية
-      _incrementViewsForLoadedReports();
-          } catch (e) {
+    } catch (e) {
       print("❌ فشل الجلب: $e");
     } finally {
-      _isLoading = false;
+      if (showLoading) {
+        _isLoading = false;
+      }
       notifyListeners();
     }
   }
 
-  void _incrementViewsForLoadedReports() {
-    for (int i = 0; i < _reports.length; i++) {
-      final report = _reports[i];
+  Future<void> incrementReportView(CitizenReportModel report) async {
+    try {
       // تحديث السيرفر وقاعدة البيانات المحلية في الخلفية
-      _repository.addView(report.id, report.viewsCount);
+      await _repository.addView(report.id, report.viewsCount);
       
       // تحديث القائمة الحالية في الذاكرة ليظهر التغيير فوراً في الواجهة
-      _reports[i] = report.copyWith(viewsCount: report.viewsCount + 1);
+      final index = _reports.indexWhere((r) => r.id == report.id);
+      if (index != -1) {
+        _reports[index] = _reports[index].copyWith(viewsCount: _reports[index].viewsCount + 1);
+        notifyListeners();
+      }
+    } catch (e) {
+      print("❌ فشل زيادة مشاهدة البلاغ ${report.id}: $e");
     }
-    notifyListeners();
   }
 
   void setSearchQuery(String query) {
@@ -120,5 +135,11 @@ class CitizenReportsViewModel extends ChangeNotifier {
     } catch (e) {
       print("خطأ في جلب التعليقات في ViewModel: $e");
     }
+  }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
   }
 }

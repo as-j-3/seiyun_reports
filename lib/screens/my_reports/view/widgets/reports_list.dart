@@ -10,6 +10,7 @@ class ReportsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(20),
       itemCount: reports.length,
       itemBuilder: (context, index) {

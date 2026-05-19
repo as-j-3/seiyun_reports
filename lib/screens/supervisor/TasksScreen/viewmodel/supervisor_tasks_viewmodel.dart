@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/data/assignment_repository.dart';
 import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/models/assignment_model.dart';
@@ -6,9 +7,18 @@ import 'package:seiyun_reports_app/core/database/assignment_local_service.dart';
 
 class SupervisorTasksViewModel extends ChangeNotifier {
   final AssignmentRepository _repository;
+  Timer? _autoRefreshTimer;
 
   SupervisorTasksViewModel(this._repository) {
     fetchAssignments();
+    _startAutoRefresh();
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      fetchAssignments(showLoading: false);
+    });
   }
 
   List<AssignmentModel> _assignments = [];
@@ -17,16 +27,20 @@ class SupervisorTasksViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  Future<void> fetchAssignments() async {
-    _isLoading = true;
-    notifyListeners();
+  Future<void> fetchAssignments({bool showLoading = true}) async {
+    if (showLoading) {
+      _isLoading = true;
+      notifyListeners();
+    }
 
     try {
       _assignments = await _repository.getAssignments();
     } catch (e) {
       debugPrint("Error fetching assignments: $e");
     } finally {
-      _isLoading = false;
+      if (showLoading) {
+        _isLoading = false;
+      }
       notifyListeners();
     }
   }
@@ -121,4 +135,9 @@ class SupervisorTasksViewModel extends ChangeNotifier {
         t.status == 'مكتملة' ||
         t.status == 'completed'
       ).toList();
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
+  }
 }

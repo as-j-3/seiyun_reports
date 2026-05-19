@@ -20,7 +20,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'seiyun_reports_v1.db');
     return await openDatabase(
       path,
-      version: 5, // 🚀 تم رفع النسخة إلى 5 لحذف حقول الإعجاب (likes)
+      version: 6, // 🚀 تم رفع النسخة إلى 6 لإضافة حقول أسماء المناطق للمستندات
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -58,6 +58,15 @@ class DatabaseHelper {
           user_profile TEXT
         )
       ''');
+    }
+    // 🆕 تحديث النسخة 6: إضافة حقول أسماء المناطق لجدول بلاغات المواطن
+    if (oldVersion < 6) {
+      try {
+        await db.execute('ALTER TABLE reports ADD COLUMN area_name TEXT');
+        await db.execute('ALTER TABLE reports ADD COLUMN square_name TEXT');
+      } catch (e) {
+        print("Columns area_name/square_name might already exist in reports: $e");
+      }
     }
   }
 
@@ -109,6 +118,8 @@ class DatabaseHelper {
         citizen_id INTEGER,
         title TEXT,
         area_id INTEGER,
+        area_name TEXT,
+        square_name TEXT,
         description TEXT,
         image TEXT,
         status TEXT,
