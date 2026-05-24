@@ -13,13 +13,18 @@ class ReportCard extends StatelessWidget {
     Color statusColor;
     switch (report.status) {
       case 'قيد الإنتظار':
+      case 'قيد الانتظار':
         statusColor = Colors.orange;
         break;
+      case 'قيد المعالجة':
+        statusColor = Colors.blue;
+        break;
       case 'تم الحل':
+      case 'تم الإنجاز':
         statusColor = Colors.green;
         break;
       default:
-        statusColor = Colors.blue;
+        statusColor = Colors.grey;
     }
 
     return Container(
@@ -42,33 +47,35 @@ class ReportCard extends StatelessWidget {
             Stack(
               children: [
                 report.image.startsWith('http')
-                  ? CachedNetworkImage(
+                    ? CachedNetworkImage(
                       imageUrl: report.image,
                       height: 160,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => Container(
-                        height: 160,
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        child: const Icon(
-                          Icons.image_not_supported,
-                          color: Colors.grey,
-                        ),
-                      ),
+                      errorWidget:
+                          (context, url, error) => Container(
+                            height: 160,
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              color: Colors.grey,
+                            ),
+                          ),
                     )
-                  : Image.file(
+                    : Image.file(
                       File(report.image),
                       height: 160,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        height: 160,
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        child: const Icon(
-                          Icons.image_not_supported,
-                          color: Colors.grey,
-                        ),
-                      ),
+                      errorBuilder:
+                          (context, error, stackTrace) => Container(
+                            height: 160,
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              color: Colors.grey,
+                            ),
+                          ),
                     ),
                 Positioned(
                   top: 15,
@@ -132,7 +139,9 @@ class ReportCard extends StatelessWidget {
                     report.description,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey,
+                      color:
+                          Theme.of(context).textTheme.bodySmall?.color ??
+                          Colors.grey,
                       height: 1.4,
                     ),
                     maxLines: 2,
@@ -152,25 +161,33 @@ class ReportCard extends StatelessWidget {
                         child: Builder(
                           builder: (context) {
                             String areaDisplay = 'غير محددة';
-                            if (report.areaName != null && report.areaName!.isNotEmpty) {
-                              if (report.squareName != null && report.squareName!.isNotEmpty && report.squareName != report.areaName) {
-                                areaDisplay = "${report.areaName} - ${report.squareName}";
+                            if (report.areaName != null &&
+                                report.areaName!.isNotEmpty) {
+                              if (report.squareName != null &&
+                                  report.squareName!.isNotEmpty &&
+                                  report.squareName != report.areaName) {
+                                areaDisplay =
+                                    "${report.areaName} - ${report.squareName}";
                               } else {
                                 areaDisplay = report.areaName!;
                               }
-                            } else if (report.areaId != null && report.areaId!.isNotEmpty) {
+                            } else if (report.areaId != null &&
+                                report.areaId!.isNotEmpty) {
                               areaDisplay = report.areaId!;
                             }
                             return Text(
                               "المنطقة: $areaDisplay",
                               style: TextStyle(
                                 fontSize: 11,
-                                color: Theme.of(context).textTheme.bodyMedium?.color,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             );
-                          }
+                          },
                         ),
                       ),
                     ],

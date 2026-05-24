@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/core/services/location_service.dart';
@@ -7,7 +6,6 @@ import 'package:seiyun_reports_app/core/services/notification_service.dart';
 import '../models/pickup_schedule_model.dart';
 import '../data/pickup_schedules_repository.dart';
 
-
 class PickupSchedulesViewModel extends ChangeNotifier {
   final PickupSchedulesRepository _repository;
   final LocationService _locationService;
@@ -15,12 +13,12 @@ class PickupSchedulesViewModel extends ChangeNotifier {
 
   List<PickupScheduleModel> _containers = [];
   List<PickupScheduleModel> get containers => _containers;
-  
+
   // Getters للتوافق مع الواجهة الحالية وإصلاح الأخطاء
   List<PickupScheduleModel> get nearbyContainers => _containers;
   List<PickupScheduleModel> get schedules => _containers;
   int get totalNearbyContainers => _containers.length;
-  
+
   String get nextPickupDayLabel {
     if (_containers.isEmpty) return '-';
     final next = _containers.first;
@@ -77,7 +75,10 @@ class PickupSchedulesViewModel extends ChangeNotifier {
       } else if (_containers.isNotEmpty) {
         _currentLocationName = _containers.first.areaName;
       } else {
-        _currentLocationName = (lat != null) ? 'لا توجد حاويات في منطقتك' : 'لا توجد حاويات قريبة حالياً';
+        _currentLocationName =
+            (lat != null)
+                ? 'لا توجد حاويات في منطقتك'
+                : 'لا توجد حاويات قريبة حالياً';
       }
     } catch (e) {
       print("Error fetching pickup schedules: $e");
@@ -87,8 +88,7 @@ class PickupSchedulesViewModel extends ChangeNotifier {
         _isLoading = false;
       }
       notifyListeners();
-    _isLoading = false;
-    notifyListeners();
+    }
 
     // ── إطلاق وجدولة إشعارات مواعيد الرفع ──────────────────────────────────
     _managePickupNotifications();
@@ -99,7 +99,7 @@ class PickupSchedulesViewModel extends ChangeNotifier {
     // إلغاء الإشعارات المجدولة القديمة لتجنب التكرار
     await NotificationService.cancelAllNotifications();
 
-    for (final schedule in _schedules) {
+    for (final schedule in containers) {
       // 1. إشعار فوري إذا كان الموعد اليوم أو غداً (تنبيه عند فتح التطبيق)
       if (schedule.isToday || schedule.isTomorrow) {
         NotificationService.showPickupReminderNotification(
@@ -140,9 +140,10 @@ class PickupSchedulesViewModel extends ChangeNotifier {
       if (scheduledDate.isBefore(now)) return;
 
       NotificationService.schedulePickupNotification(
-        id: int.tryParse(schedule.id) ?? 100 + schedule.hashCode,
-        title: '🚛 تذكير: موعد الرفع يقترب',
-        body: 'سيبدأ رفع النفايات في ${schedule.startTime} في مناطق: ${schedule.locations.take(2).join(", ")}',
+        id: schedule.id,
+        title: ' تذكير: موعد الرفع يقترب',
+        body:
+            'سيبدأ رفع النفايات في ${schedule.startTime} في مناطق: ${schedule.locations.take(2).join(", ")}',
         scheduledDate: scheduledDate,
       );
     } catch (e) {

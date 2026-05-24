@@ -10,6 +10,7 @@ import 'package:seiyun_reports_app/screens/profile/viewmodel/profile_viewmodel.d
 import 'package:seiyun_reports_app/screens/root/view/root_screen.dart';
 import 'firebase_options.dart';
 import 'package:seiyun_reports_app/core/utils/pref_helper.dart';
+import 'package:seiyun_reports_app/screens/notifications/view/notifications_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,21 +18,22 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
-    MultiProvider(
-      providers: AppProviders.providers,
-      child: const MyApp(),
-    ),
+    MultiProvider(providers: AppProviders.providers, child: const MyApp()),
   );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ProfileViewModel>(
       builder: (context, profileViewModel, child) {
         return MaterialApp(
+          navigatorKey: navigatorKey,
           debugShowCheckedModeBanner: false,
           locale: const Locale('ar', 'YE'),
           supportedLocales: const [Locale('ar', 'YE'), Locale('en', 'US')],
@@ -40,10 +42,11 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          builder: (context, child) => Directionality(
-            textDirection: TextDirection.rtl,
-            child: child!,
-          ),
+          builder:
+              (context, child) => Directionality(
+                textDirection: TextDirection.rtl,
+                child: child!,
+              ),
           title: 'Seiyun Reports App',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
@@ -63,6 +66,10 @@ class MyApp extends StatelessWidget {
               return const AuthScreen();
             },
           ),
+          routes: {
+            // تعريف المسارات لسهولة التنقل من الإشعارات
+            '/notifications': (context) => const NotificationsScreen(),
+          },
         );
       },
     );

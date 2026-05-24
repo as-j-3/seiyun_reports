@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
-import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/viewmodel/citizen_reports_viewmodel.dart';
 
 class RecentReportsList extends StatelessWidget {
@@ -16,15 +15,11 @@ class RecentReportsList extends StatelessWidget {
         }
 
         // إذا كان هناك بحث، نعرض كل النتائج المطابقة، وإلا نعرض آخر 3 بلاغات فقط
-        final reportsToShow = viewModel.searchQuery.isEmpty 
-            ? viewModel.reports.take(3).toList() 
-            : viewModel.filteredReports;
+        final reportsToShow =
+            viewModel.searchQuery.isEmpty
+                ? viewModel.reports.take(3).toList()
+                : viewModel.filteredReports;
 
-        // ياخذ آخر 3 بلاغات فقط للعرض في الهوم
-        final recentReports = viewModel.reports.take(3).toList();
-
-        return Column(
-          children: recentReports.map((report) {
         if (reportsToShow.isEmpty) {
           return const Center(
             child: Padding(
@@ -35,15 +30,15 @@ class RecentReportsList extends StatelessWidget {
         }
 
         return Column(
-          children: reportsToShow.map((report) {
-            //ياخد البيانات من المودل 
-            final reportData = {
-              "title": report.title,
-              "date": report.created_at,
-              "status": report.status,
-            };
-            return _reportItem(reportData, context);
-          }).toList(),
+          children:
+              reportsToShow.map((report) {
+                final reportData = {
+                  "title": report.title,
+                  "date": report.created_at,
+                  "status": report.status,
+                };
+                return _reportItem(reportData, context);
+              }).toList(),
         );
       },
     );
@@ -62,14 +57,18 @@ class RecentReportsList extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                data['title']!,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
+              Expanded(
+                child: Text(
+                  data['title']!,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: 10),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -83,9 +82,10 @@ class RecentReportsList extends StatelessWidget {
                   "عرض",
                   style: TextStyle(
                     fontSize: 11,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : AppTheme.secondaryColor,
+                    color:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : AppTheme.secondaryColor,
                   ),
                 ),
               ),
@@ -98,20 +98,22 @@ class RecentReportsList extends StatelessWidget {
               Row(
                 children: [
                   Icon(
-                      Icons.circle,
-                      size: 8,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? const Color(0xFF2ecc71)
-                          : AppTheme.primaryColor
+                    Icons.circle,
+                    size: 8,
+                    color:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF2ecc71)
+                            : AppTheme.primaryColor,
                   ),
                   const SizedBox(width: 5),
                   Text(
                     data['status']!,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? const Color(0xFF2ecc71)
-                          : AppTheme.primaryColor,
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? const Color(0xFF2ecc71)
+                              : AppTheme.primaryColor,
                     ),
                   ),
                 ],

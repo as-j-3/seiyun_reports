@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
+
 class ReportModel {
- // تعريف الحقول الي بتجي من قواعد البيانات 
+  // تعريف الحقول الي بتجي من قواعد البيانات
   final int id;
   final int citizenId;
   final String title;
@@ -29,75 +31,98 @@ class ReportModel {
     required this.lng,
     required this.createdAt,
   });
-  // تحويل من جيسون الى كائن 
+  // تحويل من جيسون الى كائن
   factory ReportModel.fromJson(Map<String, dynamic> json) {
-   
+    try {
+      return ReportModel(
+        // نحط قيم افتراضية تجنب للاخطاء
+        id: json['id'] != null ? int.parse(json['id'].toString()) : 0,
+        citizenId:
+            json['citizen_id'] != null
+                ? int.parse(json['citizen_id'].toString())
+                : 0,
+        title: json['title']?.toString() ?? 'بلاغ بدون عنوان',
+        areaId:
+            json['area_id'] != null && json['area_id'].toString() != '0'
+                ? json['area_id'].toString()
+                : null,
+        areaName: json['area_name']?.toString(),
+        squareName: json['square_name']?.toString(),
+        description: json['description']?.toString() ?? '',
+        image:
+            json['image'] != null && json['image'].toString().isNotEmpty
+                ? json['image'].toString()
+                : "https://via.placeholder.com/150",
+        status: json['status']?.toString() ?? 'قيد الإنتظار',
+        reportType: (json['report_type'] ?? json['type'] ?? 'رفع').toString(),
+        lat: json['lat']?.toString() ?? '0.0',
+        lng: json['lng']?.toString() ?? '0.0',
+        createdAt: json['created_at']?.toString() ?? '',
+      );
+    } catch (e) {
+      debugPrint("Error parsing ReportModel from JSON: $e");
+      // نرجع كائن فارغ/افتراضي في حالة وجود خطأ جسيم في البيانات
+      return ReportModel(
+        id: 0,
+        citizenId: 0,
+        title: "خطأ في قراءة البيانات",
+        description: "JSON content: $json",
+        image: "",
+        status: "Error",
+        reportType: "",
+        lat: "0.0",
+        lng: "0.0",
+        createdAt: "",
+      );
+    }
+  }
+  // تحويل الكائن الى جيسون نحتاجه عند الارسال الى قاعدة البيانات
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'description': description,
+      'report_type': reportType,
+      'lat': lat,
+      'lng': lng,
+      'image': image,
+      'area_id': areaId,
+    };
+  }
+
+  // تحويل الكائن الى ماب بكامل الحقول للحفظ في قاعدة البيانات المحلية
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'citizen_id': citizenId,
+      'title': title,
+      'area_id': areaId,
+      'area_name': areaName,
+      'square_name': squareName,
+      'description': description,
+      'image': image,
+      'status': status,
+      'report_type': reportType,
+      'lat': lat,
+      'lng': lng,
+      'created_at': createdAt,
+    };
+  }
+
+  factory ReportModel.fromMap(Map<String, dynamic> map) {
     return ReportModel(
-     // نحط قيم افتراضية تجنب للاخطاء 
-      id: json['id'] != null ? int.parse(json['id'].toString()) : 0,
-      citizenId: json['citizen_id'] ?? 0,
-      title: json['title'] ?? 'بلاغ بدون عنوان',
-      areaId: json['area_id'] != null && json['area_id'].toString() != '0' ? json['area_id'].toString() : null,
-      areaName: json['area_name']?.toString(),
-      squareName: json['square_name']?.toString(),
-      description: json['description'] ?? '',
-      image: json['image'] != null && json['image'].toString().isNotEmpty 
-           ? json['image'].toString() 
-           : "https://via.placeholder.com/150",
-      status: json['status'] ?? 'قيد الانتظار',
-      reportType: json['report_type'] ?? 'رفع',
-      lat: json['lat']?.toString() ?? '0.0',
-      lng: json['lng']?.toString() ?? '0.0',
-      createdAt: json['created_at'] ?? '',
+      id: map['id'] ?? 0,
+      citizenId: map['citizen_id'] ?? 0,
+      title: map['title'] ?? 'بدون عنوان',
+      areaId: map['area_id']?.toString(),
+      areaName: map['area_name'],
+      squareName: map['square_name'],
+      description: map['description'] ?? '',
+      image: map['image'] ?? '',
+      status: map['status'] ?? 'قيد الإنتظار',
+      reportType: map['report_type'] ?? 'رفع',
+      lat: map['lat'] ?? '0.0',
+      lng: map['lng'] ?? '0.0',
+      createdAt: map['created_at'] ?? '',
     );
   }
-  // تحويل الكائن الى جيسون نحتاجه عند الارسال الى قاعدة البيانات 
-  Map<String, dynamic> toJson() {
-  return {
-    'title': title,
-    'description': description,
-    'report_type': reportType,
-    'lat': lat,
-    'lng': lng,
-    'image': image, 
-    'area_id': areaId,
-  };
-}
-
-// تحويل الكائن الى ماب بكامل الحقول للحفظ في قاعدة البيانات المحلية
-Map<String, dynamic> toMap() {
-  return {
-    'id': id,
-    'citizen_id': citizenId,
-    'title': title,
-    'area_id': areaId,
-    'area_name': areaName,
-    'square_name': squareName,
-    'description': description,
-    'image': image,
-    'status': status,
-    'report_type': reportType,
-    'lat': lat,
-    'lng': lng,
-    'created_at': createdAt,
-  };
-}
-
-factory ReportModel.fromMap(Map<String, dynamic> map) {
-  return ReportModel(
-    id: map['id'],
-    citizenId: map['citizen_id'],
-    title: map['title'],
-    areaId: map['area_id'],
-    areaName: map['area_name'],
-    squareName: map['square_name'],
-    description: map['description'],
-    image: map['image'],
-    status: map['status'],
-    reportType: map['report_type'],
-    lat: map['lat'],
-    lng: map['lng'],
-    createdAt: map['created_at'],
-  );
-}
 }

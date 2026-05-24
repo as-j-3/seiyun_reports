@@ -43,6 +43,9 @@ class CitizenReportsViewModel extends ChangeNotifier {
       notifyListeners();
     }
     try {
+      // 0. حفظ الحالات الحالية قبل التحديث للكشف عن التغييرات
+      final oldStatuses = {for (var r in _reports) r.id: r.status};
+
       // 1. جلب البلاغات والاحصائيات من السيرفر
       _reports = await _repository.fetchReports();
       _stats = await _repository.getReportStats();
@@ -75,11 +78,13 @@ class CitizenReportsViewModel extends ChangeNotifier {
     try {
       // تحديث السيرفر وقاعدة البيانات المحلية في الخلفية
       await _repository.addView(report.id, report.viewsCount);
-      
+
       // تحديث القائمة الحالية في الذاكرة ليظهر التغيير فوراً في الواجهة
       final index = _reports.indexWhere((r) => r.id == report.id);
       if (index != -1) {
-        _reports[index] = _reports[index].copyWith(viewsCount: _reports[index].viewsCount + 1);
+        _reports[index] = _reports[index].copyWith(
+          viewsCount: _reports[index].viewsCount + 1,
+        );
         notifyListeners();
       }
     } catch (e) {
@@ -119,7 +124,10 @@ class CitizenReportsViewModel extends ChangeNotifier {
   Future<bool> addComment(int reportId, String commentText) async {
     if (commentText.trim().isEmpty) return false;
     try {
-      final success = await _repository.addComment(reportId, commentText.trim());
+      final success = await _repository.addComment(
+        reportId,
+        commentText.trim(),
+      );
       if (success) {
         // تحديث عداد التعليقات فوراً في الواجهة
         final index = _reports.indexWhere((r) => r.id == reportId);

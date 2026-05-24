@@ -19,13 +19,13 @@ import 'package:seiyun_reports_app/screens/citizen_reports/viewmodel/citizen_rep
 import 'package:seiyun_reports_app/screens/home/data/home_repository.dart';
 import 'package:seiyun_reports_app/screens/home/data/home_service.dart';
 import 'package:seiyun_reports_app/screens/home/viewmodel/home_viewmodel.dart';
-import 'package:seiyun_reports_app/screens/home/viewmodel/home_viewmodel.dart';
 import 'package:seiyun_reports_app/screens/map/data/map_repository.dart';
 import 'package:seiyun_reports_app/screens/map/data/map_service.dart';
 import 'package:seiyun_reports_app/screens/map/viewmodel/map_viewmodel.dart';
 import 'package:seiyun_reports_app/screens/news_tips/data/news_repository.dart';
 import 'package:seiyun_reports_app/screens/news_tips/data/news_service.dart';
 import 'package:seiyun_reports_app/screens/news_tips/viewmodel/news_tips_viewmodel.dart';
+import 'package:seiyun_reports_app/screens/notifications/data/notification_repository.dart';
 import 'package:seiyun_reports_app/screens/notifications/viewmodel/notification_viewmodel.dart';
 import 'package:seiyun_reports_app/screens/pickup_schedules/data/pickup_schedules_repository.dart';
 import 'package:seiyun_reports_app/screens/pickup_schedules/data/pickup_schedules_service.dart';
@@ -48,35 +48,42 @@ class AppProviders {
     Provider(create: (_) => AssignmentsLocalService()),
 
     ChangeNotifierProvider(
-      create: (context) => ReportViewModel(
-        ReportRepository(
-          ReportService(context.read<ApiService>()),
-          ReportsLocalService(),
-          context.read<NetworkInfo>(),
-        ),
-      ),
+      create:
+          (context) => ReportViewModel(
+            ReportRepository(
+              ReportService(context.read<ApiService>()),
+              ReportsLocalService(),
+              context.read<NetworkInfo>(),
+            ),
+          ),
     ),
     ChangeNotifierProvider(
-      create: (context) => NewsTipsViewModel(
-        NewsRepository(
-          Newsservice(context.read<ApiService>()),
-          NewsLocalService(),
-          context.read<NetworkInfo>(),
-        ),
-      ),
+      create:
+          (context) => NewsTipsViewModel(
+            NewsRepository(
+              Newsservice(context.read<ApiService>()),
+              NewsLocalService(),
+              context.read<NetworkInfo>(),
+            ),
+          ),
     ),
 
     ProxyProvider<ApiService, CitizenReportsService>(
       update: (_, api, __) => CitizenReportsService(api),
     ),
-    ProxyProvider2<CitizenReportsService, NetworkInfo, CitizenReportsRepository>(
-      update: (_, service, networkInfo, __) =>
-          CitizenReportsRepository(service, networkInfo),
+    ProxyProvider2<
+      CitizenReportsService,
+      NetworkInfo,
+      CitizenReportsRepository
+    >(
+      update:
+          (_, service, networkInfo, __) =>
+              CitizenReportsRepository(service, networkInfo),
     ),
     ChangeNotifierProvider(
-      create: (context) => CitizenReportsViewModel(
-        context.read<CitizenReportsRepository>(),
-      ),
+      create:
+          (context) =>
+              CitizenReportsViewModel(context.read<CitizenReportsRepository>()),
     ),
 
     ChangeNotifierProvider(create: (_) => AuthViewModel()),
@@ -84,62 +91,86 @@ class AppProviders {
       update: (_, api, __) => HomeService(api),
     ),
     ProxyProvider2<HomeService, NetworkInfo, HomeRepository>(
-      update: (_, service, networkInfo, __) =>
-          HomeRepository(service, networkInfo),
+      update:
+          (_, service, networkInfo, __) => HomeRepository(service, networkInfo),
     ),
     ChangeNotifierProvider(
-      create: (context) => HomeViewModel(
-        context.read<HomeRepository>(),
-        context.read<LocationService>(),
-      ),
+      create:
+          (context) => HomeViewModel(
+            context.read<HomeRepository>(),
+            context.read<LocationService>(),
+          ),
     ),
-    ChangeNotifierProvider(create: (_) => NotificationViewModel()),
+    ProxyProvider<ApiService, NotificationRepository>(
+      update: (_, api, __) => NotificationRepository(api),
+    ),
+    ChangeNotifierProxyProvider2<
+      NotificationRepository,
+      ReportViewModel,
+      NotificationViewModel
+    >(
+      create:
+          (context) => NotificationViewModel(
+            context.read<NotificationRepository>(),
+            context.read<ReportViewModel>(),
+          ),
+      update:
+          (_, repository, reportVM, previous) =>
+              previous ?? NotificationViewModel(repository, reportVM),
+    ),
     ProxyProvider<ApiService, ProfileService>(
       update: (_, api, __) => ProfileService(api),
     ),
     ProxyProvider2<ProfileService, NetworkInfo, ProfileRepository>(
-      update: (_, service, networkInfo, __) =>
-          ProfileRepository(service, networkInfo),
+      update:
+          (_, service, networkInfo, __) =>
+              ProfileRepository(service, networkInfo),
     ),
     ChangeNotifierProvider(
-      create: (context) => ProfileViewModel(
-        context.read<ProfileRepository>(),
-        context.read<LocationService>(),
-      ),
+      create:
+          (context) => ProfileViewModel(
+            context.read<ProfileRepository>(),
+            context.read<LocationService>(),
+          ),
     ),
     ProxyProvider<ApiService, PickupSchedulesService>(
       update: (_, api, __) => PickupSchedulesService(api),
     ),
-    ProxyProvider2<PickupSchedulesService, NetworkInfo, PickupSchedulesRepository>(
-      update: (_, service, networkInfo, __) =>
-          PickupSchedulesRepository(service, networkInfo),
+    ProxyProvider2<
+      PickupSchedulesService,
+      NetworkInfo,
+      PickupSchedulesRepository
+    >(
+      update:
+          (_, service, networkInfo, __) =>
+              PickupSchedulesRepository(service, networkInfo),
     ),
     ChangeNotifierProvider(
-      create: (context) => PickupSchedulesViewModel(
-        context.read<PickupSchedulesRepository>(),
-        context.read<LocationService>(),
-      ),
+      create:
+          (context) => PickupSchedulesViewModel(
+            context.read<PickupSchedulesRepository>(),
+            context.read<LocationService>(),
+          ),
     ),
     ProxyProvider<ApiService, MapService>(
       update: (_, api, __) => MapService(api),
     ),
     ProxyProvider2<MapService, NetworkInfo, MapRepository>(
-      update: (_, service, networkInfo, __) =>
-          MapRepository(service, networkInfo),
+      update:
+          (_, service, networkInfo, __) => MapRepository(service, networkInfo),
     ),
     ChangeNotifierProvider(
-      create: (context) => MapViewModel(
-        context.read<MapRepository>(),
-      ),
+      create: (context) => MapViewModel(context.read<MapRepository>()),
     ),
     ChangeNotifierProvider(
-      create: (context) => SupervisorTasksViewModel(
-        AssignmentRepository(
-          remoteService: AssignmentService(context.read<ApiService>()),
-          localService: context.read<AssignmentsLocalService>(),
-          networkInfo: context.read<NetworkInfo>(),
-        ),
-      ),
+      create:
+          (context) => SupervisorTasksViewModel(
+            AssignmentRepository(
+              remoteService: AssignmentService(context.read<ApiService>()),
+              localService: context.read<AssignmentsLocalService>(),
+              networkInfo: context.read<NetworkInfo>(),
+            ),
+          ),
     ),
   ];
 }

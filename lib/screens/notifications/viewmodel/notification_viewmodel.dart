@@ -1,24 +1,14 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:http/http.dart' as http;
 import 'package:seiyun_reports_app/core/services/notification_service.dart';
-
-class AppNotification {
-  final String title;
-  final String body;
-  final DateTime time;
-  final bool isRead;
-
-  AppNotification({
-    required this.title,
-    required this.body,
-    required this.time,
-    this.isRead = false,
-  });
-}
+import 'package:seiyun_reports_app/screens/notifications/data/notification_repository.dart';
+import 'package:seiyun_reports_app/screens/notifications/models/notification_model.dart';
+import 'package:seiyun_reports_app/screens/report/viewmodel/report_viewmodel.dart';
 
 class NotificationViewModel extends ChangeNotifier {
+  final NotificationRepository _repository;
+  final ReportViewModel _reportViewModel;
+
   String? _token;
   String? get token => _token;
 
@@ -27,45 +17,63 @@ class NotificationViewModel extends ChangeNotifier {
 
   int get unreadCount => _notifications.where((n) => !n.isRead).length;
 
-  NotificationViewModel() {
+  NotificationViewModel(this._repository, this._reportViewModel) {
     _init();
   }
 
   Future<void> _init() async {
+    // 1. تهيئة خدمة الإشعارات (Firebase + Local Notifications)
     await NotificationService.initialize();
+
+    // 2. جلب وتحديث التوكن بالسيرفر
     _token = await NotificationService.getToken();
     debugPrint("======== FCM TOKEN ========");
     debugPrint(_token ?? "Failed to get token");
     debugPrint("===========================");
-    
+
+    if (_token != null) {
+      await _repository.updateFcmToken(_token!);
+    }
+
+    // 3. التسمع لتجدد التوكن تلقائياً
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      _token = newToken;
+      _repository.updateFcmToken(newToken);
+      notifyListeners();
+    });
+
+    // 4. التسمع للإشعارات والتطبيق مفتوح (Foreground)
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
-        _addNotification(
-          message.notification!.title ?? "تنبيه جديد",
-          message.notification!.body ?? "",
+        String title = message.notification!.title ?? "تنبيه جديد";
+        String body = message.notification!.body ?? "";
+
+        // أ. إضافة الإشعار للقائمة في الـ UI
+        _addNotification(title, body);
+
+        // ب. تحديث البلاغات تلقائياً (Silent Sync) لضمان تزامن البيانات
+        _reportViewModel.fetchReportsFromLaravel(isRefresh: true);
+
+        debugPrint(
+          "🔔 Foreground Notification received: $title. Triggering silent sync.",
         );
       }
     });
 
     notifyListeners();
-    if (_token != null) {
-      await _sendTokenToServer(_token!);
-    }
   }
 
   void _addNotification(String title, String body) {
-    _notifications.insert(0, AppNotification(
-      title: title,
-      body: body,
-      time: DateTime.now(),
-    ));
+    _notifications.insert(
+      0,
+      AppNotification(title: title, body: body, time: DateTime.now()),
+    );
     notifyListeners();
   }
 
   void markAsRead() {
     if (unreadCount == 0) return;
-    
-    // منطق بسيط لتعليم الكل كمقروء عند فتح القائمة
+
     for (var i = 0; i < _notifications.length; i++) {
       _notifications[i] = AppNotification(
         title: _notifications[i].title,
@@ -75,18 +83,5 @@ class NotificationViewModel extends ChangeNotifier {
       );
     }
     notifyListeners();
-  }
-
-  Future<void> _sendTokenToServer(String fcmToken) async {
-    try {
-      // تم الاحتفاظ بالكود القديم للتواصل مع السيرفر
-      await http.post(
-        Uri.parse("https://60e573cbec47e8.lhr.life/api/update-fcm-token"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"fcm_token": fcmToken}),
-      );
-    } catch (e) {
-      debugPrint("خطأ في تحديث التوكن بالسيرفر: $e");
-    }
   }
 }

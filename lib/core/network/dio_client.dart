@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:seiyun_reports_app/import.dart';
+import 'package:flutter/material.dart';
 
 class DioClient {
   late Dio dio;

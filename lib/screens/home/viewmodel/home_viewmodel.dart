@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -87,10 +86,13 @@ class HomeViewModel extends ChangeNotifier {
       debugPrint("Error fetching next collection: $e");
     }
   }
+
   @override
   void dispose() {
     _autoRefreshTimer?.cancel();
     super.dispose();
+  }
+
   // --- منطق البحث عن الخدمات ---
   String _serviceSearchQuery = "";
   String get serviceSearchQuery => _serviceSearchQuery;
@@ -98,7 +100,11 @@ class HomeViewModel extends ChangeNotifier {
   final List<Map<String, dynamic>> _allServices = [
     {'title': 'تقديم بلاغ جديد', 'icon': Icons.add_chart, 'page': 'report'},
     {'title': 'خريطة الحاويات', 'icon': Icons.map_outlined, 'page': 1},
-    {'title': 'مواعيد رفع النفايات', 'icon': Icons.local_shipping_outlined, 'page': 'pickup'},
+    {
+      'title': 'مواعيد رفع النفايات',
+      'icon': Icons.local_shipping_outlined,
+      'page': 'pickup',
+    },
     {'title': 'أخبار وتحديثات سيئون', 'icon': Icons.newspaper, 'page': 2},
     {'title': 'الملف الشخصي', 'icon': Icons.person_outline, 'page': 3},
   ];
@@ -110,8 +116,12 @@ class HomeViewModel extends ChangeNotifier {
 
   List<Map<String, dynamic>> get filteredServices {
     if (_serviceSearchQuery.isEmpty) return [];
-    return _allServices.where((s) => 
-      s['title'].toString().toLowerCase().contains(_serviceSearchQuery.toLowerCase())
-    ).toList();
+    return _allServices
+        .where(
+          (s) => s['title'].toString().toLowerCase().contains(
+            _serviceSearchQuery.toLowerCase(),
+          ),
+        )
+        .toList();
   }
 }

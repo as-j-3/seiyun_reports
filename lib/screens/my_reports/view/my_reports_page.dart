@@ -36,7 +36,10 @@ class _MyReportsPageState extends State<MyReportsPage> {
             Expanded(
               child: RefreshIndicator(
                 color: AppTheme.accentGreen,
-                onRefresh: () => context.read<ReportViewModel>().fetchReportsFromLaravel(isRefresh: true),
+                onRefresh:
+                    () => context
+                        .read<ReportViewModel>()
+                        .fetchReportsFromLaravel(isRefresh: true),
                 child: Consumer<ReportViewModel>(
                   builder: (context, viewModel, child) {
                     if (viewModel.isLoadingReports) {
@@ -46,8 +49,8 @@ class _MyReportsPageState extends State<MyReportsPage> {
                         ),
                       );
                     }
-            
-                    if (viewModel.reportsList.isEmpty) {
+
+                    if (viewModel.filteredReports.isEmpty) {
                       return ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         children: const [
@@ -56,26 +59,10 @@ class _MyReportsPageState extends State<MyReportsPage> {
                         ],
                       );
                     }
-            
-                    return ReportsList(reports: viewModel.reportsList);
+
+                    return ReportsList(reports: viewModel.filteredReports);
                   },
                 ),
-              child: Consumer<ReportViewModel>(
-                builder: (context, viewModel, child) {
-                  if (viewModel.isLoadingReports) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppTheme.accentGreen,
-                      ),
-                    );
-                  }
-
-                  if (viewModel.filteredReports.isEmpty) {
-                    return const EmptyReportsState();
-                  }
-
-                  return ReportsList(reports: viewModel.filteredReports);
-                },
               ),
             ),
           ],

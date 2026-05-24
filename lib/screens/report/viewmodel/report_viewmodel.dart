@@ -12,7 +12,7 @@ import '../data/report_repository.dart';
 
 class ReportViewModel extends ChangeNotifier {
   final ReportRepository _repository;
-  ReportViewModel(this._repository){
+  ReportViewModel(this._repository) {
     fetchReportsFromLaravel();
   }
 
@@ -38,7 +38,7 @@ class ReportViewModel extends ChangeNotifier {
   String? _verificationId;
   bool _isPhoneVerified = false;
   bool get isPhoneVerified => _isPhoneVerified;
-  
+
   bool _isVerifying = false;
   bool get isVerifying => _isVerifying;
 
@@ -57,25 +57,29 @@ class ReportViewModel extends ChangeNotifier {
   }
 
   void setPriority(String priority) {
-     _selectedPriority = priority;
-      notifyListeners() ;
-      }
+    _selectedPriority = priority;
+    notifyListeners();
+  }
 
   void removeImage() {
-     _image = null;
-      notifyListeners(); 
-      }
+    _image = null;
+    notifyListeners();
+  }
 
   Future<void> pickImage(ImageSource source) async {
     final ImagePicker picker = ImagePicker();
     try {
       final XFile? photo = await picker.pickImage(
         source: source,
-         imageQuality: 70
-         );
-      if (photo != null)
-       { _image = File(photo.path); notifyListeners(); }
-    } catch (e) { debugPrint("Error picking image: $e"); }
+        imageQuality: 70,
+      );
+      if (photo != null) {
+        _image = File(photo.path);
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("Error picking image: $e");
+    }
   }
 
   Future<void> getCurrentLocation() async {
@@ -83,36 +87,36 @@ class ReportViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-        LocationPermission permission = await Geolocator.checkPermission();
+      LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
-       if (permission == LocationPermission.whileInUse ||
+      if (permission == LocationPermission.whileInUse ||
           permission == LocationPermission.always) {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
         );
-      _locationStatus = "إحداثيات: ${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}";
-    }
-    else {
+        _locationStatus =
+            "إحداثيات: ${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}";
+      } else {
         _locationStatus = "تعذر الحصول على الصلاحية";
-      }}
-       catch (e) {
-         debugPrint("Error location: $e");
-        _locationStatus = "خطأ في جلب الموقع";
       }
+    } catch (e) {
+      debugPrint("Error location: $e");
+      _locationStatus = "خطأ في جلب الموقع";
+    }
     _isLoadingLocation = false;
     notifyListeners();
   }
 
   /// تعيين الموقع من خريطة الاختيار
   void setLocationFromMap(double lat, double lng) {
-    _locationStatus = "إحداثيات: ${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}";
+    _locationStatus =
+        "إحداثيات: ${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}";
     notifyListeners();
   }
 
-  
-  List<ReportModel> _reportsList = []; 
+  List<ReportModel> _reportsList = [];
   List<ReportModel> get reportsList => _reportsList;
 
   String _searchQuery = "";
@@ -125,9 +129,9 @@ class ReportViewModel extends ChangeNotifier {
     if (_searchQuery.isEmpty) return _reportsList;
     return _reportsList.where((report) {
       final query = _searchQuery.toLowerCase();
-      return report.title.toLowerCase().contains(query) || 
-             report.description.toLowerCase().contains(query) ||
-             report.status.toLowerCase().contains(query);
+      return report.title.toLowerCase().contains(query) ||
+          report.description.toLowerCase().contains(query) ||
+          report.status.toLowerCase().contains(query);
     }).toList();
   }
 
@@ -145,26 +149,32 @@ class ReportViewModel extends ChangeNotifier {
       //نحاول رفع أي بلاغات كانت مخزنة أوفلاين
       await _repository.syncPendingReports();
       //جلب القائمة (سواء من السيرفر أو الكاش حسب منطق الريبوزيتوري)
-      _reportsList = await _repository.fetchMyReports(isRefresh: isRefresh);//ياخذ البيانات من الريبوزتري 
+      _reportsList = await _repository.fetchMyReports(
+        isRefresh: isRefresh,
+      ); //ياخذ البيانات من الريبوزتري
     } catch (e) {
       debugPrint("خطأ في جلب البلاغات: $e");
     } finally {
       _isLoadingReports = false;
       notifyListeners();
-    } 
+    }
   }
 
-  // دالة ارسال البلاغ 
-  Future<void> sendNewReport(BuildContext context, String description, {String? customTitle}) async {
+  // دالة ارسال البلاغ
+  Future<void> sendNewReport(
+    BuildContext context,
+    String description, {
+    String? customTitle,
+  }) async {
     _isUploading = true;
     notifyListeners();
-   // قيم افتراضية للاحداثيات 
-    String lat = "0.0";  
+    // قيم افتراضية للاحداثيات
+    String lat = "0.0";
     String lng = "0.0";
-  //هذا لضمان ارسال بيانات الاحداثيات صحيحة يقبلها السيرفر
+    //هذا لضمان ارسال بيانات الاحداثيات صحيحة يقبلها السيرفر
     if (_locationStatus.contains(":") && _locationStatus.contains(",")) {
       try {
-       //تقص النص عشان ناخذ الارقام ونخزنها في المتغيرات 
+        //تقص النص عشان ناخذ الارقام ونخزنها في المتغيرات
         var parts = _locationStatus.split(":")[1].split(",");
         lat = parts[0].trim();
         lng = parts[1].trim();
@@ -175,13 +185,18 @@ class ReportViewModel extends ChangeNotifier {
 
     // التحقق من أن الموقع داخل نطاق مدينة سيئون
     if (lat != "0.0" && lng != "0.0") {
-      bool isInside = await _isLocationInServiceArea(double.parse(lat), double.parse(lng));
+      bool isInside = await _isLocationInServiceArea(
+        double.parse(lat),
+        double.parse(lng),
+      );
       if (!isInside) {
         _isUploading = false;
         notifyListeners();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("عفواً، الموقع المحدد خارج نطاق الخدمة المسموح به (مدينة سيئون)."),
+            content: Text(
+              "عفواً، الموقع المحدد خارج نطاق الخدمة المسموح به (مدينة سيئون).",
+            ),
             backgroundColor: Colors.red,
             duration: Duration(seconds: 4),
           ),
@@ -200,11 +215,12 @@ class ReportViewModel extends ChangeNotifier {
       categoryLabel = 'التشوه البصري';
     }
 
-    final String generatedTitle = (customTitle != null && customTitle.isNotEmpty)
-        ? customTitle
-        : (_selectedSubType != null && _selectedSubType!.isNotEmpty
-            ? '$categoryLabel - $_selectedSubType'
-            : categoryLabel);
+    final String generatedTitle =
+        (customTitle != null && customTitle.isNotEmpty)
+            ? customTitle
+            : (_selectedSubType != null && _selectedSubType!.isNotEmpty
+                ? '$categoryLabel - $_selectedSubType'
+                : categoryLabel);
 
     // تحديد نوع البلاغ (رفع / كنس / اخرى)
     String mappedType = 'اخرى';
@@ -228,14 +244,17 @@ class ReportViewModel extends ChangeNotifier {
 
     _isUploading = false;
     notifyListeners();
-  // في حال نجح ارسال البلاغ نستدعي دالة جلب البلاغات لاجل ان تتحدث قائمة بلاغاتي ويوضع فيها البلاغ الجديد
+    // في حال نجح ارسال البلاغ نستدعي دالة جلب البلاغات لاجل ان تتحدث قائمة بلاغاتي ويوضع فيها البلاغ الجديد
     if (success) {
-      await fetchReportsFromLaravel(isRefresh: true);  
-      
+      await fetchReportsFromLaravel(isRefresh: true);
+
       // تحديث إحصائيات البلاغات العامة وقائمة البلاغات الأخيرة فوراً
       try {
         if (context.mounted) {
-          Provider.of<CitizenReportsViewModel>(context, listen: false).loadDashboardData();
+          Provider.of<CitizenReportsViewModel>(
+            context,
+            listen: false,
+          ).loadDashboardData();
         }
       } catch (e) {
         debugPrint("Error updating CitizenReportsViewModel stats: $e");
@@ -243,7 +262,8 @@ class ReportViewModel extends ChangeNotifier {
 
       String message = "تمت العملية بنجاح";
       ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.green));
+        SnackBar(content: Text(message), backgroundColor: Colors.green),
+      );
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -264,11 +284,14 @@ class ReportViewModel extends ChangeNotifier {
   // خوارزمية Ray-Casting للتحقق مما إذا كانت النقطة داخل مضلع (Polygon) سيئون
   Future<bool> _isLocationInServiceArea(double lat, double lng) async {
     try {
-      final String jsonString = await rootBundle.loadString('json/boundary_sayun.json');
+      final String jsonString = await rootBundle.loadString(
+        'json/boundary_sayun.json',
+      );
       final Map<String, dynamic> geoJson = jsonDecode(jsonString);
-      
-      final List<dynamic> coordinates = geoJson['features'][0]['geometry']['coordinates'][0];
-      
+
+      final List<dynamic> coordinates =
+          geoJson['features'][0]['geometry']['coordinates'][0];
+
       bool isInside = false;
       int i, j = coordinates.length - 1;
       for (i = 0; i < coordinates.length; i++) {
@@ -276,9 +299,13 @@ class ReportViewModel extends ChangeNotifier {
         double polyLatI = coordinates[i][1];
         double polyLngJ = coordinates[j][0];
         double polyLatJ = coordinates[j][1];
-        
+
         if (((polyLatI > lat) != (polyLatJ > lat)) &&
-            (lng < (polyLngJ - polyLngI) * (lat - polyLatI) / (polyLatJ - polyLatI) + polyLngI)) {
+            (lng <
+                (polyLngJ - polyLngI) *
+                        (lat - polyLatI) /
+                        (polyLatJ - polyLatI) +
+                    polyLngI)) {
           isInside = !isInside;
         }
         j = i;

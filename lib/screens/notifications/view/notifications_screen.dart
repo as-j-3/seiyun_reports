@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/screens/notifications/viewmodel/notification_viewmodel.dart';
+import 'package:seiyun_reports_app/screens/notifications/models/notification_model.dart';
 import 'package:intl/intl.dart';
 
 class NotificationsScreen extends StatelessWidget {

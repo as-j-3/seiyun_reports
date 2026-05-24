@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:seiyun_reports_app/main.dart';
 
 /// خدمة الإشعارات المركزية للتطبيق بلمسات جمالية
 class NotificationService {
@@ -11,7 +12,9 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  static const Color _brandColor = Color(0xFF2E7D32); // اللون الأخضر الأساسي للتطبيق
+  static const Color _brandColor = Color(
+    0xFF2E7D32,
+  ); // اللون الأخضر الأساسي للتطبيق
 
   // ─── قناة إشعارات تغيير حالة البلاغ ───────────────────────────────────────
   static const _statusChannel = AndroidNotificationChannel(
@@ -60,13 +63,14 @@ class NotificationService {
       debugPrint('✅ إذن الإشعارات ممنوح');
     }
 
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const initSettings = InitializationSettings(
       android: androidSettings,
       iOS: DarwinInitializationSettings(),
     );
-    
+
     await _localNotifications.initialize(
       initSettings,
       onDidReceiveNotificationResponse: (details) {
@@ -74,21 +78,42 @@ class NotificationService {
       },
     );
 
-    final androidPlugin = _localNotifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
-            
+    final androidPlugin =
+        _localNotifications
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+
     await androidPlugin?.createNotificationChannel(_statusChannel);
     await androidPlugin?.createNotificationChannel(_pickupChannel);
     await androidPlugin?.createNotificationChannel(_generalChannel);
 
     FirebaseMessaging.onMessage.listen(_showFcmNotification);
+
+    // التعامل مع فتح التطبيق من إشعار وهو في الخلفية (Background)
     FirebaseMessaging.onMessageOpenedApp.listen((msg) {
-      debugPrint('📬 فُتح التطبيق من إشعار: ${msg.notification?.title}');
+      _handleNotificationClick(msg);
     });
+
+    // التعال مع فتح التطبيق من إشعار وهو مغلق تماماً (Terminated)
+    RemoteMessage? initialMessage = await _messaging.getInitialMessage();
+    if (initialMessage != null) {
+      _handleNotificationClick(initialMessage);
+    }
 
     await _messaging.subscribeToTopic('all');
     await _messaging.subscribeToTopic('news');
+  }
+
+  static void _handleNotificationClick(RemoteMessage message) {
+    debugPrint('📬 تم النقر على الإشعار: ${message.notification?.title}');
+
+    // توجيه المستخدم لصفحة الإشعارات عند النقر
+    // يمكن تطوير هذا لاحقاً للتوجيه لبلاغ محدد بناءً على الـ Data Payload
+    final context = MyApp.navigatorKey.currentContext;
+    if (context != null) {
+      Navigator.of(context).pushNamed('/notifications');
+    }
   }
 
   // ── إشعار FCM العام ──────────────────────────────────────────────────────────
