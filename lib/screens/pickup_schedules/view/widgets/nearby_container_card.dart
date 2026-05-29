@@ -58,7 +58,10 @@ class NearbyContainerCard extends StatelessWidget {
                   ),
                   Text(
                     container.nameStreet ?? '',
-                    style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color, fontSize: 13),
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                      fontSize: 13,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -92,11 +95,22 @@ class NearbyContainerCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.calendar_today, size: 12, color: Colors.orange),
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 12,
+                          color: Colors.orange,
+                        ),
                         const SizedBox(width: 4),
-                        Text(
-                          container.scheduleDays,
-                          style: TextStyle(color: Colors.orange, fontSize: 11),
+                        Expanded(
+                          child: Text(
+                            container.scheduleDays,
+                            style: const TextStyle(
+                              color: Colors.orange,
+                              fontSize: 11,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
@@ -116,118 +130,179 @@ class NearbyContainerCard extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      builder:
+          (context) => Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(25),
               ),
             ),
-            const SizedBox(height: 24),
-            Row(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(container.status).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    Icons.delete_outline,
-                    color: _getStatusColor(container.status),
-                    size: 32,
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        container.locationName,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(
+                          container.status,
+                        ).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      Text(
-                        container.nameStreet ?? '',
-                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            _buildDetailItem(context, Icons.location_on_outlined, 'المنطقة', container.areaName),
-            _buildDetailItem(context, Icons.wb_sunny_outlined, 'الفترة', container.period),
-            _buildDetailItem(context, Icons.access_time, 'وقت الرفع المتوقع', '${container.areaStartTime} - ${container.areaEndTime}'),
-            _buildDetailItem(context, Icons.info_outline, 'الحالة الحالية', container.status, 
-              valueColor: _getStatusColor(container.status)),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MapScreen(
-                        initialLocation: LatLng(container.latitude, container.longitude),
-                        initialTitle: container.locationName,
+                      child: Icon(
+                        Icons.delete_outline,
+                        color: _getStatusColor(container.status),
+                        size: 32,
                       ),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.map_outlined),
-                label: const Text('عرض على الخريطة', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryGreen,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            container.locationName,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            container.nameStreet ?? '',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                const SizedBox(height: 24),
+                _buildDetailItem(
+                  context,
+                  Icons.location_on_outlined,
+                  'المنطقة',
+                  container.areaName,
+                ),
+                _buildDetailItem(
+                  context,
+                  Icons.wb_sunny_outlined,
+                  'الفترة',
+                  container.period,
+                ),
+                _buildDetailItem(
+                  context,
+                  Icons.access_time,
+                  'وقت الرفع المتوقع',
+                  '${container.areaStartTime} - ${container.areaEndTime}',
+                ),
+                _buildDetailItem(
+                  context,
+                  Icons.info_outline,
+                  'الحالة الحالية',
+                  container.status,
+                  valueColor: _getStatusColor(container.status),
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => MapScreen(
+                                initialLocation: LatLng(
+                                  container.latitude,
+                                  container.longitude,
+                                ),
+                                initialTitle: container.locationName,
+                              ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.map_outlined),
+                    label: const Text(
+                      'عرض على الخريطة',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryGreen,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
             ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
-  Widget _buildDetailItem(BuildContext context, IconData icon, String label, String value, {Color? valueColor}) {
+  Widget _buildDetailItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value, {
+    Color? valueColor,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 20, color: AppTheme.primaryGreen),
           const SizedBox(width: 12),
-          Text(
-            '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: valueColor ?? Theme.of(context).textTheme.bodyLarge?.color,
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$label: ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                  TextSpan(
+                    text: value,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color:
+                          valueColor ??
+                          Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -240,11 +315,12 @@ class NearbyContainerCard extends StatelessWidget {
       return Colors.red;
     } else if (status.contains('نصف') || status == 'half') {
       return Colors.orange;
-    } else if (status.contains('فارغة') || status == 'empty' || status.contains('هدأ')) {
+    } else if (status.contains('فارغة') ||
+        status == 'empty' ||
+        status.contains('هدأ')) {
       return Colors.green;
     } else {
       return Colors.grey;
     }
   }
-
 }

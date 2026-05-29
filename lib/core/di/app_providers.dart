@@ -4,10 +4,12 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'package:seiyun_reports_app/core/database/news_local_service.dart';
 import 'package:seiyun_reports_app/core/database/reports_local_service.dart';
+import 'package:seiyun_reports_app/screens/home/data/home_local_service.dart';
 import 'package:seiyun_reports_app/core/network/api_service.dart';
 import 'package:seiyun_reports_app/core/network/dio_client.dart';
 import 'package:seiyun_reports_app/core/network/network_info.dart';
 import 'package:seiyun_reports_app/core/database/assignment_local_service.dart';
+import 'package:seiyun_reports_app/core/database/pickup_schedules_local_service.dart';
 import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/data/assignment_service.dart';
 import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/data/assignment_repository.dart';
 import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/viewmodel/supervisor_tasks_viewmodel.dart';
@@ -46,6 +48,8 @@ class AppProviders {
     Provider(create: (_) => ReportsLocalService()),
     Provider(create: (_) => NewsLocalService()),
     Provider(create: (_) => AssignmentsLocalService()),
+    Provider(create: (_) => PickupSchedulesLocalService()),
+    Provider(create: (_) => HomeLocalService()),
 
     ChangeNotifierProvider(
       create:
@@ -90,9 +94,10 @@ class AppProviders {
     ProxyProvider<ApiService, HomeService>(
       update: (_, api, __) => HomeService(api),
     ),
-    ProxyProvider2<HomeService, NetworkInfo, HomeRepository>(
+    ProxyProvider3<HomeService, NetworkInfo, HomeLocalService, HomeRepository>(
       update:
-          (_, service, networkInfo, __) => HomeRepository(service, networkInfo),
+          (_, service, networkInfo, localService, __) =>
+              HomeRepository(service, networkInfo, localService),
     ),
     ChangeNotifierProvider(
       create:
@@ -136,14 +141,15 @@ class AppProviders {
     ProxyProvider<ApiService, PickupSchedulesService>(
       update: (_, api, __) => PickupSchedulesService(api),
     ),
-    ProxyProvider2<
+    ProxyProvider3<
       PickupSchedulesService,
       NetworkInfo,
+      PickupSchedulesLocalService,
       PickupSchedulesRepository
     >(
       update:
-          (_, service, networkInfo, __) =>
-              PickupSchedulesRepository(service, networkInfo),
+          (_, service, networkInfo, localService, __) =>
+              PickupSchedulesRepository(service, networkInfo, localService),
     ),
     ChangeNotifierProvider(
       create:

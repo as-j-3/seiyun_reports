@@ -1,30 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
-import 'package:seiyun_reports_app/screens/citizen_reports/viewmodel/citizen_reports_viewmodel.dart';
+import 'package:seiyun_reports_app/screens/home/viewmodel/home_viewmodel.dart';
 
 class RecentReportsList extends StatelessWidget {
   const RecentReportsList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CitizenReportsViewModel>(
+    return Consumer<HomeViewModel>(
       builder: (context, viewModel, child) {
-        if (viewModel.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        // إذا كان هناك بحث، نعرض كل النتائج المطابقة، وإلا نعرض آخر 3 بلاغات فقط
-        final reportsToShow =
-            viewModel.searchQuery.isEmpty
-                ? viewModel.reports.take(3).toList()
-                : viewModel.filteredReports;
+        // نستخدم البيانات القادمة من رابط الهوم الموحد
+        final reportsToShow = viewModel.recentReports;
 
         if (reportsToShow.isEmpty) {
           return const Center(
             child: Padding(
               padding: EdgeInsets.all(20.0),
-              child: Text("لا توجد بلاغات تطابق بحثك"),
+              child: Text("لا توجد بلاغات تظهر حالياً"),
             ),
           );
         }
@@ -34,7 +27,7 @@ class RecentReportsList extends StatelessWidget {
               reportsToShow.map((report) {
                 final reportData = {
                   "title": report.title,
-                  "date": report.created_at,
+                  "date": report.createdAt,
                   "status": report.status,
                 };
                 return _reportItem(reportData, context);

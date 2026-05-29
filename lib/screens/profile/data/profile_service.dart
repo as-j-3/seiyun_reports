@@ -1,4 +1,3 @@
-
 import 'package:dio/dio.dart';
 import 'package:seiyun_reports_app/core/network/api_service.dart';
 
@@ -22,6 +21,7 @@ class ProfileService {
     double? longitude,
     String? name,
     String? phone,
+    String? email,
     String? imagePath,
   }) async {
     try {
@@ -30,14 +30,14 @@ class ProfileService {
       if (longitude != null) data['longitude'] = longitude;
       if (name != null) data['name'] = name;
       if (phone != null) data['phone'] = phone;
-      
+      if (email != null) data['email'] = email;
+
       FormData formData = FormData.fromMap(data);
-      
+
       if (imagePath != null) {
-        formData.files.add(MapEntry(
-          'image',
-          await MultipartFile.fromFile(imagePath),
-        ));
+        formData.files.add(
+          MapEntry('image', await MultipartFile.fromFile(imagePath)),
+        );
       }
 
       return await _apiService.post('updateInformationCitizen', data: formData);

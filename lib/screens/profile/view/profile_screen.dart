@@ -7,6 +7,8 @@ import 'package:seiyun_reports_app/screens/profile/view/widgets/settings_item.da
 import 'package:seiyun_reports_app/screens/profile/view/widgets/logout_button.dart';
 import 'package:seiyun_reports_app/screens/my_reports/view/my_reports_page.dart';
 import 'package:seiyun_reports_app/core/services/notification_service.dart';
+import 'package:seiyun_reports_app/screens/support/view/help_center_screen.dart';
+import 'package:seiyun_reports_app/screens/support/view/about_app_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -58,7 +60,7 @@ class ProfileScreen extends StatelessWidget {
                               title: "رقم الهاتف",
                               subtitle:
                                   viewModel.isPhoneVerified
-                                      ? (viewModel.userPhone ?? "تم التحقق")
+                                      ? (viewModel.userPhone ?? "رقم غير محدد")
                                       : "لم يتم التحقق - اضغط للتحقق الآن",
                               trailing: Icon(
                                 viewModel.isPhoneVerified
@@ -103,37 +105,37 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               onTap: () {},
                             ),
-                            SettingsItem(
-                              icon: Icons.notification_important_outlined,
-                              title: "اختبار التنبيهات",
-                              subtitle: "اضغط لإرسال تنبيه تجريبي لهاتفك",
-                              onTap: () {
-                                NotificationService.showStatusChangedNotification(
-                                  reportTitle: "بلاغ تجريبي",
-                                  oldStatus: "قيد الانتظار",
-                                  newStatus: "تم الحل (تجربة)",
-                                );
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("تم إرسال التنبيه التجريبي"),
-                                  ),
-                                );
-                              },
-                            ),
                             const SizedBox(height: 25),
                             const _SectionTitle(title: "الدعم والمساعدة"),
                             const SizedBox(height: 15),
+
                             SettingsItem(
                               icon: Icons.help_outline,
                               title: "مركز المساعدة",
                               subtitle: "الأسئلة الشائعة وطرق الاستخدام",
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => const HelpCenterScreen(),
+                                  ),
+                                );
+                              },
                             ),
                             SettingsItem(
                               icon: Icons.info_outline,
                               title: "حول التطبيق",
                               subtitle: "معلومات الإصدار وسياسة الخصوصية",
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => const AboutAppScreen(),
+                                  ),
+                                );
+                              },
                             ),
                             const SizedBox(height: 30),
                             LogoutButton(viewModel: viewModel),

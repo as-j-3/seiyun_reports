@@ -1,4 +1,3 @@
-
 import '../models/profile_model.dart';
 import 'profile_service.dart';
 import 'package:seiyun_reports_app/core/network/network_info.dart';
@@ -31,6 +30,7 @@ class ProfileRepository {
     double? longitude,
     String? name,
     String? phone,
+    String? email,
     String? imagePath,
   }) async {
     if (!await _networkInfo.isConnected) return null;
@@ -41,6 +41,7 @@ class ProfileRepository {
         longitude: longitude,
         name: name,
         phone: phone,
+        email: email,
         imagePath: imagePath,
       );
       if (response.data['status'] == 'success') {

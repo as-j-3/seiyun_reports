@@ -36,6 +36,9 @@ class ProfileViewModel extends ChangeNotifier {
   String? _userAddress;
   String? get userAddress => _userAddress;
 
+  String? _userEmail;
+  String? get userEmail => _userEmail;
+
   bool _isDarkMode = false;
   bool get isDarkMode => _isDarkMode;
 
@@ -67,11 +70,16 @@ class ProfileViewModel extends ChangeNotifier {
         _userName = _profile!.fullName;
         _userPhone = _profile!.phone;
         _userAddress = _profile!.areaName;
-        
+        _userEmail = _profile!.email;
+
         await PrefHelper.saveUserName(_profile!.fullName);
         await PrefHelper.saveUserPhone(_profile!.phone);
+        await PrefHelper.saveUserEmail(_profile!.email);
         await PrefHelper.saveUserAddress(_profile!.areaName);
-        await PrefHelper.saveUserLocation(_profile!.latitude, _profile!.longitude);
+        await PrefHelper.saveUserLocation(
+          _profile!.latitude,
+          _profile!.longitude,
+        );
       }
     } catch (e) {
       debugPrint("Error fetching profile: $e");
@@ -90,16 +98,16 @@ class ProfileViewModel extends ChangeNotifier {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
-      
+
       if (permission == LocationPermission.whileInUse ||
           permission == LocationPermission.always) {
         Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high
+          desiredAccuracy: LocationAccuracy.high,
         );
-        
+
         // جلب اسم المنطقة محلياً في حالة فشل الاتصال بالإنترنت
         final localAreaName = await _locationService.getCurrentAreaName();
-        
+
         try {
           final updatedProfile = await _repository.updateProfile(
             latitude: position.latitude,
@@ -109,13 +117,19 @@ class ProfileViewModel extends ChangeNotifier {
             _profile = updatedProfile;
             _userAddress = updatedProfile.areaName;
             await PrefHelper.saveUserAddress(updatedProfile.areaName);
-            await PrefHelper.saveUserLocation(updatedProfile.latitude, updatedProfile.longitude);
+            await PrefHelper.saveUserLocation(
+              updatedProfile.latitude,
+              updatedProfile.longitude,
+            );
           }
         } catch (apiError) {
           debugPrint("API update failed, using local area name: $apiError");
           _userAddress = localAreaName;
           await PrefHelper.saveUserAddress(localAreaName);
-          await PrefHelper.saveUserLocation(position.latitude, position.longitude);
+          await PrefHelper.saveUserLocation(
+            position.latitude,
+            position.longitude,
+          );
         }
       }
     } catch (e) {
@@ -139,7 +153,10 @@ class ProfileViewModel extends ChangeNotifier {
         _profile = updatedProfile;
         _userAddress = updatedProfile.areaName;
         await PrefHelper.saveUserAddress(updatedProfile.areaName);
-        await PrefHelper.saveUserLocation(updatedProfile.latitude, updatedProfile.longitude);
+        await PrefHelper.saveUserLocation(
+          updatedProfile.latitude,
+          updatedProfile.longitude,
+        );
       }
     } catch (e) {
       debugPrint("Error updating location manually: $e");
@@ -161,6 +178,7 @@ class ProfileViewModel extends ChangeNotifier {
     _notificationsEnabled = await PrefHelper.isNotificationsEnabled();
     _userName = await PrefHelper.getUserName();
     _userPhone = await PrefHelper.getUserPhone();
+    _userEmail = await PrefHelper.getUserEmail();
     _userAddress = await PrefHelper.getUserAddress();
     _isDarkMode = await PrefHelper.isDarkMode();
     _isPhoneVerified = await PrefHelper.isPhoneVerified();
@@ -211,7 +229,7 @@ class ProfileViewModel extends ChangeNotifier {
 
   Future<bool> verifyOTP(String smsCode) async {
     if (_verificationId == null) return false;
-    
+
     _isVerifying = true;
     _phoneErrorMessage = null;
     notifyListeners();
@@ -253,9 +271,9 @@ class ProfileViewModel extends ChangeNotifier {
         final updatedProfile = await _repository.updateProfile(
           imagePath: pickedFile.path,
         );
-        
+
         if (updatedProfile != null) {
-           _profile = updatedProfile;
+          _profile = updatedProfile;
         }
 
         _profileImage = File(pickedFile.path);
@@ -282,7 +300,7 @@ class ProfileViewModel extends ChangeNotifier {
   Future<void> updateUserName(String name) async {
     _userName = name;
     await PrefHelper.saveUserName(name);
-    
+
     // تحديث في السيرفر
     await _repository.updateProfile(name: name);
     notifyListeners();
@@ -291,7 +309,7 @@ class ProfileViewModel extends ChangeNotifier {
   Future<void> updateUserPhone(String phone) async {
     _userPhone = phone;
     await PrefHelper.saveUserPhone(phone);
-    
+
     // تحديث في السيرفر
     await _repository.updateProfile(phone: phone);
     notifyListeners();
@@ -300,6 +318,15 @@ class ProfileViewModel extends ChangeNotifier {
   Future<void> updateUserAddress(String address) async {
     _userAddress = address;
     await PrefHelper.saveUserAddress(address);
+    notifyListeners();
+  }
+
+  Future<void> updateUserEmail(String email) async {
+    _userEmail = email;
+    await PrefHelper.saveUserEmail(email);
+
+    // تحديث في السيرفر (إذا كان يدعم ذلك)
+    // await _repository.updateProfile(email: email);
     notifyListeners();
   }
 

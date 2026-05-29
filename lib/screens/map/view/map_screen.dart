@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
-import 'package:seiyun_reports_app/screens/citizen_reports/viewmodel/citizen_reports_viewmodel.dart';
-import 'package:seiyun_reports_app/screens/pickup_schedules/viewmodel/pickup_schedules_viewmodel.dart';
 import 'package:seiyun_reports_app/screens/map/viewmodel/map_viewmodel.dart';
 import 'package:seiyun_reports_app/screens/map/view/widgets/map_filter_chip.dart';
-import 'package:seiyun_reports_app/screens/map/view/widgets/map_info_bottom_sheet.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MapScreen extends StatefulWidget {
   final LatLng? initialLocation;
@@ -36,24 +34,87 @@ class _MapScreenState extends State<MapScreen> {
       _pickedLocation = widget.initialLocation;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MapViewModel>().fetchMapData();
+      final mapVM = context.read<MapViewModel>();
+      mapVM.fetchMapData();
+      if (widget.initialLocation != null &&
+          widget.initialLocation!.latitude != 0 &&
+          !widget.isPicker) {
+        mapVM.startLocationTracking(widget.initialLocation);
+      } else if (widget.isPicker) {
+        // Just start tracking user position without isolating a target
+        mapVM.startLocationTracking(null);
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    // Stop tracking when leaving the screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<MapViewModel>().stopLocationTracking();
+      }
+    });
+    super.dispose();
+  }
+
+  Future<void> _openExternalMap(LatLng location) async {
+    // الرابط الرسمي لفتح الملاحة وتوجيه المستخدم مباشرة من موقعه الحالي إلى موقع الحاوية
+    final String url =
+        'google.navigation:q=${location.latitude},${location.longitude}&mode=d';
+    final Uri uri = Uri.parse(url);
+
+    // رابط احتياطي للمتصفح أو نظام iOS في حال لم يكن تطبيق خرائط جوجل مثبتاً
+    final String fallbackUrl =
+        'https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}&travelmode=driving';
+    final Uri fallbackUri = Uri.parse(fallbackUrl);
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else if (await canLaunchUrl(fallbackUri)) {
+        await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'عذراً، لم نتمكن من العثور على تطبيق خرائط للتوجيه',
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("Navigation Error: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final mapVM = context.watch<MapViewModel>();
-
     final Set<Marker> markers = _buildMarkers(context, mapVM);
+    final Set<Polyline> polylines = {};
 
-    // Add temporary marker for initial location if provided (not in picker mode)
-    if (!widget.isPicker && widget.initialLocation != null) {
-      markers.add(
-        Marker(
-          markerId: const MarkerId('initial_focus'),
-          position: widget.initialLocation!,
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-          infoWindow: InfoWindow(title: widget.initialTitle ?? 'موقع البلاغ'),
+    // Create polyline between user and target if in navigation mode
+    if (mapVM.isIsolatedMode &&
+        mapVM.currentPosition != null &&
+        mapVM.targetLocation != null) {
+      polylines.add(
+        Polyline(
+          polylineId: const PolylineId('route_to_target'),
+          points: [
+            LatLng(
+              mapVM.currentPosition!.latitude,
+              mapVM.currentPosition!.longitude,
+            ),
+            mapVM.targetLocation!,
+          ],
+          color: AppTheme.primaryColor,
+          width: 5,
+          jointType: JointType.round,
+          startCap: Cap.roundCap,
+          endCap: Cap.buttCap,
         ),
       );
     }
@@ -74,247 +135,225 @@ class _MapScreenState extends State<MapScreen> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.isPicker ? 'تحديد الموقع على الخريطة' : 'خريطة سيئون',
-        ),
-        actions:
-            widget.isPicker
-                ? [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 8,
-                    ),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context, _pickedLocation);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF2E7D32),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            widget.isPicker ? 'تحديد الموقع على الخريطة' : 'خريطة سيئون',
+          ),
+          actions:
+              widget.isPicker
+                  ? [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed:
+                            () => Navigator.pop(context, _pickedLocation),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppTheme.primaryColor,
                         ),
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      child: const Text(
-                        'حفظ',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        child: const Text('حفظ'),
                       ),
                     ),
-                  ),
-                ]
-                : [
-                  IconButton(
-                    icon: const Icon(Icons.refresh),
-                    tooltip: 'تحديث',
-                    onPressed: () => mapVM.fetchMapData(),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      mapVM.isSatellite
-                          ? Icons.map_outlined
-                          : Icons.satellite_alt_outlined,
+                  ]
+                  : [
+                    IconButton(
+                      icon: const Icon(Icons.refresh),
+                      tooltip: 'تحديث',
+                      onPressed: () => mapVM.fetchMapData(),
                     ),
-                    tooltip:
+                    IconButton(
+                      icon: Icon(
                         mapVM.isSatellite
-                            ? 'العرض العادي'
-                            : 'عرض القمر الصناعي',
-                    onPressed: () => mapVM.toggleSatellite(),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.my_location),
-                    tooltip: 'موقعي',
-                    onPressed: () => mapVM.moveToCenter(),
-                  ),
-                ],
-      ),
-      body: Stack(
-        children: [
-          GoogleMap(
-            onMapCreated: (controller) {
-              mapVM.onMapCreated(controller);
-              if (widget.initialLocation != null) {
-                // Focus on the location after a short delay to ensure map is ready
-                Future.delayed(const Duration(milliseconds: 500), () {
-                  mapVM.focusOnLocation(widget.initialLocation!);
-                });
-              }
-            },
-            initialCameraPosition: CameraPosition(
-              target:
-                  widget.initialLocation != null &&
-                          widget.initialLocation!.latitude != 0
-                      ? widget.initialLocation!
-                      : MapViewModel.seiyunCenter,
-              zoom:
-                  widget.initialLocation != null &&
-                          widget.initialLocation!.latitude != 0
-                      ? 17.0
-                      : 14.0,
-            ),
-            mapType: mapVM.isSatellite ? MapType.satellite : MapType.normal,
-            markers: markers,
-            onTap:
-                widget.isPicker
-                    ? (location) {
-                      setState(() {
-                        _pickedLocation = location;
-                      });
-                    }
-                    : null,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: widget.isPicker,
-            zoomControlsEnabled: false,
-          ),
-          // Legend / Filters
-          Positioned(
-            top: 16,
-            left: 16,
-            right: 16,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  MapFilterChip(
-                    label: 'بلاغات المواطنين',
-                    color: Colors.blue,
-                    icon: Icons.report_problem_outlined,
-                    isSelected: mapVM.showReports,
-                    onTap: () => mapVM.toggleReports(),
-                  ),
-                  const SizedBox(width: 8),
-                  MapFilterChip(
-                    label: 'حاويات النفايات',
-                    color: AppTheme.primaryGreen,
-                    icon: Icons.delete_outline,
-                    isSelected: mapVM.showContainers,
-                    onTap: () => mapVM.toggleContainers(),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Info box for picker mode
-          if (widget.isPicker)
-            Positioned(
-              bottom: 40,
-              left: 20,
-              right: 20,
-              child: Container(
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline, color: Colors.blue),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Text(
-                        'اضغط على الخريطة أو اسحب العلامة لتحديد موقع منزلك بدقة، ثم اضغط حفظ.',
-                        style: TextStyle(fontSize: 13),
+                            ? Icons.map_outlined
+                            : Icons.satellite_alt_outlined,
                       ),
+                      tooltip: 'نوع الخريطة',
+                      onPressed: () => mapVM.toggleSatellite(),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.my_location),
+                      tooltip: 'موقعي',
+                      onPressed: () => mapVM.moveToCenter(),
                     ),
                   ],
+        ),
+        body: Stack(
+          children: [
+            GoogleMap(
+              onMapCreated: (controller) {
+                mapVM.onMapCreated(controller);
+                if (widget.initialLocation != null &&
+                    widget.initialLocation!.latitude != 0 &&
+                    !widget.isPicker) {
+                  mapVM.focusOnLocation(widget.initialLocation!);
+                }
+              },
+              initialCameraPosition: CameraPosition(
+                target:
+                    (widget.initialLocation == null ||
+                            widget.initialLocation!.latitude == 0)
+                        ? MapViewModel.seiyunCenter
+                        : widget.initialLocation!,
+                zoom:
+                    (widget.initialLocation == null ||
+                            widget.initialLocation!.latitude == 0)
+                        ? 14.0
+                        : 17.0,
+              ),
+              mapType: mapVM.isSatellite ? MapType.satellite : MapType.normal,
+              markers: markers,
+              polylines: polylines,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+              onTap:
+                  widget.isPicker
+                      ? (loc) => setState(() => _pickedLocation = loc)
+                      : null,
+            ),
+
+            // Distance Overlay (Wayfinding)
+            if (mapVM.isIsolatedMode && mapVM.distanceToTarget != null)
+              Positioned(
+                bottom: 120, // Moved to bottom above zoom buttons
+                left: 16,
+                right: 16,
+                child: _DistanceIndicator(
+                  distance: mapVM.distanceToTarget!,
+                  title: widget.initialTitle ?? "الحاوية المقصودة",
+                  onNavigate: () => _openExternalMap(widget.initialLocation!),
                 ),
               ),
-            ),
-          // Zoom Controls
-          Positioned(
-            right: 12,
-            bottom: 180,
-            child: Column(
-              children: [
-                _ZoomButton(icon: Icons.add, onPressed: () => mapVM.zoomIn()),
-                const SizedBox(height: 4),
-                _ZoomButton(
-                  icon: Icons.remove,
-                  onPressed: () => mapVM.zoomOut(),
+
+            // Top Filters
+            if (!widget.isPicker)
+              Positioned(
+                top: 16,
+                left: 16,
+                right: 16,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      MapFilterChip(
+                        label: 'بلاغات المواطنين',
+                        color: Colors.blue,
+                        icon: Icons.report_problem_outlined,
+                        isSelected: mapVM.showReports,
+                        onTap: () => mapVM.toggleReports(),
+                      ),
+                      const SizedBox(width: 8),
+                      MapFilterChip(
+                        label: 'حاويات النفايات',
+                        color: AppTheme.primaryColor,
+                        icon: Icons.delete_outline,
+                        isSelected: mapVM.showContainers,
+                        onTap: () => mapVM.toggleContainers(),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
+
+            // Zoom Buttons
+            Positioned(
+              right: 12,
+              bottom: mapVM.isIsolatedMode ? 100 : 40,
+              child: Column(
+                children: [
+                  if (mapVM.isIsolatedMode) ...[
+                    FloatingActionButton.small(
+                      heroTag: 'clear_track',
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      onPressed: () => mapVM.stopLocationTracking(),
+                      child: const Icon(Icons.clear),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  FloatingActionButton.small(
+                    heroTag: 'zoom_in',
+                    onPressed: () => mapVM.zoomIn(),
+                    child: const Icon(Icons.add),
+                  ),
+                  const SizedBox(height: 8),
+                  FloatingActionButton.small(
+                    heroTag: 'zoom_out',
+                    onPressed: () => mapVM.zoomOut(),
+                    child: const Icon(Icons.remove),
+                  ),
+                ],
+              ),
             ),
-          ),
-          if (mapVM.isLoading && !widget.isPicker)
-            const Center(child: CircularProgressIndicator()),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Set<Marker> _buildMarkers(BuildContext context, MapViewModel mapVM) {
     final Set<Marker> markers = {};
+    if (widget.isPicker) return markers;
     final data = mapVM.mapData;
+
+    // If isolated mode is on, only show the target marker
+    if (mapVM.isIsolatedMode && widget.initialLocation != null) {
+      markers.add(
+        Marker(
+          markerId: const MarkerId('target_focus'),
+          position: widget.initialLocation!,
+          icon:
+              mapVM.containerIcon ??
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+          infoWindow: InfoWindow(title: widget.initialTitle ?? 'الوجهة'),
+        ),
+      );
+      return markers;
+    }
 
     if (data == null) return markers;
 
-    // Add Report Markers
     if (mapVM.showReports) {
       for (var report in data.reports) {
-        if (report.lat == 0.0 || report.lng == 0.0) continue;
-
-        double hue;
-        switch (report.status) {
-          case 'تم الحل':
-            hue = BitmapDescriptor.hueGreen;
-            break;
-          case 'قيد المعالجة':
-            hue = BitmapDescriptor.hueAzure;
-            break;
-          case 'قيد الانتظار':
-            hue = BitmapDescriptor.hueOrange;
-            break;
-          case 'ملغية':
-          case 'ملغي':
-            hue = BitmapDescriptor.hueRed;
-            break;
-          default:
-            hue = BitmapDescriptor.hueBlue;
-        }
-
+        if (report.lat == 0 || report.lng == 0) continue;
         markers.add(
           Marker(
-            markerId: MarkerId('report_${report.id}'),
+            markerId: MarkerId('rep_${report.id}'),
             position: LatLng(report.lat, report.lng),
-            icon: BitmapDescriptor.defaultMarkerWithHue(hue),
+            icon: _getReportIcon(report.status, mapVM),
             infoWindow: InfoWindow(
-              title: 'بلاغ رقم ${report.id}',
-              snippet: 'الحالة: ${report.status}',
+              title: 'بلاغ ${report.id}',
+              snippet: report.status,
             ),
           ),
         );
       }
     }
 
-    // Add Container Markers
     if (mapVM.showContainers) {
       for (var container in data.containers) {
-        if (container.lat == 0.0 || container.lng == 0.0) continue;
+        if (container.lat == 0 || container.lng == 0) continue;
+        final containerLatLng = LatLng(container.lat, container.lng);
 
         markers.add(
           Marker(
-            markerId: MarkerId('container_${container.id}'),
-            position: LatLng(container.lat, container.lng),
+            markerId: MarkerId('cont_${container.id}'),
+            position: containerLatLng,
             icon:
                 mapVM.containerIcon ??
                 BitmapDescriptor.defaultMarkerWithHue(
                   BitmapDescriptor.hueGreen,
                 ),
-            infoWindow: InfoWindow(
-              title: container.locationName,
-              snippet: 'النوع: ${container.type}',
-            ),
+            infoWindow: InfoWindow(title: container.locationName),
+            onTap: () {
+              // 1. تفعيل وضع العزل وبدء تتبع المسافة الحية بين المستخدم وهذه الحاوية
+              mapVM.startLocationTracking(containerLatLng);
+              // 2. تحديث الكاميرا للتركيز عليها
+              mapVM.focusOnLocation(containerLatLng);
+            },
           ),
         );
       }
@@ -322,29 +361,103 @@ class _MapScreenState extends State<MapScreen> {
 
     return markers;
   }
+
+  BitmapDescriptor _getReportIcon(String status, MapViewModel mapVM) {
+    switch (status) {
+      case 'تم الحل':
+        return mapVM.reportIconSolved ??
+            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+      case 'قيد المعالجة':
+        return mapVM.reportIconProcessing ??
+            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue);
+      case 'ملغية':
+        return mapVM.reportIconCancelled ??
+            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+      default:
+        return mapVM.reportIconPending ??
+            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange);
+    }
+  }
 }
 
-class _ZoomButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onPressed;
+class _DistanceIndicator extends StatelessWidget {
+  final double distance;
+  final String title;
+  final VoidCallback onNavigate;
 
-  const _ZoomButton({required this.icon, required this.onPressed});
+  const _DistanceIndicator({
+    required this.distance,
+    required this.title,
+    required this.onNavigate,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(8),
-      elevation: 3,
-      shadowColor: Colors.black26,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(8),
-        child: SizedBox(
-          width: 40,
-          height: 40,
-          child: Icon(icon, size: 22, color: const Color(0xFF2E7D32)),
-        ),
+    final String distText =
+        distance > 1000
+            ? "${(distance / 1000).toStringAsFixed(1)} كم"
+            : "${distance.toStringAsFixed(0)} متر";
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.directions_walk,
+              color: AppTheme.primaryColor,
+            ),
+          ),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  "تبعد عنك $distText",
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: onNavigate,
+            icon: const Icon(Icons.navigation_outlined, size: 18),
+            label: const Text("توجيه"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,4 +1,3 @@
-
 class ProfileModel {
   final String fullName;
   final String email;
@@ -19,14 +18,17 @@ class ProfileModel {
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
+    // التعامل مع احتمالية وجود البيانات داخل كائن 'user'
+    final userData = json['user'] ?? json;
+
     return ProfileModel(
-      fullName: json['full_name'] ?? '',
-      email: json['email'] ?? '',
-      phone: json['phone'] ?? '',
-      latitude: double.tryParse(json['latitude'].toString()) ?? 0.0,
-      longitude: double.tryParse(json['longitude'].toString()) ?? 0.0,
-      areaName: json['area_name'] ?? '',
-      profileImage: json['profile_image'],
+      fullName: userData['name'] ?? userData['full_name'] ?? '',
+      email: userData['email'] ?? '',
+      phone: userData['phone'] ?? '',
+      latitude: double.tryParse(userData['latitude'].toString()) ?? 0.0,
+      longitude: double.tryParse(userData['longitude'].toString()) ?? 0.0,
+      areaName: userData['area_name'] ?? '',
+      profileImage: userData['profile_image'],
     );
   }
 }

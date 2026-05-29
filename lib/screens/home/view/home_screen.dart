@@ -95,13 +95,9 @@ class _HomeContent extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Consumer<CitizenReportsViewModel>(
-                      builder: (context, reportsVM, child) {
-                        return StatsCards(
-                          activeCount: reportsVM.activeReports,
-                          resolvedCount: reportsVM.resolvedReports,
-                        );
-                      },
+                    StatsCards(
+                      activeCount: homeVM.reportActive,
+                      resolvedCount: homeVM.reportSolved,
                     ),
                     const SizedBox(height: 20),
                     const NextPickupCard(),

@@ -1,4 +1,3 @@
-
 class HomeDataModel {
   final String userName;
   final int reportActive;
@@ -20,9 +19,21 @@ class HomeDataModel {
       userName: json['user_name'] ?? '',
       reportActive: json['report_active'] ?? 0,
       reportSolved: json['report_solved'] ?? 0,
-      nextCollection: NextCollectionModel.fromJson(json['next_collection'] ?? {}),
+      nextCollection: NextCollectionModel.fromJson(
+        json['next_collection'] ?? {},
+      ),
       reports: reportsList.map((i) => RecentReportModel.fromJson(i)).toList(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'user_name': userName,
+      'report_active': reportActive,
+      'report_solved': reportSolved,
+      'next_collection': nextCollection.toJson(),
+      'report': reports.map((e) => e.toJson()).toList(),
+    };
   }
 }
 
@@ -37,6 +48,10 @@ class NextCollectionModel {
       status: json['status'] ?? '',
       timing: json['timing'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'status': status, 'timing': timing};
   }
 }
 
@@ -60,5 +75,14 @@ class RecentReportModel {
       status: json['status'] ?? '',
       createdAt: json['created_at'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'status': status,
+      'created_at': createdAt,
+    };
   }
 }

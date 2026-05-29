@@ -32,15 +32,24 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  int _reportActive = 0;
+  int get reportActive => _reportActive;
+
+  int _reportSolved = 0;
+  int get reportSolved => _reportSolved;
+
+  List<RecentReportModel> _recentReports = [];
+  List<RecentReportModel> get recentReports => _recentReports;
+
   HomeViewModel(this._repository, this._locationService) {
     _fetchUser();
     _fetchLocation();
-    _fetchNextCollection();
+    _fetchHomeData();
     _startAutoRefresh();
     FirebaseAuth.instance.userChanges().listen((User? user) {
       _currentUser = user;
       if (user != null) {
-        _fetchNextCollection();
+        _fetchHomeData();
       }
       notifyListeners();
     });
@@ -55,7 +64,7 @@ class HomeViewModel extends ChangeNotifier {
 
   Future<void> refreshData() async {
     await _fetchUser();
-    await _fetchNextCollection();
+    await _fetchHomeData();
     await _fetchLocation();
   }
 
@@ -75,15 +84,21 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _fetchNextCollection() async {
+  Future<void> _fetchHomeData() async {
     try {
       final data = await _repository.getHomeData();
       if (data != null) {
         _nextCollection = data.nextCollection;
+        _reportActive = data.reportActive;
+        _reportSolved = data.reportSolved;
+        _recentReports = data.reports;
+        if (data.userName.isNotEmpty) {
+          _userName = data.userName;
+        }
         notifyListeners();
       }
     } catch (e) {
-      debugPrint("Error fetching next collection: $e");
+      debugPrint("Error fetching home data: $e");
     }
   }
 

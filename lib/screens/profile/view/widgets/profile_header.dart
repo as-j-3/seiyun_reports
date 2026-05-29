@@ -14,9 +14,15 @@ class ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = viewModel.currentUser;
-    final name = viewModel.userName ?? user?.displayName ?? "مستخدم";
-    final phone = viewModel.userPhone ?? "+967 777 777 777";
-    final address = viewModel.userAddress ?? "سيئون - حضرموت";
+    final name = viewModel.userName ?? user?.displayName ?? "غير محدد";
+    final phone =
+        (viewModel.userPhone != null && viewModel.userPhone!.isNotEmpty)
+            ? viewModel.userPhone!
+            : "رقم غير محدد";
+    final address =
+        (viewModel.userAddress != null && viewModel.userAddress!.isNotEmpty)
+            ? viewModel.userAddress!
+            : "موقع غير محدد";
 
     return Stack(
       clipBehavior: Clip.none,
@@ -113,7 +119,9 @@ class ProfileHeader extends StatelessWidget {
                       _buildInfoRow(
                         context,
                         Icons.email_outlined,
-                        user?.email ?? "no-email@example.com",
+                        viewModel.userEmail ??
+                            user?.email ??
+                            "no-email@example.com",
                       ),
                       const SizedBox(height: 6),
                       _buildInfoRow(
@@ -173,51 +181,97 @@ class ProfileHeader extends StatelessWidget {
                   TextField(
                     controller: addressController,
                     readOnly: true,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: "العنوان",
-                      suffixIcon: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.my_location, color: AppTheme.primaryColor),
-                            onPressed: () async {
-                              addressController.text = "جاري التحديد...";
-                              await viewModel.updateLocationAutomatically();
-                              addressController.text = viewModel.userAddress ?? "موقع غير محدد";
-                            },
-                            tooltip: "تلقائي",
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.map_outlined, color: AppTheme.primaryColor),
-                            onPressed: () async {
-                              final LatLng? pickedLocation = await Navigator.push(
-                                context,
-                                PageRouteBuilder(
-                                  pageBuilder: (context, animation, secondaryAnimation) => MapScreen(
-                                    isPicker: true,
-                                    initialLocation: LatLng(
-                                      viewModel.profile?.latitude ?? 0.0,
-                                      viewModel.profile?.longitude ?? 0.0,
-                                    ),
-                                  ),
-                                  transitionDuration: Duration.zero,
-                                  reverseTransitionDuration: Duration.zero,
-                                ),
-                              );
-
-                              if (pickedLocation != null) {
-                                await viewModel.updateLocationManually(
-                                  pickedLocation.latitude,
-                                  pickedLocation.longitude,
-                                );
-                                addressController.text = viewModel.userAddress ?? "";
-                              }
-                            },
-                            tooltip: "من الخريطة",
-                          ),
-                        ],
-                      ),
+                      hintText: "لم يتم تحديد موقع بعد",
                     ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "تحديث الموقع:",
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            addressController.text = "جاري التحديد...";
+                            await viewModel.updateLocationAutomatically();
+                            addressController.text =
+                                viewModel.userAddress ?? "موقع غير محدد";
+                          },
+                          icon: const Icon(Icons.my_location, size: 18),
+                          label: const Text(
+                            "تلقائي",
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor.withOpacity(
+                              0.1,
+                            ),
+                            foregroundColor: AppTheme.primaryColor,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            final LatLng? pickedLocation = await Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder:
+                                    (
+                                      context,
+                                      animation,
+                                      secondaryAnimation,
+                                    ) => MapScreen(
+                                      isPicker: true,
+                                      initialLocation: LatLng(
+                                        viewModel.profile?.latitude ?? 15.9429,
+                                        viewModel.profile?.longitude ?? 48.7844,
+                                      ),
+                                    ),
+                                transitionDuration: Duration.zero,
+                                reverseTransitionDuration: Duration.zero,
+                              ),
+                            );
+
+                            if (pickedLocation != null) {
+                              await viewModel.updateLocationManually(
+                                pickedLocation.latitude,
+                                pickedLocation.longitude,
+                              );
+                              addressController.text =
+                                  viewModel.userAddress ?? "موقع غير محدد";
+                            }
+                          },
+                          icon: const Icon(Icons.map_outlined, size: 18),
+                          label: const Text(
+                            "الخريطة",
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor.withOpacity(
+                              0.1,
+                            ),
+                            foregroundColor: AppTheme.primaryColor,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -311,19 +365,22 @@ class ProfileHeader extends StatelessWidget {
           child: CircleAvatar(
             radius: 46,
             backgroundColor: AppTheme.primaryColor.withOpacity(0.05),
-            backgroundImage: viewModel.profileImage != null
-                ? FileImage(viewModel.profileImage!)
-                : (viewModel.profile?.profileImage != null
-                    ? NetworkImage(viewModel.profile!.profileImage!)
-                    : null) as ImageProvider?,
-            child: (viewModel.profileImage == null &&
-                    viewModel.profile?.profileImage == null)
-                ? const Icon(
-                    Icons.person,
-                    size: 50,
-                    color: AppTheme.primaryColor,
-                  )
-                : null,
+            backgroundImage:
+                viewModel.profileImage != null
+                    ? FileImage(viewModel.profileImage!)
+                    : (viewModel.profile?.profileImage != null
+                            ? NetworkImage(viewModel.profile!.profileImage!)
+                            : null)
+                        as ImageProvider?,
+            child:
+                (viewModel.profileImage == null &&
+                        viewModel.profile?.profileImage == null)
+                    ? const Icon(
+                      Icons.person,
+                      size: 50,
+                      color: AppTheme.primaryColor,
+                    )
+                    : null,
           ),
         ),
         Positioned(

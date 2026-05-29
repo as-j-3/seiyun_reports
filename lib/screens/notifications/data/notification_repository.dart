@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:seiyun_reports_app/core/network/api_service.dart';
 
@@ -10,17 +9,9 @@ class NotificationRepository {
   /// تحديث توكن FCM في السيرفر
   Future<bool> updateFcmToken(String fcmToken) async {
     try {
-      // جلب معرف الهوية من فيربيس (idToken) كما هو مطلوب في السيرفر
-      User? user = FirebaseAuth.instance.currentUser;
-      String? firebaseIdToken;
-      if (user != null) {
-        firebaseIdToken = await user.getIdToken();
-      }
-
       final response = await _apiService.post(
         'update-fcm-token',
         data: {
-          "idToken": firebaseIdToken, // إرسال توكن الفايربيس في الجسم
           "fcm_token": fcmToken, // إرسال توكن الإشعارات
         },
       );
