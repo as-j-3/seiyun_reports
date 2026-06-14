@@ -3,7 +3,7 @@ import 'package:seiyun_reports_app/screens/news_tips/view/news_tips_screen.dart'
 
 import 'package:seiyun_reports_app/screens/citizen_reports/view/citizen_reports_page.dart';
 
-import 'package:seiyun_reports_app/screens/home/view/home_screen.dart'; // For sectionTitleStyle
+import 'package:seiyun_reports_app/screens/home/view/home_screen.dart'; 
 
 class SectionHeader extends StatelessWidget {
   final String title;

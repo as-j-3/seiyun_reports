@@ -6,16 +6,18 @@ import '../models/home_data_model.dart';
 class HomeLocalService {
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
+  /// يحفظ بيانات الصفحة الرئيسية في قاعدة البيانات المحلية (الكاش).
   Future<void> saveHomeData(HomeDataModel data) async {
     final db = await _dbHelper.database;
     final String jsonString = jsonEncode(data.toJson());
 
     await db.insert('home_cache', {
-      'id': 1, // نقطة واحدة ثابتة لبيانات الهوم
+      'id': 1, 
       'data_json': jsonString,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
+  /// يسترجع بيانات الصفحة الرئيسية المخزنة محلياً من الكاش.
   Future<HomeDataModel?> getHomeData() async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -31,6 +33,7 @@ class HomeLocalService {
     return null;
   }
 
+  /// يمسح الكاش الخاص ببيانات الصفحة الرئيسية من قاعدة البيانات.
   Future<void> clearCache() async {
     final db = await _dbHelper.database;
     await db.delete('home_cache');

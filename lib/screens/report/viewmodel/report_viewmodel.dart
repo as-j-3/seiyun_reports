@@ -34,7 +34,6 @@ class ReportViewModel extends ChangeNotifier {
   bool _isLoadingLocation = false;
   bool get isLoadingLocation => _isLoadingLocation;
 
-  // Phone Verification State
   String? _verificationId;
   bool _isPhoneVerified = false;
   bool get isPhoneVerified => _isPhoneVerified;
@@ -45,27 +44,32 @@ class ReportViewModel extends ChangeNotifier {
   String? _phoneErrorMessage;
   String? get phoneErrorMessage => _phoneErrorMessage;
 
+  /// تعيين الفئة الرئيسية للبلاغ المحدد وتصفير الفئة الفرعية
   void setCategory(String category) {
     _selectedCategory = category;
-    _selectedSubType = null; // reset sub-type on category change
+    _selectedSubType = null; 
     notifyListeners();
   }
 
+  /// تعيين الفئة الفرعية للبلاغ
   void setSubType(String? subType) {
     _selectedSubType = subType;
     notifyListeners();
   }
 
+  /// تعيين مستوى أولوية البلاغ (منخفضة، متوسطة، مرتفعة)
   void setPriority(String priority) {
     _selectedPriority = priority;
     notifyListeners();
   }
 
+  /// إزالة الصورة المرفقة بالبلاغ حالياً
   void removeImage() {
     _image = null;
     notifyListeners();
   }
 
+  /// التقاط أو اختيار صورة من الكاميرا أو المعرض لارفاقها بالبلاغ
   Future<void> pickImage(ImageSource source) async {
     final ImagePicker picker = ImagePicker();
     try {
@@ -78,10 +82,10 @@ class ReportViewModel extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint("Error picking image: $e");
     }
   }
 
+  /// جلب الموقع الجغرافي الحالي للمستخدم باستخدام GPS
   Future<void> getCurrentLocation() async {
     _isLoadingLocation = true;
     notifyListeners();
@@ -102,7 +106,6 @@ class ReportViewModel extends ChangeNotifier {
         _locationStatus = "تعذر الحصول على الصلاحية";
       }
     } catch (e) {
-      debugPrint("Error location: $e");
       _locationStatus = "خطأ في جلب الموقع";
     }
     _isLoadingLocation = false;
@@ -120,6 +123,7 @@ class ReportViewModel extends ChangeNotifier {
   List<ReportModel> get reportsList => _reportsList;
 
   String _searchQuery = "";
+  /// تعيين نص البحث لتصفية قائمة بلاغات المستخدم
   void setSearchQuery(String query) {
     _searchQuery = query;
     notifyListeners();
@@ -135,32 +139,29 @@ class ReportViewModel extends ChangeNotifier {
     }).toList();
   }
 
-  bool _isLoadingReports = false; // حالة تحميل القائمة
+  bool _isLoadingReports = false; 
   bool get isLoadingReports => _isLoadingReports;
 
-  bool _isUploading = false; // حالة تحميل الزر عند الإرسال
+  bool _isUploading = false; 
   bool get isUploading => _isUploading;
 
-  //  دالة جلب البلاغات المستخدم  من قاعدة البيانات
+  /// جلب بلاغات المستخدم من خادم لارفل ومزامنة البلاغات المعلقة
   Future<void> fetchReportsFromLaravel({bool isRefresh = false}) async {
     _isLoadingReports = true;
     notifyListeners();
     try {
-      //نحاول رفع أي بلاغات كانت مخزنة أوفلاين
       await _repository.syncPendingReports();
-      //جلب القائمة (سواء من السيرفر أو الكاش حسب منطق الريبوزيتوري)
       _reportsList = await _repository.fetchMyReports(
         isRefresh: isRefresh,
-      ); //ياخذ البيانات من الريبوزتري
+      ); 
     } catch (e) {
-      debugPrint("خطأ في جلب البلاغات: $e");
     } finally {
       _isLoadingReports = false;
       notifyListeners();
     }
   }
 
-  // دالة ارسال البلاغ
+  /// إرسال بلاغ جديد إلى الخادم مع التحقق من النطاق الجغرافي والصورة
   Future<void> sendNewReport(
     BuildContext context,
     String description, {
@@ -168,22 +169,17 @@ class ReportViewModel extends ChangeNotifier {
   }) async {
     _isUploading = true;
     notifyListeners();
-    // قيم افتراضية للاحداثيات
     String lat = "0.0";
     String lng = "0.0";
-    //هذا لضمان ارسال بيانات الاحداثيات صحيحة يقبلها السيرفر
     if (_locationStatus.contains(":") && _locationStatus.contains(",")) {
       try {
-        //تقص النص عشان ناخذ الارقام ونخزنها في المتغيرات
         var parts = _locationStatus.split(":")[1].split(",");
         lat = parts[0].trim();
         lng = parts[1].trim();
       } catch (e) {
-        debugPrint("خطأ في تحليل إحداثيات الموقع: $e");
       }
     }
 
-    // التحقق من أن الموقع داخل نطاق مدينة سيئون
     if (lat != "0.0" && lng != "0.0") {
       bool isInside = await _isLocationInServiceArea(
         double.parse(lat),
@@ -201,11 +197,10 @@ class ReportViewModel extends ChangeNotifier {
             duration: Duration(seconds: 4),
           ),
         );
-        return; // منع إرسال البلاغ
+        return; 
       }
     }
 
-    // تحديد عنوان البلاغ بناءً على خيار التصنيف والقسم الفرعي
     String categoryLabel = 'أخرى';
     if (_selectedCategory == 'تراكم_نفايات') {
       categoryLabel = 'تراكم نفايات';
@@ -222,7 +217,6 @@ class ReportViewModel extends ChangeNotifier {
                 ? '$categoryLabel - $_selectedSubType'
                 : categoryLabel);
 
-    // تحديد نوع البلاغ (رفع / كنس / اخرى)
     String mappedType = 'اخرى';
     if (_selectedCategory == 'تراكم_نفايات') {
       mappedType = 'رفع';
@@ -244,11 +238,9 @@ class ReportViewModel extends ChangeNotifier {
 
     _isUploading = false;
     notifyListeners();
-    // في حال نجح ارسال البلاغ نستدعي دالة جلب البلاغات لاجل ان تتحدث قائمة بلاغاتي ويوضع فيها البلاغ الجديد
     if (success) {
       await fetchReportsFromLaravel(isRefresh: true);
 
-      // تحديث إحصائيات البلاغات العامة وقائمة البلاغات الأخيرة فوراً
       try {
         if (context.mounted) {
           Provider.of<CitizenReportsViewModel>(
@@ -257,7 +249,6 @@ class ReportViewModel extends ChangeNotifier {
           ).loadDashboardData();
         }
       } catch (e) {
-        debugPrint("Error updating CitizenReportsViewModel stats: $e");
       }
 
       String message = "تمت العملية بنجاح";
@@ -271,17 +262,16 @@ class ReportViewModel extends ChangeNotifier {
           content: Text(
             "لا يوجد اتصال بالإنترنت حاليًا سيتم رفعه البلاغ عند توفر الشبكة.",
           ),
-          backgroundColor: Colors.blueGrey, // لون هادئ يدل على الحفظ المحلي
+          backgroundColor: Colors.blueGrey, 
           duration: Duration(seconds: 5),
         ),
       );
-      // حتى لو فشل الإرسال للسيرفر، نقوم بتحديث القائمة لعرض البلاغ المخزن محلياً
       fetchReportsFromLaravel();
-      Navigator.pop(context); // نغلق الصفحة لأن البلاغ "حُفظ" ولم يضع
+      Navigator.pop(context); 
     }
   }
 
-  // خوارزمية Ray-Casting للتحقق مما إذا كانت النقطة داخل مضلع (Polygon) سيئون
+  /// التحقق مما إذا كانت الإحداثيات المحددة تقع ضمن نطاق الخدمة المسموح به (مدينة سيئون)
   Future<bool> _isLocationInServiceArea(double lat, double lng) async {
     try {
       final String jsonString = await rootBundle.loadString(
@@ -312,8 +302,6 @@ class ReportViewModel extends ChangeNotifier {
       }
       return isInside;
     } catch (e) {
-      debugPrint("Error checking boundary: \$e");
-      // في حالة وجود خطأ في قراءة الملف، نسمح بمرور البلاغ لتجنب تعطيل التطبيق
       return true;
     }
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/screens/report/viewmodel/report_viewmodel.dart';
 import 'package:seiyun_reports_app/screens/profile/viewmodel/profile_viewmodel.dart';
@@ -35,83 +36,80 @@ class _ReportScreenState extends State<ReportScreen> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Directionality(
-        textDirection: TextDirection.rtl,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const ReportHeader(),
-              if (!context.watch<ProfileViewModel>().isPhoneVerified)
-                _buildVerificationWarning(context, context.read<HomeViewModel>()),
-              Padding(
-                padding: const EdgeInsets.all(25.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "نوع البلاغ *",
-                      style: sectionTitleStyle.copyWith(
-                        color: Theme.of(context).textTheme.titleLarge?.color,
-                      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ReportHeader(),
+            if (!context.watch<ProfileViewModel>().isPhoneVerified)
+              _buildVerificationWarning(context, context.read<HomeViewModel>()),
+            Padding(
+              padding: const EdgeInsets.all(25.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "report.type".tr(),
+                    style: sectionTitleStyle.copyWith(
+                      color: Theme.of(context).textTheme.titleLarge?.color,
                     ),
-                    const SizedBox(height: 15),
-                    const CategoryGrid(),
-                    if (reportVM.selectedCategory == 'أخرى') ...[
-                      const SizedBox(height: 30),
-                      Text(
-                        "عنوان البلاغ *",
-                        style: sectionTitleStyle.copyWith(
-                          color: Theme.of(context).textTheme.titleLarge?.color,
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      _buildTitleField(),
-                    ],
+                  ),
+                  const SizedBox(height: 15),
+                  const CategoryGrid(),
+                  if (reportVM.selectedCategory == 'أخرى') ...[
                     const SizedBox(height: 30),
                     Text(
-                      "الأولوية *",
+                      "report.custom_title".tr(),
                       style: sectionTitleStyle.copyWith(
                         color: Theme.of(context).textTheme.titleLarge?.color,
                       ),
                     ),
                     const SizedBox(height: 15),
-                    const PrioritySelector(),
-                    const SizedBox(height: 30),
-                    Text(
-                      "الموقع *",
-                      style: sectionTitleStyle.copyWith(
-                        color: Theme.of(context).textTheme.titleLarge?.color,
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    const LocationCard(),
-                    const SizedBox(height: 30),
-                    Text(
-                      "الصورة (اختياري)",
-                      style: sectionTitleStyle.copyWith(
-                        color: Theme.of(context).textTheme.titleLarge?.color,
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    const ImagePickerWidget(),
-                    const SizedBox(height: 30),
-                    Text(
-                      "وصف المشكلة",
-                      style: sectionTitleStyle.copyWith(
-                        color: Theme.of(context).textTheme.titleLarge?.color,
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    _buildDescriptionField(),
-                    const SizedBox(height: 35),
-                    _buildSubmitButton(context),
-                    const SizedBox(height: 100),
+                    _buildTitleField(),
                   ],
-                ),
+                  const SizedBox(height: 30),
+                  Text(
+                    "report.priority".tr(),
+                    style: sectionTitleStyle.copyWith(
+                      color: Theme.of(context).textTheme.titleLarge?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  const PrioritySelector(),
+                  const SizedBox(height: 30),
+                  Text(
+                    "report.location".tr(),
+                    style: sectionTitleStyle.copyWith(
+                      color: Theme.of(context).textTheme.titleLarge?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  const LocationCard(),
+                  const SizedBox(height: 30),
+                  Text(
+                    "report.image_optional".tr(),
+                    style: sectionTitleStyle.copyWith(
+                      color: Theme.of(context).textTheme.titleLarge?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  const ImagePickerWidget(),
+                  const SizedBox(height: 30),
+                  Text(
+                    "report.description".tr(),
+                    style: sectionTitleStyle.copyWith(
+                      color: Theme.of(context).textTheme.titleLarge?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  _buildDescriptionField(),
+                  const SizedBox(height: 35),
+                  _buildSubmitButton(context),
+                  const SizedBox(height: 100),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -120,7 +118,7 @@ class _ReportScreenState extends State<ReportScreen> {
   Widget _buildVerificationWarning(BuildContext context, HomeViewModel homeVM) {
     return GestureDetector(
       onTap: () {
-        homeVM.setPage(3); // الانتقال لصفحة الملف الشخصي
+        homeVM.setPage(3); 
         Navigator.pop(context);
       },
       child: Container(
@@ -146,30 +144,38 @@ class _ReportScreenState extends State<ReportScreen> {
                 color: Colors.orange.shade100,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 24),
+              child: const Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.orange,
+                size: 24,
+              ),
             ),
             const SizedBox(width: 15),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
-                    "تنبيه: الحساب غير مفعل",
-                    style: TextStyle(
+                    "report.warning_account_inactive".tr(),
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Color(0xFFD35400),
                       fontSize: 14,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
-                    "يجب التحقق من رقم الهاتف لتتمكن من إرسال البلاغ. اضغط هنا للتحقق الآن.",
-                    style: TextStyle(fontSize: 12, color: Colors.black87),
+                    "report.warning_verify_phone".tr(),
+                    style: const TextStyle(fontSize: 12, color: Colors.black87),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_back_ios_new, size: 14, color: Colors.orange),
+            const Icon(
+              Icons.arrow_back_ios_new,
+              size: 14,
+              color: Colors.orange,
+            ),
           ],
         ),
       ),
@@ -181,7 +187,7 @@ class _ReportScreenState extends State<ReportScreen> {
       controller: _titleController,
       style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
       decoration: InputDecoration(
-        hintText: "أدخل عنواناً ملخصاً للبلاغ (مثلاً: حفرة في الشارع)...",
+        hintText: "report.hint_title".tr(),
         hintStyle: TextStyle(
           color: Theme.of(context).textTheme.bodySmall?.color,
           fontSize: 13,
@@ -203,60 +209,63 @@ class _ReportScreenState extends State<ReportScreen> {
     final homeVM = context.read<HomeViewModel>();
 
     return ElevatedButton(
-      onPressed: reportVM.isUploading
-          ? null
-          : () {
-              if (!profileVM.isPhoneVerified) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("يرجى التحقق من رقم الهاتف في الملف الشخصي أولاً"),
-                    duration: Duration(seconds: 3),
-                  ),
-                );
-                // Redirect to profile
-                homeVM.setPage(3); // Index 3 is Profile
-                Navigator.pop(context);
-                return;
-              }
+      onPressed:
+          reportVM.isUploading
+              ? null
+              : () {
+                if (!profileVM.isPhoneVerified) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("report.toast_verify_phone".tr()),
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                  homeVM.setPage(3); 
+                  Navigator.pop(context);
+                  return;
+                }
 
-              if (reportVM.selectedCategory == 'أخرى' && _titleController.text.trim().isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("يرجى إدخال عنوان للبلاغ")),
-                );
-                return;
-              }
+                if (reportVM.selectedCategory == 'أخرى' &&
+                    _titleController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("report.toast_enter_title".tr())),
+                  );
+                  return;
+                }
 
-              reportVM.sendNewReport(
-                context,
-                _descriptionController.text.trim(),
-                customTitle: reportVM.selectedCategory == 'أخرى'
-                    ? _titleController.text.trim()
-                    : null,
-              );
-            },
+                reportVM.sendNewReport(
+                  context,
+                  _descriptionController.text.trim(),
+                  customTitle:
+                      reportVM.selectedCategory == 'أخرى'
+                          ? _titleController.text.trim()
+                          : null,
+                );
+              },
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF27ae60),
         disabledBackgroundColor: const Color(0xFF27ae60).withOpacity(0.6),
         minimumSize: const Size(double.infinity, 65),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
-      child: reportVM.isUploading
-          ? const SizedBox(
-              width: 25,
-              height: 25,
-              child: CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
+      child:
+          reportVM.isUploading
+              ? const SizedBox(
+                width: 25,
+                height: 25,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+              : Text(
+                "report.submit".tr(),
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-            )
-          : const Text(
-              "إرسال البلاغ للصندوق",
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
     );
   }
 
@@ -266,7 +275,7 @@ class _ReportScreenState extends State<ReportScreen> {
       maxLines: 4,
       style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
       decoration: InputDecoration(
-        hintText: "صف المشكلة بدقة لمساعدة الفريق الميداني...",
+        hintText: "report.hint_description".tr(),
         hintStyle: TextStyle(
           color: Theme.of(context).textTheme.bodySmall?.color,
           fontSize: 13,

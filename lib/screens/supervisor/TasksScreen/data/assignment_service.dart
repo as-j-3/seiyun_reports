@@ -10,13 +10,13 @@ class AssignmentService {
   /// جلب المهام الخاصة بالمشرف الميداني
   Future<Response> getSupervisorAssignments() async {
     try {
-      // بناءً على الصورة، الاندبوينت هو showReportToSupervisors والنوع POST
       return await _apiService.post('showReportToSupervisors');
     } catch (e) {
       rethrow;
     }
   }
 
+  /// تحديث حالة المهمة المُسندة إلى المشرف (مع دعم رفع الصورة والتعليق)
   Future<Response> updateAssignmentStatus({
     required int assignmentId,
     required String status,

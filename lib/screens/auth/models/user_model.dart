@@ -3,10 +3,10 @@ class UserModel {
   final int id;
   final String name;
   final String email;
-  final String role; // دور المستخدم (مثلاً: مواطن، مسؤول)
-  final String? street; // الشارع (اختياري)
-  final String? district; // الحي/المنطقة (اختياري)
-  final String? type; // نوع الحساب
+  final String role; 
+  final String? street; 
+  final String? district; 
+  final String? type; 
 
   UserModel({
     required this.id, 
@@ -43,4 +43,4 @@ class UserModel {
       'type': type,
     };
   }
-}
+}

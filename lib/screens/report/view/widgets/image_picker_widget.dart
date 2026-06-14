@@ -47,7 +47,7 @@ class ImagePickerWidget extends StatelessWidget {
       onTap: () => _showPickerOptions(context),
       child: Container(
         width: double.infinity,
-        height: 200, // زيادة الطول قليلاً لعرض الصورة بشكل أوضح
+        height: 200, 
         decoration: BoxDecoration(
           color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1E293B) : const Color(0xFFf8fafc),
           borderRadius: BorderRadius.circular(24),

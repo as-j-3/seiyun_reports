@@ -27,6 +27,7 @@ class _AuthFormState extends State<AuthForm> {
     super.dispose();
   }
 
+  /// عرض رسالة خطأ للمستخدم باستخدام SnackBar.
   void _showErrorSnackBar(String message, [ScaffoldMessengerState? messenger]) {
     (messenger ?? ScaffoldMessenger.of(context)).showSnackBar(
       SnackBar(
@@ -42,6 +43,7 @@ class _AuthFormState extends State<AuthForm> {
     );
   }
 
+  /// التحقق من صحة البيانات المدخلة في حقول البريد الإلكتروني وكلمة المرور والاسم.
   bool _validateInputs(AuthViewModel authVM) {
     if (_emailController.text.trim().isEmpty ||
         _passwordController.text.trim().isEmpty) {
@@ -63,6 +65,7 @@ class _AuthFormState extends State<AuthForm> {
     return true;
   }
 
+  /// معالجة عملية المصادقة بالبريد الإلكتروني (إنشاء حساب أو تسجيل دخول).
   Future<void> _handleEmailAuth() async {
     final authVM = Provider.of<AuthViewModel>(context, listen: false);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -91,6 +94,7 @@ class _AuthFormState extends State<AuthForm> {
     }
   }
 
+  /// معالجة عملية تسجيل الدخول باستخدام حساب Google.
   Future<void> _handleGoogleSignIn() async {
     final authVM = Provider.of<AuthViewModel>(context, listen: false);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -197,15 +201,7 @@ class _AuthFormState extends State<AuthForm> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          if (!authVM.isSignupMode)
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                "نسيت كلمة المرور؟",
-                style: TextStyle(color: Theme.of(context).colorScheme.secondary),
-              ),
-            ),
+          const SizedBox(height: 10)
         ],
       ),
     );

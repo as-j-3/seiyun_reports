@@ -6,6 +6,7 @@ class AuthService {
 
   AuthService(this._apiService);
 
+  /// تسجيل الدخول إلى النظام بإرسال الدور والاسم.
   Future<Response> login({
     required String role,
     String? name,
@@ -15,7 +16,6 @@ class AuthService {
       data: { 
         'role': role, 
         if (name != null) 'name': name,
-        // ملاحظة: التوكن (idToken) يتم إضافته تلقائياً بواسطة DioClient Interceptor
       },
     );
   }

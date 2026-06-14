@@ -10,7 +10,6 @@ class RecentReportsList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<HomeViewModel>(
       builder: (context, viewModel, child) {
-        // نستخدم البيانات القادمة من رابط الهوم الموحد
         final reportsToShow = viewModel.recentReports;
 
         if (reportsToShow.isEmpty) {

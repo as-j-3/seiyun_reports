@@ -19,7 +19,6 @@ class AssignmentRepository {
 
   /// جلب كافة المهام (مع التعامل مع الحالات: إنترنت / بدون إنترنت)
   Future<List<AssignmentModel>> getAssignments() async {
-    // 1. إذا كان هناك إنترنت، نجلب من السيرفر ونحدث المحلي
     if (await _networkInfo.isConnected) {
       try {
         final response = await _remoteService.getSupervisorAssignments();
@@ -28,17 +27,13 @@ class AssignmentRepository {
           final List data = response.data['data'];
           final assignments = data.map((json) => AssignmentModel.fromJson(json)).toList();
           
-          // تحديث قاعدة البيانات المحلية
           await _localService.saveAssignments(assignments);
           return assignments;
         }
       } catch (e) {
-        print("خطأ في جلب المهام من السيرفر: $e");
-        // في حال فشل السيرفر، نحاول العودة للمحلي
       }
     }
 
-    // 2. إذا لم يوجد إنترنت أو فشل السيرفر، نجلب من المحلي
     return await _localService.getLocalAssignments();
   }
 
@@ -60,11 +55,9 @@ class AssignmentRepository {
       );
 
       if (response.data['status'] == 'success') {
-        // يمكن تحديث الحالة محلياً أيضاً هنا إذا لزم الأمر
         return true;
       }
     } catch (e) {
-      print("خطأ في تحديث حالة المهمة: $e");
     }
     return false;
   }
@@ -77,11 +70,9 @@ class AssignmentRepository {
       final response = await _remoteService.storeConfirmation(confirmation);
 
       if (response.data['status'] == 'success') {
-        // نرجع البيانات التي أرسلها السيرفر (الصورة والملاحظة والوقت)
         return response.data['data'];
       }
     } catch (e) {
-      print("خطأ في تأكيد إتمام البلاغ: $e");
     }
     return null;
   }

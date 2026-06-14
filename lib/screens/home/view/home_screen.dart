@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:seiyun_reports_app/screens/home/viewmodel/home_viewmodel.dart';
@@ -72,66 +73,60 @@ class _HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final homeVM = context.watch<HomeViewModel>();
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: RefreshIndicator(
-        onRefresh: () async {
-          await homeVM.refreshData();
-          if (context.mounted) {
-            await context.read<CitizenReportsViewModel>().loadDashboardData();
-          }
-        },
-        color: AppTheme.primaryColor,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            children: [
-              const HomeHeader(),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 20,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    StatsCards(
-                      activeCount: homeVM.reportActive,
-                      resolvedCount: homeVM.reportSolved,
+    return RefreshIndicator(
+      onRefresh: () async {
+        await homeVM.refreshData();
+        if (context.mounted) {
+          await context.read<CitizenReportsViewModel>().loadDashboardData();
+        }
+      },
+      color: AppTheme.primaryColor,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            const HomeHeader(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  StatsCards(
+                    activeCount: homeVM.reportActive,
+                    resolvedCount: homeVM.reportSolved,
+                  ),
+                  const SizedBox(height: 20),
+                  const NextPickupCard(),
+                  const SizedBox(height: 20),
+                  const OrderServiceBanner(),
+                  const SizedBox(height: 25),
+                  SectionHeader(
+                    title: "home.recent_reports".tr(),
+                    action: "home.view_all".tr(),
+                  ),
+                  const SizedBox(height: 15),
+                  const RecentReportsList(),
+                  const SizedBox(height: 25),
+                  SectionHeader(
+                    title: "home.news_updates".tr(),
+                    action: "home.view_all".tr(),
+                  ),
+                  const SizedBox(height: 15),
+                  const NewsList(),
+                  const SizedBox(height: 25),
+                  Text(
+                    "home.useful_tips".tr(),
+                    style: sectionTitleStyle.copyWith(
+                      color: Theme.of(context).textTheme.titleLarge?.color,
                     ),
-                    const SizedBox(height: 20),
-                    const NextPickupCard(),
-                    const SizedBox(height: 20),
-                    const OrderServiceBanner(),
-                    const SizedBox(height: 25),
-                    const SectionHeader(
-                      title: "البلاغات الأخيرة",
-                      action: "عرض الكل",
-                    ),
-                    const SizedBox(height: 15),
-                    const RecentReportsList(),
-                    const SizedBox(height: 25),
-                    const SectionHeader(
-                      title: "الأخبار والتحديثات",
-                      action: "عرض الكل",
-                    ),
-                    const SizedBox(height: 15),
-                    const NewsList(),
-                    const SizedBox(height: 25),
-                    Text(
-                      "نصائح مفيدة",
-                      style: sectionTitleStyle.copyWith(
-                        color: Theme.of(context).textTheme.titleLarge?.color,
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    const TipsGrid(),
-                    const SizedBox(height: 100), // مساحة للزر العائم
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 15),
+                  const TipsGrid(),
+                  const SizedBox(height: 100), 
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

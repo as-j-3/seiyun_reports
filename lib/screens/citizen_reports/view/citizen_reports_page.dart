@@ -17,8 +17,10 @@ class CitizenReportsPage extends StatelessWidget {
       body: Consumer<CitizenReportsViewModel>(
         builder: (context, viewModel, child) {
           return RefreshIndicator(
-            onRefresh: () => viewModel.loadDashboardData(),
-            child: SingleChildScrollView(
+              onRefresh: () async {
+                await viewModel.loadDashboardData(showLoading: true);
+              },
+              child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 children: [
@@ -54,6 +56,9 @@ class CitizenReportsPage extends StatelessWidget {
                                 'حالة البلاغ: ${report.status}';
                             Share.share(shareText);
                           },
+                          onLike: () {
+                            context.read<CitizenReportsViewModel>().toggleLike(report);
+                          },
                         );
                       },
                     ),
@@ -78,7 +83,6 @@ class CitizenReportsPage extends StatelessWidget {
   }
 }
 
-// ===== Bottom Sheet للتعليقات =====
 class _CommentsSheet extends StatefulWidget {
   final CitizenReportModel report;
   final CitizenReportsViewModel viewModel;
@@ -96,7 +100,6 @@ class _CommentsSheetState extends State<_CommentsSheet> {
   @override
   void initState() {
     super.initState();
-    // جلب التعليقات وزيادة عدد المشاهدات لهذا البلاغ فقط عند فتح النافذة
     Future.microtask(() {
       widget.viewModel.fetchComments(widget.report.id);
       widget.viewModel.incrementReportView(widget.report);
@@ -152,7 +155,6 @@ class _CommentsSheetState extends State<_CommentsSheet> {
         ),
         child: Column(
           children: [
-            // Header
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               decoration: BoxDecoration(
@@ -173,11 +175,9 @@ class _CommentsSheetState extends State<_CommentsSheet> {
               ),
             ),
 
-            // Comments List
             Expanded(
               child: Consumer<CitizenReportsViewModel>(
                 builder: (context, vm, child) {
-                  // إذا كان هناك تعليقات مسجلة في العداد ولكن القائمة فارغة حالياً، نظهر مؤشر تحميل
                   if (vm.comments.isEmpty && widget.report.commentsCount > 0) {
                     return const Center(child: CircularProgressIndicator());
                   }
@@ -264,7 +264,6 @@ class _CommentsSheetState extends State<_CommentsSheet> {
               ),
             ),
 
-            // Input Area
             Container(
               padding: EdgeInsets.only(
                 left: 15,

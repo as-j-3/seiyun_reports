@@ -126,7 +126,6 @@ class _SupervisorTasksScreenState extends State<SupervisorTasksScreen> with Sing
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category and Status
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -146,7 +145,6 @@ class _SupervisorTasksScreenState extends State<SupervisorTasksScreen> with Sing
                   ),
                   const SizedBox(height: 12),
 
-                  // Title and Zone
                   Text(
                     task.title,
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -155,14 +153,12 @@ class _SupervisorTasksScreenState extends State<SupervisorTasksScreen> with Sing
                   _buildIconRow(Icons.location_on_outlined, " ${task.area} ${task.square}", isDark),
                   const SizedBox(height: 6),
              
-                  // Description
                   Text(
                     task.description,
                     style: TextStyle(color: Colors.grey.shade700, fontSize: 14, height: 1.5),
                   ),
                   const SizedBox(height: 16),
 
-                  // Image Section
                   const Text(
                     "صورة البلاغ",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
@@ -188,7 +184,6 @@ class _SupervisorTasksScreenState extends State<SupervisorTasksScreen> with Sing
                   ),
                   const SizedBox(height: 16),
 
-                  // Supervisor
                   Row(
                     children: [
                       const Icon(Icons.person_outline, size: 16, color: Colors.grey),
@@ -226,7 +221,6 @@ class _SupervisorTasksScreenState extends State<SupervisorTasksScreen> with Sing
                   ),
                   const Divider(height: 32),
 
-                  // Actions
                   if (!isCompleted) ...[
                     SizedBox(
                       width: double.infinity,
@@ -302,13 +296,10 @@ class _SupervisorTasksScreenState extends State<SupervisorTasksScreen> with Sing
     if (dateStr.isEmpty) return "";
     try {
       DateTime? dt;
-      // محاولة تحليل التنسيق القادم من السيرفر "22:28:41 2026-05-13"
       if (dateStr.contains(':') && dateStr.contains('-')) {
-        // إذا كان الوقت أولاً "HH:mm:ss yyyy-MM-dd"
         if (dateStr.indexOf(':') < dateStr.indexOf('-')) {
           dt = DateFormat("HH:mm:ss yyyy-MM-dd").parse(dateStr);
         } else {
-          // التنسيق القياسي yyyy-MM-dd HH:mm:ss
           dt = DateTime.parse(dateStr);
         }
       } else {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 
 class NewsTipsHeader extends StatelessWidget {
@@ -36,9 +37,9 @@ class NewsTipsHeader extends StatelessWidget {
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () => Navigator.pop(context),
               ),
-              const Text(
-                "الأخبار والنصائح",
-                style: TextStyle(
+              Text(
+                "news_tips.header_title".tr(),
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -56,8 +57,16 @@ class NewsTipsHeader extends StatelessWidget {
             ),
             child: Row(
               children: [
-                _toggleBtn("الأخبار", isNewsSelected, () => onToggle(true)),
-                _toggleBtn("النصائح", !isNewsSelected, () => onToggle(false)),
+                _toggleBtn(
+                  "news_tips.tab_news".tr(),
+                  isNewsSelected,
+                  () => onToggle(true),
+                ),
+                _toggleBtn(
+                  "news_tips.tab_tips".tr(),
+                  !isNewsSelected,
+                  () => onToggle(false),
+                ),
               ],
             ),
           ),

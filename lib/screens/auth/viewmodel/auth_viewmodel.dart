@@ -9,7 +9,7 @@ class AuthViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  bool _isSignupMode = true; // وضع إنشاء حساب (true) أو تسجيل دخول (false)
+  bool _isSignupMode = true; 
   bool get isSignupMode => _isSignupMode;
 
   final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -48,19 +48,16 @@ class AuthViewModel extends ChangeNotifier {
 
     try {
       if (_isSignupMode) {
-        // إنشاء حساب جديد في Firebase
         await _auth.createUserWithEmailAndPassword(
           email: email.trim(),
           password: password.trim(),
         );
 
-        // تحديث اسم المستخدم إذا تم توفيره
         if (name != null && name.trim().isNotEmpty) {
           await _auth.currentUser?.updateDisplayName(name.trim());
           await _auth.currentUser?.reload();
         }
       } else {
-        // تسجيل الدخول لحساب موجود
         await _auth.signInWithEmailAndPassword(
           email: email.trim(),
           password: password.trim(),
@@ -70,15 +67,11 @@ class AuthViewModel extends ChangeNotifier {
       final user = _auth.currentUser;
       if (user != null) {
         final token = await user.getIdToken();
-        debugPrint("FIREBASE_TOKEN: $token");
 
-        // دور افتراضي، سيتم تجاوزه بالدور الحقيقي من استجابة السيرفر
         const String role = 'citizens';
 
-        // تسجيل المستخدم في قاعدة بيانات السيرفر الخاص بالتطبيق والحصول على الدور الحقيقي من الاستجابة
         await _authRepo.registerUser(
           role: role,
-          // نرسل الاسم فقط في حالة إنشاء حساب جديد لتجنب تغيير الاسم الحقيقي في السيرفر بكلمة "User"
           name: _isSignupMode 
               ? ((name != null && name.trim().isNotEmpty) ? name.trim() : (user.displayName ?? "User"))
               : null,
@@ -109,7 +102,7 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _googleSignIn.signOut(); // تسجيل خروج مسبق لضمان اختيار الحساب
+      await _googleSignIn.signOut(); 
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         _isLoading = false;
@@ -123,7 +116,6 @@ class AuthViewModel extends ChangeNotifier {
         idToken: googleAuth.idToken,
       );
 
-      // تسجيل الدخول في Firebase باستخدام بيانات جوجل
       final userCredential = await _auth.signInWithCredential(credential);
       final user = userCredential.user;
 
@@ -132,13 +124,10 @@ class AuthViewModel extends ChangeNotifier {
             (user.email != null ? user.email!.split('@')[0] : "User");
 
         final token = await user.getIdToken();
-        // دور افتراضي
         const String role = 'citizens';
 
-        // تسجيل المستخدم والحصول على الدور النهائي من السيرفر
         await _authRepo.registerUser(
           role: role, 
-          // في جوجل، نرسل الاسم فقط إذا لم يكن "User" لضمان عدم الكتابة فوق الاسم الحقيقي
           name: finalName != "User" ? finalName : null,
           token: token,
           email: user.email,
@@ -149,7 +138,6 @@ class AuthViewModel extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = "فشل تسجيل الدخول بواسطة Google";
-      debugPrint("Google SignIn Error: $e");
     }
 
     _isLoading = false;

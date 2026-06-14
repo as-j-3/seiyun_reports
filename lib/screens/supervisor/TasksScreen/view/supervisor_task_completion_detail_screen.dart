@@ -24,7 +24,6 @@ class SupervisorTaskCompletionDetailScreen extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              // Header Status Banner
               _buildStatusHeader(),
               
               Padding(
@@ -32,17 +31,14 @@ class SupervisorTaskCompletionDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Section: Before and After Images
                     _buildComparisonSection(context, isDark),
                     
                     const SizedBox(height: 30),
                     
-                    // Section: Final Notes
                     _buildNotesSection(isDark),
                     
                     const SizedBox(height: 30),
                     
-                    // Section: Task Summary Card
                     _buildTaskSummary(isDark),
                     
                     const SizedBox(height: 40),
@@ -110,7 +106,6 @@ class SupervisorTaskCompletionDetailScreen extends StatelessWidget {
         const SizedBox(height: 15),
         Row(
           children: [
-            // Original Report Image
             Expanded(
               child: _buildImageCard(
                 context,
@@ -120,12 +115,11 @@ class SupervisorTaskCompletionDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 15),
-            // Completion Image
             Expanded(
               child: _buildImageCard(
                 context,
                 "بعد المعالجة",
-                task.confirmationImage ?? task.reportImage, // Fallback if image not loaded
+                task.confirmationImage ?? task.reportImage, 
                 AppTheme.accentGreen,
               ),
             ),

@@ -14,7 +14,6 @@ class PickupSchedulesViewModel extends ChangeNotifier {
   List<PickupScheduleModel> _containers = [];
   List<PickupScheduleModel> get containers => _containers;
 
-  // Getters للتوافق مع الواجهة الحالية وإصلاح الأخطاء
   List<PickupScheduleModel> get nearbyContainers => _containers;
   List<PickupScheduleModel> get schedules => _containers;
   int get totalNearbyContainers => _containers.length;
@@ -51,15 +50,12 @@ class PickupSchedulesViewModel extends ChangeNotifier {
     }
 
     try {
-      // 1. محاولة الحصول على الموقع المحفوظ من البروفايل أولاً
       double? lat = await PrefHelper.getUserLat();
       double? lng = await PrefHelper.getUserLng();
 
       if (lat != null && lng != null) {
-        // استخدام الموقع المحفوظ
         _containers = await _repository.fetchNearbyContainers(lat, lng);
       } else {
-        // 2. إذا لم يوجد موقع محفوظ، تحديد موقع المستخدم الحالي عبر GPS
         final position = await _locationService.getCurrentPosition();
         if (position != null) {
           _containers = await _repository.fetchNearbyContainers(
@@ -81,7 +77,6 @@ class PickupSchedulesViewModel extends ChangeNotifier {
                 : 'لا توجد حاويات قريبة حالياً';
       }
     } catch (e) {
-      print("Error fetching pickup schedules: $e");
       _currentLocationName = 'حدث خطأ أثناء جلب البيانات';
     } finally {
       if (showLoading) {
@@ -90,17 +85,14 @@ class PickupSchedulesViewModel extends ChangeNotifier {
       notifyListeners();
     }
 
-    // ── إطلاق وجدولة إشعارات مواعيد الرفع ──────────────────────────────────
     _managePickupNotifications();
   }
 
   /// يدير الإشعارات الفورية والمجدولة
   Future<void> _managePickupNotifications() async {
-    // إلغاء الإشعارات المجدولة القديمة لتجنب التكرار
     await NotificationService.cancelAllNotifications();
 
     for (final schedule in containers) {
-      // 1. إشعار فوري إذا كان الموعد اليوم أو غداً (تنبيه عند فتح التطبيق)
       if (schedule.isToday || schedule.isTomorrow) {
         NotificationService.showPickupReminderNotification(
           day: schedule.day,
@@ -112,7 +104,6 @@ class PickupSchedulesViewModel extends ChangeNotifier {
         );
       }
 
-      // 2. جدولة إشعار مستقبلي إذا كان الموعد غداً (مثلاً قبل الموعد بـ 30 دقيقة)
       if (schedule.isTomorrow) {
         _scheduleFuturePickup(schedule);
       }
@@ -121,12 +112,10 @@ class PickupSchedulesViewModel extends ChangeNotifier {
 
   void _scheduleFuturePickup(PickupScheduleModel schedule) {
     try {
-      // استخراج الوقت (نفترض تنسيق HH:mm مثل 05:00)
       final parts = schedule.startTime.split(':');
       final hour = int.parse(parts[0]);
       final minute = int.parse(parts[1]);
 
-      // حساب وقت الإشعار: غداً في نفس وقت البداية (أو قبله بمدة)
       final now = DateTime.now();
       var scheduledDate = DateTime(
         now.year,
@@ -134,9 +123,8 @@ class PickupSchedulesViewModel extends ChangeNotifier {
         now.day + 1,
         hour,
         minute,
-      ).subtract(const Duration(minutes: 30)); // تنبيه قبل الموعد بـ 30 دقيقة
+      ).subtract(const Duration(minutes: 30)); 
 
-      // إذا كان الوقت المحسوب قد مضى فعلاً اليوم (في حال كان الوقت مبكراً جداً)
       if (scheduledDate.isBefore(now)) return;
 
       NotificationService.schedulePickupNotification(
@@ -147,7 +135,6 @@ class PickupSchedulesViewModel extends ChangeNotifier {
         scheduledDate: scheduledDate,
       );
     } catch (e) {
-      debugPrint('⚠️ خطأ في جدولة الإشعار: $e');
     }
   }
 

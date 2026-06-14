@@ -30,7 +30,6 @@ class ApiService {
       data: data, 
       options: Options(
         headers: headers,
-        // تحديد نوع المحتوى تلقائياً بناءً على البيانات المرسلة
         contentType: data is FormData ? 'multipart/form-data' : 'application/json',
       ), 
     );
@@ -59,4 +58,4 @@ class ApiService {
       options: Options(headers: headers), 
     );
   }
-}
+}

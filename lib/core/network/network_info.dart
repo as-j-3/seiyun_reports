@@ -13,10 +13,8 @@ class NetworkInfoImpl implements NetworkInfo {
 
   @override
   Future<bool> get isConnected async {
-    // التحقق من حالة الاتصال (واي فاي، بيانات جوال، أو لا يوجد اتصال)
     final result = await connectivity.checkConnectivity();
     
-    // إذا كانت النتيجة لا تحتوي على "none"، فهذا يعني أن الجهاز متصل بشبكة ما
     return !result.contains(ConnectivityResult.none);
   }
-}
+}

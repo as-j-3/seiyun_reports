@@ -7,6 +7,7 @@ class MapService {
 
   MapService(this._apiService);
 
+  /// جلب بيانات الخريطة (نقاط البلاغات والمناطق) من الخادم
   Future<Response> getMapData() async {
     try {
       return await _apiService.get('getMapData');

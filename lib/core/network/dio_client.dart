@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/material.dart';
 
 class DioClient {
   late Dio dio;
@@ -9,11 +8,11 @@ class DioClient {
   DioClient() {
     dio = Dio(
       BaseOptions(
-        baseUrl: 'https://medicalhouse-ye.net/api/', // الرابط الأساسي للسيرفر
-        connectTimeout: const Duration(seconds: 60), // وقت انتظار الاتصال
+        baseUrl: 'https://medicalhouse-ye.net/api/',
+        connectTimeout: const Duration(seconds: 60),
         receiveTimeout: const Duration(
           seconds: 60,
-        ), // وقت انتظار استلام البيانات
+        ),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -21,7 +20,6 @@ class DioClient {
       ),
     );
 
-    // إضافة (Interceptor) للتعامل مع التوكن (Token) تلقائياً في كل طلب
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -30,18 +28,14 @@ class DioClient {
             String? laravelToken = prefs.getString('access_token');
 
             if (laravelToken != null && laravelToken.isNotEmpty) {
-              // إذا كان لدينا توكن من لارفيل، نستخدمه مباشرة
               options.headers['Authorization'] = 'Bearer $laravelToken';
             } else {
-              // إذا لم يوجد توكن لارفيل، نحاول جلب توكن فيربيس (لأغراض تسجيل الدخول/الإنشاء)
               User? user = FirebaseAuth.instance.currentUser;
               if (user != null) {
                 String? firebaseToken = await user.getIdToken();
                 if (firebaseToken != null) {
-                  // نرسل توكن فيربيس في الهيدر كاحتياط
                   options.headers['Authorization'] = 'Bearer $firebaseToken';
 
-                  // إذا كان الطلب POST (مثل تسجيل الدخول)، نرسل التوكن في الجسم أيضاً
                   if (options.method == 'POST') {
                     if (options.data is FormData) {
                       (options.data as FormData).fields.add(
@@ -57,7 +51,6 @@ class DioClient {
               }
             }
           } catch (e) {
-            debugPrint("Error in Dio Interceptor: $e");
           }
           return handler.next(options);
         },

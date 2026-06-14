@@ -14,6 +14,7 @@ class SupervisorTasksViewModel extends ChangeNotifier {
     _startAutoRefresh();
   }
 
+  /// بدء مؤقت التحديث التلقائي للمهام والتعيينات
   void _startAutoRefresh() {
     _autoRefreshTimer?.cancel();
     _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
@@ -27,6 +28,7 @@ class SupervisorTasksViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  /// جلب قائمة المهام والتعيينات الخاصة بالمشرف من المستودع
   Future<void> fetchAssignments({bool showLoading = true}) async {
     if (showLoading) {
       _isLoading = true;
@@ -36,7 +38,6 @@ class SupervisorTasksViewModel extends ChangeNotifier {
     try {
       _assignments = await _repository.getAssignments();
     } catch (e) {
-      debugPrint("Error fetching assignments: $e");
     } finally {
       if (showLoading) {
         _isLoading = false;
@@ -45,6 +46,7 @@ class SupervisorTasksViewModel extends ChangeNotifier {
     }
   }
 
+  /// تحديث حالة المهمة/التعيين المحدد مع إمكانية إرفاق تعليق وصورة
   Future<bool> updateAssignmentStatus({
     required int assignmentId,
     required String status,
@@ -62,11 +64,10 @@ class SupervisorTasksViewModel extends ChangeNotifier {
         imagePath: imagePath,
       );
       if (success) {
-        await fetchAssignments(); // Refresh list on success
+        await fetchAssignments(); 
       }
       return success;
     } catch (e) {
-      debugPrint("Error updating status: $e");
       return false;
     } finally {
       _isLoading = false;
@@ -93,17 +94,15 @@ class SupervisorTasksViewModel extends ChangeNotifier {
       final confirmationData = await _repository.confirmAssignment(confirmation);
       
       if (confirmationData != null) {
-        // تحديث المهمة في القائمة المحلية فوراً لضمان ظهور البيانات في التفاصيل
         final index = _assignments.indexWhere((a) => a.idAssignments == assignmentId);
         if (index != -1) {
           _assignments[index] = _assignments[index].copyWith(
-            status: 'completed', // أو 'solved' حسب المعتمد في السيرفر
+            status: 'completed', 
             confirmationNote: confirmationData['note'],
             confirmationImage: confirmationData['image'],
           );
           
-          // حفظ التحديث في قاعدة البيانات المحلية أيضاً لضمان الاستمرارية
-          final localService = AssignmentsLocalService(); // أو جلبها من الـ Repository إذا كانت عامة
+          final localService = AssignmentsLocalService(); 
           await localService.saveAssignments(_assignments);
         }
         
@@ -112,7 +111,6 @@ class SupervisorTasksViewModel extends ChangeNotifier {
       }
       return false;
     } catch (e) {
-      debugPrint("Error confirming task: $e");
       return false;
     } finally {
       _isLoading = false;

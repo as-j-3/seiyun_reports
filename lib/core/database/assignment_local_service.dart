@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:seiyun_reports_app/screens/supervisor/TasksScreen/models/assignment_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'database_helper.dart';
@@ -11,7 +10,6 @@ class AssignmentsLocalService {
     final db = await _dbHelper.database;
     Batch batch = db.batch();
 
-    // مسح البيانات القديمة لضمان عدم تكرار المهام أو بقاء مهام ملغية
     batch.delete('assignments');
 
     for (var assignment in assignmentsList) {
@@ -29,7 +27,6 @@ class AssignmentsLocalService {
   Future<List<AssignmentModel>> getLocalAssignments() async {
     final db = await _dbHelper.database;
     
-    // جلب البيانات مرتبة حسب تاريخ التعيين (الأحدث أولاً)
     final List<Map<String, dynamic>> maps = await db.query(
       'assignments',
       orderBy: 'assigned_at DESC',
@@ -41,8 +38,6 @@ class AssignmentsLocalService {
       try {
         return AssignmentModel.fromMap(map);
       } catch (e) {
-        debugPrint(" خطأ في تحويل مهمة محلية: $e");
-        // إرجاع كائن افتراضي لتجنب كراش التطبيق
         return AssignmentModel(
           idAssignments: 0,
           reportId: 0,

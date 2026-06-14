@@ -26,10 +26,66 @@ class CitizenReportsViewModel extends ChangeNotifier {
   ReportStatistics? get stats => _stats;
 
   CitizenReportsViewModel(this._repository) {
-    loadDashboardData(); // استدعاء لدالة الجلب عند التشغيل
+    loadDashboardData(); 
     _startAutoRefresh();
   }
+  /// الإعجاب ببلاغ أو إلغاء الإعجاب به
+  Future<void> toggleLike(CitizenReportModel report) async {
+    _autoRefreshTimer?.cancel(); 
 
+    final index = _reports.indexWhere((r) => r.id == report.id);
+    if (index == -1) {
+      _startAutoRefresh();
+      return;
+    }
+
+    final wasLiked = report.isLiked;
+
+    _reports[index] = _reports[index].copyWith(
+      isLiked: !wasLiked,
+      likesCount: wasLiked
+          ? (_reports[index].likesCount - 1).clamp(0, 999999)
+          : _reports[index].likesCount + 1,
+    );
+    notifyListeners();
+
+    try {
+      await _repository.toggleLike(report);
+    } catch (e) {
+      _reports[index] = _reports[index].copyWith(
+        isLiked: wasLiked,
+        likesCount: wasLiked
+            ? _reports[index].likesCount + 1
+            : (_reports[index].likesCount - 1).clamp(0, 999999),
+      );
+      notifyListeners();
+    } finally {
+      _startAutoRefresh(); 
+    }
+  }
+
+  /// زيادة عدد المشاهدات للبلاغ المحدد
+  Future<void> incrementReportView(CitizenReportModel report) async {
+    _autoRefreshTimer?.cancel();
+
+    final index = _reports.indexWhere((r) => r.id == report.id);
+    if (index == -1) {
+      _startAutoRefresh();
+      return;
+    }
+
+    final int newViewsCount = _reports[index].viewsCount + 1;
+    _reports[index] = _reports[index].copyWith(viewsCount: newViewsCount);
+    notifyListeners();
+
+    try {
+      await _repository.addView(report.id, newViewsCount);
+    } catch (e) {
+    } finally {
+      _startAutoRefresh();
+    }
+  }
+  /// بدء مؤقت التحديث التلقائي للبيانات
   void _startAutoRefresh() {
     _autoRefreshTimer?.cancel();
     _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
@@ -37,25 +93,22 @@ class CitizenReportsViewModel extends ChangeNotifier {
     });
   }
 
+  /// تحميل بيانات البلاغات والإحصائيات من الخادم
   Future<void> loadDashboardData({bool showLoading = true}) async {
     if (showLoading) {
       _isLoading = true;
       notifyListeners();
     }
     try {
-      // 0. حفظ الحالات الحالية قبل التحديث للكشف عن التغييرات
       final oldStatuses = {for (var r in _reports) r.id: r.status};
 
-      // 1. جلب البلاغات والاحصائيات من السيرفر
       _reports = await _repository.fetchReports();
       _stats = await _repository.getReportStats();
 
-      // ── كشف تغيير الحالة وإطلاق إشعار فوري ──────────────────────────────────
       if (oldStatuses.isNotEmpty) {
         for (final report in _reports) {
           final old = oldStatuses[report.id];
           if (old != null && old != report.status) {
-            // الحالة تغيرت → أرسل إشعاراً فورياً
             await NotificationService.showStatusChangedNotification(
               reportTitle: report.title,
               oldStatus: old,
@@ -65,7 +118,6 @@ class CitizenReportsViewModel extends ChangeNotifier {
         }
       }
     } catch (e) {
-      debugPrint("❌ فشل الجلب: $e");
     } finally {
       if (showLoading) {
         _isLoading = false;
@@ -74,24 +126,8 @@ class CitizenReportsViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> incrementReportView(CitizenReportModel report) async {
-    try {
-      // تحديث السيرفر وقاعدة البيانات المحلية في الخلفية
-      await _repository.addView(report.id, report.viewsCount);
 
-      // تحديث القائمة الحالية في الذاكرة ليظهر التغيير فوراً في الواجهة
-      final index = _reports.indexWhere((r) => r.id == report.id);
-      if (index != -1) {
-        _reports[index] = _reports[index].copyWith(
-          viewsCount: _reports[index].viewsCount + 1,
-        );
-        notifyListeners();
-      }
-    } catch (e) {
-      print("❌ فشل زيادة مشاهدة البلاغ ${report.id}: $e");
-    }
-  }
-
+  /// تعيين نص البحث لتصفية البلاغات
   void setSearchQuery(String query) {
     _searchQuery = query;
     notifyListeners();
@@ -108,7 +144,6 @@ class CitizenReportsViewModel extends ChangeNotifier {
         .toList();
   }
 
-  // هنا يقرأ البيانات من مودل الاحصائيات، مالم يجدها يحسبها
   int get totalReports => _stats?.total ?? _reports.length;
   int get resolvedReports =>
       _stats?.resolved ?? _reports.where((r) => r.status == 'تم الحل').length;
@@ -121,6 +156,7 @@ class CitizenReportsViewModel extends ChangeNotifier {
     return "${calculatedRate.toStringAsFixed(0)}%";
   }
 
+  /// إضافة تعليق جديد على بلاغ محدد
   Future<bool> addComment(int reportId, String commentText) async {
     if (commentText.trim().isEmpty) return false;
     try {
@@ -129,32 +165,29 @@ class CitizenReportsViewModel extends ChangeNotifier {
         commentText.trim(),
       );
       if (success) {
-        // تحديث عداد التعليقات فوراً في الواجهة
         final index = _reports.indexWhere((r) => r.id == reportId);
         if (index != -1) {
           _reports[index] = _reports[index].copyWith(
             commentsCount: _reports[index].commentsCount + 1,
           );
-          // يمكننا إعادة جلب التعليقات لتظهر فوراً
           fetchComments(reportId);
           notifyListeners();
         }
       }
       return success;
     } catch (e) {
-      print("خطأ في ViewModel عند إضافة تعليق: $e");
       return false;
     }
   }
 
+  /// جلب التعليقات الخاصة ببلاغ محدد
   Future<void> fetchComments(int reportId) async {
-    _comments = []; // تصفير القائمة لمنع ظهور تعليقات البلاغ السابق
+    _comments = []; 
     notifyListeners();
     try {
       _comments = await _repository.fetchComments(reportId);
       notifyListeners();
     } catch (e) {
-      print("خطأ في جلب التعليقات في ViewModel: $e");
     }
   }
 

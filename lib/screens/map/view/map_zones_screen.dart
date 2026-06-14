@@ -24,7 +24,6 @@ class _MapZonesScreenState extends State<MapZonesScreen> {
     super.initState();
     _loadAllZones();
     
-    // إذا تم تمرير موقع (مثل موقع بلاغ)، نقوم بإضافة مؤشر له
     if (widget.initialLocation != null) {
       _markers.add(
         Marker(
@@ -37,15 +36,11 @@ class _MapZonesScreenState extends State<MapZonesScreen> {
     }
   }
 
-  // دالة لتحميل كافة الملفات
   Future<void> _loadAllZones() async {
-    // 1. حدود سيئون (نجعلها بلون أزرق شفاف جداً لأنها تغطي كل الخريطة)
     await _loadGeoJson('json/boundary_sayun.json', isBoundary: true);
     
-    // 2. مربعات الرفع
     await _loadGeoJson('json/upload_zones.json');
     
-    // 3. مربعات الكنس
     await _loadGeoJson('json/sweep_zones.json');
   }
 
@@ -53,13 +48,12 @@ class _MapZonesScreenState extends State<MapZonesScreen> {
     final Random random = Random();
     return Color.fromARGB(
       255,
-      random.nextInt(200) + 55, // ألوان فاتحة
+      random.nextInt(200) + 55, 
       random.nextInt(200) + 55,
       random.nextInt(200) + 55,
     );
   }
 
-  // دالة قراءة الـ JSON وتحويله إلى Polygons
   Future<void> _loadGeoJson(String path, {bool isBoundary = false}) async {
     try {
       final String jsonString = await rootBundle.loadString(path);
@@ -69,18 +63,13 @@ class _MapZonesScreenState extends State<MapZonesScreen> {
       Set<Polygon> newPolygons = {};
 
       for (var feature in features) {
-        // التأكد أن الشكل عبارة عن مساحة (Polygon)
         if (feature['geometry']['type'] == 'Polygon') {
-          // استخراج مصفوفة الإحداثيات
           final List<dynamic> coordinates = feature['geometry']['coordinates'][0];
           
           List<LatLng> polygonPoints = coordinates.map((coord) {
-            // ملاحظة هامة: في الـ GeoJSON الترتيب يكون [خط الطول(lng), خط العرض(lat)]
-            // بينما في Flutter الترتيب هو (lat, lng)
             return LatLng(coord[1], coord[0]);
           }).toList();
 
-          // جلب اسم المنطقة إن وجد
           final String name = feature['properties']['Name'] ?? 'منطقة غير مسماة';
           
           final Color zoneColor = isBoundary ? Colors.blue : _getRandomColor();
@@ -89,12 +78,12 @@ class _MapZonesScreenState extends State<MapZonesScreen> {
 
           newPolygons.add(
             Polygon(
-              polygonId: PolygonId(name + path), // معرف فريد
+              polygonId: PolygonId(name + path), 
               points: polygonPoints,
               fillColor: fill,
               strokeColor: stroke,
               strokeWidth: isBoundary ? 3 : 2,
-              consumeTapEvents: true, // تفعيل إمكانية الضغط على المربع
+              consumeTapEvents: true, 
               onTap: () {
                 _showZoneDetails(name);
               },
@@ -103,16 +92,13 @@ class _MapZonesScreenState extends State<MapZonesScreen> {
         }
       }
 
-      // تحديث الخريطة بالبيانات الجديدة
       setState(() {
         _polygons.addAll(newPolygons);
       });
     } catch (e) {
-      debugPrint('Error loading $path: $e');
     }
   }
 
-  // إظهار تنبيه عند الضغط على المربع
   void _showZoneDetails(String name) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(

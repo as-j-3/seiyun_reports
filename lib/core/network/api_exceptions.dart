@@ -32,6 +32,7 @@ class ApiExceptions implements Exception {
     }
   }
 
+  /// تحويل رمز حالة HTTP إلى رسالة خطأ مقروءة بالعربية
   String _handleError(int? statusCode, dynamic error) {
     switch (statusCode) {
       case 400:

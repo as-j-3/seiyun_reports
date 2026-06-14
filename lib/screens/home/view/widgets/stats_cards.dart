@@ -16,7 +16,6 @@ class StatsCards extends StatelessWidget {
     return Row(
       children: [
         _statCard(
-         // عرض البلاغات النشطة من API 
           "$activeCount",
           "بلاغات نشطة",
           const Color(0xFFfee2e2),
@@ -25,7 +24,6 @@ class StatsCards extends StatelessWidget {
         ),
         const SizedBox(width: 15),
         _statCard(
-         // عرض البلاغات المحلولة من API 
           "$resolvedCount",
           "بلاغ تم إنجازه",
           const Color(0xFFe0f2fe),

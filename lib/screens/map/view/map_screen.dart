@@ -41,7 +41,6 @@ class _MapScreenState extends State<MapScreen> {
           !widget.isPicker) {
         mapVM.startLocationTracking(widget.initialLocation);
       } else if (widget.isPicker) {
-        // Just start tracking user position without isolating a target
         mapVM.startLocationTracking(null);
       }
     });
@@ -49,7 +48,6 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   void dispose() {
-    // Stop tracking when leaving the screen
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<MapViewModel>().stopLocationTracking();
@@ -59,12 +57,10 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _openExternalMap(LatLng location) async {
-    // الرابط الرسمي لفتح الملاحة وتوجيه المستخدم مباشرة من موقعه الحالي إلى موقع الحاوية
     final String url =
         'google.navigation:q=${location.latitude},${location.longitude}&mode=d';
     final Uri uri = Uri.parse(url);
 
-    // رابط احتياطي للمتصفح أو نظام iOS في حال لم يكن تطبيق خرائط جوجل مثبتاً
     final String fallbackUrl =
         'https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}&travelmode=driving';
     final Uri fallbackUri = Uri.parse(fallbackUrl);
@@ -86,7 +82,6 @@ class _MapScreenState extends State<MapScreen> {
         }
       }
     } catch (e) {
-      debugPrint("Navigation Error: $e");
     }
   }
 
@@ -96,7 +91,6 @@ class _MapScreenState extends State<MapScreen> {
     final Set<Marker> markers = _buildMarkers(context, mapVM);
     final Set<Polyline> polylines = {};
 
-    // Create polyline between user and target if in navigation mode
     if (mapVM.isIsolatedMode &&
         mapVM.currentPosition != null &&
         mapVM.targetLocation != null) {
@@ -119,7 +113,6 @@ class _MapScreenState extends State<MapScreen> {
       );
     }
 
-    // Add marker for picker mode
     if (widget.isPicker && _pickedLocation != null) {
       markers.add(
         Marker(
@@ -215,10 +208,9 @@ class _MapScreenState extends State<MapScreen> {
                       : null,
             ),
 
-            // Distance Overlay (Wayfinding)
             if (mapVM.isIsolatedMode && mapVM.distanceToTarget != null)
               Positioned(
-                bottom: 120, // Moved to bottom above zoom buttons
+                bottom: 120, 
                 left: 16,
                 right: 16,
                 child: _DistanceIndicator(
@@ -228,7 +220,6 @@ class _MapScreenState extends State<MapScreen> {
                 ),
               ),
 
-            // Top Filters
             if (!widget.isPicker)
               Positioned(
                 top: 16,
@@ -258,7 +249,6 @@ class _MapScreenState extends State<MapScreen> {
                 ),
               ),
 
-            // Zoom Buttons
             Positioned(
               right: 12,
               bottom: mapVM.isIsolatedMode ? 100 : 40,
@@ -299,7 +289,6 @@ class _MapScreenState extends State<MapScreen> {
     if (widget.isPicker) return markers;
     final data = mapVM.mapData;
 
-    // If isolated mode is on, only show the target marker
     if (mapVM.isIsolatedMode && widget.initialLocation != null) {
       markers.add(
         Marker(
@@ -349,9 +338,7 @@ class _MapScreenState extends State<MapScreen> {
                 ),
             infoWindow: InfoWindow(title: container.locationName),
             onTap: () {
-              // 1. تفعيل وضع العزل وبدء تتبع المسافة الحية بين المستخدم وهذه الحاوية
               mapVM.startLocationTracking(containerLatLng);
-              // 2. تحديث الكاميرا للتركيز عليها
               mapVM.focusOnLocation(containerLatLng);
             },
           ),

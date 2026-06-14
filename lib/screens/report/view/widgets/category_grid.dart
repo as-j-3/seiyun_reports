@@ -59,7 +59,6 @@ class CategoryGrid extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- شبكة الأزرار ---
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -67,7 +66,7 @@ class CategoryGrid extends StatelessWidget {
               crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 1.25, // تكبير الارتفاع ليسمح بسطرين للنص
+              childAspectRatio: 1.25, 
             ),
             itemCount: categories.length,
             itemBuilder: (context, index) {
@@ -120,7 +119,6 @@ class CategoryGrid extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // أيقونة داخل دائرة
                       Container(
                         width: 46,
                         height: 46,
@@ -137,7 +135,6 @@ class CategoryGrid extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      // النصوص
                       Expanded(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -172,7 +169,6 @@ class CategoryGrid extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // علامة الاختيار
                       if (isSelected)
                         const Icon(Icons.check_circle_rounded,
                             color: Colors.white, size: 18),
@@ -183,7 +179,6 @@ class CategoryGrid extends StatelessWidget {
             },
           ),
 
-          // --- Dropdown الخيارات الفرعية ---
           Builder(builder: (context) {
             final selectedCat = categories.firstWhere(
               (c) => c['id'] == reportVM.selectedCategory,
@@ -206,7 +201,6 @@ class CategoryGrid extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // عنوان القسم
                     Row(
                       children: [
                         Container(
@@ -245,7 +239,6 @@ class CategoryGrid extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    // قائمة الخيارات كأزرار اختيار
                     ...subTypes.map((sub) {
                       final isSubSelected = reportVM.selectedSubType == sub;
                       return GestureDetector(

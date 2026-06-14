@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:seiyun_reports_app/screens/profile/viewmodel/profile_viewmodel.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 import 'package:seiyun_reports_app/screens/profile/view/widgets/profile_header.dart';
@@ -17,136 +18,137 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = Provider.of<ProfileViewModel>(context);
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body:
-            viewModel.isLoading && viewModel.profile == null
-                ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
-                  onRefresh: () => viewModel.fetchProfile(),
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    children: [
-                      ProfileHeader(viewModel: viewModel),
-                      const SizedBox(height: 80),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const _SectionTitle(title: "نشاطاتي"),
-                            const SizedBox(height: 15),
-                            SettingsItem(
-                              icon: Icons.assignment_outlined,
-                              title: "بلاغاتي",
-                              subtitle: "عرض ومتابعة البلاغات التي قمت برفعها",
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const MyReportsPage(),
-                                  ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 25),
-                            const _SectionTitle(title: "الإعدادات العامة"),
-                            const SizedBox(height: 15),
-                            SettingsItem(
-                              icon: Icons.phone_android_outlined,
-                              title: "رقم الهاتف",
-                              subtitle:
-                                  viewModel.isPhoneVerified
-                                      ? (viewModel.userPhone ?? "رقم غير محدد")
-                                      : "لم يتم التحقق - اضغط للتحقق الآن",
-                              trailing: Icon(
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body:
+          viewModel.isLoading && viewModel.profile == null
+              ? const Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                onRefresh: () => viewModel.fetchProfile(),
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    ProfileHeader(viewModel: viewModel),
+                    const SizedBox(height: 80),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _SectionTitle(title: "profile.activities".tr()),
+                          const SizedBox(height: 15),
+                          SettingsItem(
+                            icon: Icons.assignment_outlined,
+                            title: "profile.my_reports".tr(),
+                            subtitle: "profile.my_reports_desc".tr(),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const MyReportsPage(),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 25),
+                          _SectionTitle(title: "profile.general_settings".tr()),
+                          const SizedBox(height: 15),
+                          SettingsItem(
+                            icon: Icons.phone_android_outlined,
+                            title: "profile.phone".tr(),
+                            subtitle:
                                 viewModel.isPhoneVerified
-                                    ? Icons.verified
-                                    : Icons.error_outline,
-                                color:
-                                    viewModel.isPhoneVerified
-                                        ? Colors.green
-                                        : Colors.orange,
-                              ),
-                              onTap:
-                                  () => _showPhoneVerificationDialog(
-                                    context,
-                                    viewModel,
-                                  ),
+                                    ? (viewModel.userPhone ?? "رقم غير محدد")
+                                    : "لم يتم التحقق - اضغط للتحقق الآن",
+                            trailing: Icon(
+                              viewModel.isPhoneVerified
+                                  ? Icons.verified
+                                  : Icons.error_outline,
+                              color:
+                                  viewModel.isPhoneVerified
+                                      ? Colors.green
+                                      : Colors.orange,
                             ),
-                            SettingsItem(
-                              icon: Icons.notifications_active_outlined,
-                              title: "تنبيهات التطبيق",
-                              subtitle: "تلقي تحديثات حول البلاغات الجديدة",
-                              trailing: Switch.adaptive(
-                                value: viewModel.notificationsEnabled,
-                                onChanged:
-                                    (v) => viewModel.toggleNotifications(v),
-                                activeColor: AppTheme.primaryColor,
-                              ),
-                              onTap: () {},
+                            onTap:
+                                () => _showPhoneVerificationDialog(
+                                  context,
+                                  viewModel,
+                                ),
+                          ),
+                          SettingsItem(
+                            icon: Icons.notifications_active_outlined,
+                            title: "profile.notifications".tr(),
+                            subtitle: "profile.notifications_desc".tr(),
+                            trailing: Switch.adaptive(
+                              value: viewModel.notificationsEnabled,
+                              onChanged:
+                                  (v) => viewModel.toggleNotifications(v),
+                              activeColor: AppTheme.primaryColor,
                             ),
-                            SettingsItem(
-                              icon: Icons.language_outlined,
-                              title: "لغة التطبيق",
-                              subtitle: "العربية (اليمن)",
-                              onTap: () {},
+                            onTap: () {},
+                          ),
+                          SettingsItem(
+                            icon: Icons.language_outlined,
+                            title: "profile.language".tr(),
+                            subtitle:
+                                context.locale.languageCode == 'ar'
+                                    ? 'العربية'
+                                    : 'English',
+                            onTap: () {
+                              _showLanguageSelection(context);
+                            },
+                          ),
+                          SettingsItem(
+                            icon: Icons.dark_mode_outlined,
+                            title: "profile.dark_mode".tr(),
+                            subtitle: "profile.dark_mode_desc".tr(),
+                            trailing: Switch.adaptive(
+                              value: viewModel.isDarkMode,
+                              onChanged: (v) => viewModel.toggleTheme(v),
                             ),
-                            SettingsItem(
-                              icon: Icons.dark_mode_outlined,
-                              title: "الوضع الليلي",
-                              subtitle: "تفعيل السمات الداكنة",
-                              trailing: Switch.adaptive(
-                                value: viewModel.isDarkMode,
-                                onChanged: (v) => viewModel.toggleTheme(v),
-                              ),
-                              onTap: () {},
-                            ),
-                            const SizedBox(height: 25),
-                            const _SectionTitle(title: "الدعم والمساعدة"),
-                            const SizedBox(height: 15),
+                            onTap: () {},
+                          ),
+                          const SizedBox(height: 25),
+                          _SectionTitle(title: "profile.support".tr()),
+                          const SizedBox(height: 15),
 
-                            SettingsItem(
-                              icon: Icons.help_outline,
-                              title: "مركز المساعدة",
-                              subtitle: "الأسئلة الشائعة وطرق الاستخدام",
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => const HelpCenterScreen(),
-                                  ),
-                                );
-                              },
-                            ),
-                            SettingsItem(
-                              icon: Icons.info_outline,
-                              title: "حول التطبيق",
-                              subtitle: "معلومات الإصدار وسياسة الخصوصية",
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => const AboutAppScreen(),
-                                  ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 30),
-                            LogoutButton(viewModel: viewModel),
-                            const SizedBox(height: 100),
-                          ],
-                        ),
+                          SettingsItem(
+                            icon: Icons.help_outline,
+                            title: "profile.help_center".tr(),
+                            subtitle: "",
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => const HelpCenterScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                          SettingsItem(
+                            icon: Icons.info_outline,
+                            title: "profile.about_app".tr(),
+                            subtitle: "",
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const AboutAppScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 30),
+                          LogoutButton(viewModel: viewModel),
+                          const SizedBox(height: 100),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-      ),
+              ),
     );
   }
 
@@ -254,7 +256,7 @@ class ProfileScreen extends StatelessWidget {
                                   } else {
                                     setDialogState(
                                       () {},
-                                    ); // Refresh error message
+                                    ); 
                                   }
                                 }
                               },
@@ -282,6 +284,56 @@ class ProfileScreen extends StatelessWidget {
                   ],
                 ),
           ),
+    );
+  }
+
+  void _showLanguageSelection(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "profile.select_language".tr(),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 15),
+              ListTile(
+                title: Text("profile.arabic".tr()),
+                trailing:
+                    context.locale.languageCode == 'ar'
+                        ? const Icon(Icons.check, color: AppTheme.primaryColor)
+                        : null,
+                onTap: () {
+                  context.setLocale(const Locale('ar'));
+                  Navigator.pop(context);
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
+                title: Text("profile.english".tr()),
+                trailing:
+                    context.locale.languageCode == 'en'
+                        ? const Icon(Icons.check, color: AppTheme.primaryColor)
+                        : null,
+                onTap: () {
+                  context.setLocale(const Locale('en'));
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

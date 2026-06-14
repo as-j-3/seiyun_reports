@@ -5,10 +5,10 @@ import 'package:seiyun_reports_app/screens/pickup_schedules/models/pickup_schedu
 class PickupSchedulesLocalService {
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
+  /// حفظ قائمة مواقيت الرفع محلياً في قاعدة البيانات
   Future<void> saveSchedules(List<PickupScheduleModel> schedules) async {
     final db = await _dbHelper.database;
     await db.transaction((txn) async {
-      // مسح البيانات القديمة أولاً
       await txn.delete('pickup_schedules');
 
       for (var schedule in schedules) {
@@ -31,6 +31,7 @@ class PickupSchedulesLocalService {
     });
   }
 
+  /// جلب جميع مواقيت الرفع المخزنة محلياً
   Future<List<PickupScheduleModel>> getSchedules() async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query('pickup_schedules');
@@ -54,6 +55,7 @@ class PickupSchedulesLocalService {
     });
   }
 
+  /// حذف جميع مواقيت الرفع من الكاش المحلي
   Future<void> clearSchedules() async {
     final db = await _dbHelper.database;
     await db.delete('pickup_schedules');

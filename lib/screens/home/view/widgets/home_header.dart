@@ -115,7 +115,6 @@ class HomeHeader extends StatelessWidget {
               ),
             ),
           ),
-          // عرض نتائج البحث عن الخدمات
           if (homeVM.serviceSearchQuery.isNotEmpty)
             Container(
               margin: const EdgeInsets.only(top: 10),

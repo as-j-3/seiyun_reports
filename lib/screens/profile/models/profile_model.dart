@@ -18,7 +18,6 @@ class ProfileModel {
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
-    // التعامل مع احتمالية وجود البيانات داخل كائن 'user'
     final userData = json['user'] ?? json;
 
     return ProfileModel(

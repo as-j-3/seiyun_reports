@@ -5,7 +5,7 @@ class ReportService {
   final ApiService _apiService;
   ReportService(this._apiService);
 
-  // إرسال بلاغ جديد (POST)
+  /// إرسال بلاغ جديد إلى الخادم عبر FormData
   Future<Response> createReport(FormData formData) async {
     return await _apiService.post(
       'reports/create', 
@@ -14,7 +14,7 @@ class ReportService {
     );
   }
 
-  // جلب بلاغاتي 
+  /// جلب بلاغات المستخدم الحالي من الخادم
   Future<Response> getMyReports( ) async {
     return await _apiService.post( 
       'ShowMyReport', 

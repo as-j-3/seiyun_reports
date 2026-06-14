@@ -20,7 +20,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   void initState() {
     super.initState();
     _selectedLocation = widget.initialLocation;
-    _isMapReady = true; // الخريطة جاهزة فوراً لأننا لغينا الأنميشن
+    _isMapReady = true; 
   }
 
   @override

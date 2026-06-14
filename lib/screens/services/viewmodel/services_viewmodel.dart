@@ -51,29 +51,31 @@ class ServicesViewModel extends ChangeNotifier {
   DateTime? _selectedDate;
   DateTime? get selectedDate => _selectedDate;
 
-  String? _selectedTime; // 'صباحاً', 'ظهراً', 'مساءً'
+  String? _selectedTime; 
   String? get selectedTime => _selectedTime;
 
   final TextEditingController phoneController = TextEditingController(text: "+967 773 849 866");
   final TextEditingController notesController = TextEditingController();
 
   ServicesViewModel() {
-    // Select a default service for demonstration
-    _selectedService = availableServices[3]; // تنظيف شامل
+    _selectedService = availableServices[3]; 
     _selectedTime = "مساءً";
     _selectedDate = DateTime.now();
   }
 
+  /// يحدد الخدمة المختارة ويخطر المستمعين بالتغيير.
   void selectService(AppService service) {
     _selectedService = service;
     notifyListeners();
   }
 
+  /// يحدد التاريخ المختار ويخطر المستمعين بالتغيير.
   void selectDate(DateTime date) {
     _selectedDate = date;
     notifyListeners();
   }
 
+  /// يحدد الوقت المختار ويخطر المستمعين بالتغيير.
   void selectTime(String time) {
     _selectedTime = time;
     notifyListeners();

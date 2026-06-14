@@ -30,17 +30,14 @@ class PickupSchedulesRepository {
           final schedules =
               list.map((json) => PickupScheduleModel.fromJson(json)).toList();
 
-          // حفظ البيانات محلياً للاستخدام عند انقطاع النت
           await _localService.saveSchedules(schedules);
 
           return schedules;
         }
       } catch (e) {
-        print("Error in PickupSchedulesRepository Online: $e");
       }
     }
 
-    // إذا كان لا يوجد اتصال أو فشل الطلب، نجلب من الكاش المحلي
     return await _localService.getSchedules();
   }
 }

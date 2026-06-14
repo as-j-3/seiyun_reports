@@ -19,7 +19,6 @@ class ProfileRepository {
       }
       return null;
     } catch (e) {
-      print("Error in ProfileRepository: $e");
       return null;
     }
   }
@@ -49,7 +48,6 @@ class ProfileRepository {
       }
       return null;
     } catch (e) {
-      print("Error updating profile in repository: $e");
       return null;
     }
   }

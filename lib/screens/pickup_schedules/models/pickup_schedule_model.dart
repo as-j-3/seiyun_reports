@@ -14,7 +14,6 @@ class PickupScheduleModel {
   final String status;
   final String scheduleDays;
 
-  // Getters للحفاظ على توافق الواجهة (Compatibility Getters)
   bool get isToday => status == "الآن"; 
   bool get isTomorrow => false;
   String get day => scheduleDays;

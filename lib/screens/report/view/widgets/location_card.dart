@@ -63,14 +63,12 @@ class LocationCard extends StatelessWidget {
           else
             Column(
               children: [
-                // زر GPS
                 _LocationButton(
                   label: "GPS",
                   icon: Icons.my_location,
                   onPressed: () => context.read<ReportViewModel>().getCurrentLocation(),
                 ),
                 const SizedBox(height: 4),
-                // زر الخريطة
                 _LocationButton(
                   label: "خريطة",
                   icon: Icons.map_outlined,
@@ -99,6 +97,7 @@ class LocationCard extends StatelessWidget {
   }
 }
 
+
 class _LocationButton extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -112,24 +111,38 @@ class _LocationButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Theme.of(context).primaryColor.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.15)
+                : Theme.of(context).primaryColor.withValues(alpha: 0.15),
+            width: 0.8,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 13, color: Theme.of(context).primaryColor),
-            const SizedBox(width: 3),
+            Icon(
+              icon,
+              size: 14,
+              color: isDark ? const Color(0xFF4ADE80) : Theme.of(context).primaryColor,
+            ),
+            const SizedBox(width: 5),
             Text(
               label,
               style: TextStyle(
                 fontSize: 11,
-                color: Theme.of(context).primaryColor,
+                color: isDark ? const Color(0xFF4ADE80) : Theme.of(context).primaryColor,
                 fontWeight: FontWeight.bold,
               ),
             ),

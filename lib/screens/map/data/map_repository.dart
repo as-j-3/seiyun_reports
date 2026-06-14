@@ -9,6 +9,7 @@ class MapRepository {
 
   MapRepository(this._service, this._networkInfo);
 
+  /// جلب بيانات الخريطة من الخادم مع التحقق من الاتصال بالإنترنت
   Future<MapDataModel?> getMapData() async {
     if (!await _networkInfo.isConnected) return null;
 
@@ -19,7 +20,6 @@ class MapRepository {
       }
       return null;
     } catch (e) {
-      print("Error in MapRepository: $e");
       return null;
     }
   }

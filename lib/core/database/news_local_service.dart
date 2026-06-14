@@ -9,14 +9,12 @@ class NewsLocalService {
   /// حفظ قائمة من الأخبار في قاعدة البيانات المحلية
   Future<void> saveNews(List<NewsModel> newsList) async {
     final db = await _dbHelper.database;
-    // نستخدم Batch (الدفعة) لضمان سرعة إدخال كميات كبيرة من البيانات دفعة واحدة
     Batch batch = db.batch();
 
     for (var news in newsList) {
       batch.insert(
         'news', 
         news.toJson(), 
-        // إذا كان الخبر موجوداً مسبقاً (بنفس الـ ID)، يتم استبداله بالبيانات الجديدة
         conflictAlgorithm: ConflictAlgorithm.replace
       );
     }
@@ -29,9 +27,25 @@ class NewsLocalService {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query('news', orderBy: 'created_at DESC');
     
-    // تحويل البيانات من Map (تنسيق قاعدة البيانات) إلى Objects (تنسيق Flutter)
     return List.generate(maps.length, (i) {
       return NewsModel.fromMap(maps[i]);
     });
   }
-}
+  /// مزامنة كاملة للأخبار: مسح البيانات القديمة وحفظ البيانات الجديدة القادمة من السيرفر
+  Future<void> syncNewsTable(List<NewsModel> remoteNewsList) async {
+    final db = await _dbHelper.database;
+    Batch batch = db.batch();
+
+    batch.delete('news');
+
+    for (var news in remoteNewsList) {
+      batch.insert(
+        'news',
+        news.toJson(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    await batch.commit(noResult: true);
+  }
+}

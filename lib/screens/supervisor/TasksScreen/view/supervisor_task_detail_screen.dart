@@ -47,7 +47,6 @@ class _SupervisorTaskDetailScreenState extends State<SupervisorTaskDetailScreen>
 
     final viewModel = context.read<SupervisorTasksViewModel>();
     
-    // استخدام دالة التأكيد الجديدة التي تم ربطها بـ ConfirmationStore
     bool success = await viewModel.confirmTask(
       assignmentId: widget.task.idAssignments,
       note: _commentController.text,
@@ -93,12 +92,10 @@ class _SupervisorTaskDetailScreenState extends State<SupervisorTaskDetailScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Task Info Card
               _buildTaskInfoCard(isDark),
               const SizedBox(height: 30),
               
               if (isCompleted) ...[
-                // عرض نتائج المعالجة (بعد الحل)
                 Text(
                   "إثبات المعالجة",
                   style: TextStyle(
@@ -109,7 +106,6 @@ class _SupervisorTaskDetailScreenState extends State<SupervisorTaskDetailScreen>
                 ),
                 const SizedBox(height: 15),
                 
-                // عرض الصورة بعد المعالجة
                 if (widget.task.confirmationImage != null)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(15),
@@ -127,7 +123,6 @@ class _SupervisorTaskDetailScreenState extends State<SupervisorTaskDetailScreen>
                   ),
                 const SizedBox(height: 15),
                 
-                // عرض الملاحظة بعد المعالجة
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(15),
@@ -155,7 +150,6 @@ class _SupervisorTaskDetailScreenState extends State<SupervisorTaskDetailScreen>
                   ),
                 ),
               ] else ...[
-                // عرض نموذج الرد (قبل الحل)
                 Text(
                   "الرد على البلاغ *",
                   style: TextStyle(
@@ -166,7 +160,6 @@ class _SupervisorTaskDetailScreenState extends State<SupervisorTaskDetailScreen>
                 ),
                 const SizedBox(height: 15),
                 
-                // Comment Field
                 Container(
                   decoration: BoxDecoration(
                     color: isDark ? Colors.grey.shade900 : Colors.grey.shade50,
@@ -187,7 +180,6 @@ class _SupervisorTaskDetailScreenState extends State<SupervisorTaskDetailScreen>
                 ),
                 const SizedBox(height: 20),
                 
-                // Image Picker
                 Text(
                   "صورة الإثبات *",
                   style: TextStyle(
@@ -201,7 +193,6 @@ class _SupervisorTaskDetailScreenState extends State<SupervisorTaskDetailScreen>
                 
                 const SizedBox(height: 40),
                 
-                // Submit Button
                 SizedBox(
                   width: double.infinity,
                   height: 55,

@@ -34,7 +34,6 @@ class LocationService {
         timeLimit: const Duration(seconds: 10),
       );
     } catch (e) {
-      print("Error getting location: $e");
       return null;
     }
   }
@@ -45,35 +44,29 @@ class LocationService {
       final position = await getCurrentPosition();
       if (position == null) return 'موقعك غير محدد';
 
-      return _getAreaName(position.latitude, position.longitude);
+      return getAreaName(position.latitude, position.longitude);
     } catch (e) {
       return 'موقعك غير محدد';
     }
   }
 
   /// يحدد اسم المنطقة بناءً على الإحداثيات
-  String _getAreaName(double lat, double lng) {
-    // سيئون
+  String getAreaName(double lat, double lng) {
     if (lat >= 15.85 && lat <= 16.05 && lng >= 48.70 && lng <= 48.90) {
       return 'سيئون';
     }
-    // تريم
     if (lat >= 15.90 && lat <= 16.05 && lng >= 48.94 && lng <= 49.10) {
       return 'تريم';
     }
-    // الغرفة
     if (lat >= 15.75 && lat <= 15.90 && lng >= 48.55 && lng <= 48.72) {
       return ' الغرفة';
     }
-    // شبام
     if (lat >= 15.90 && lat <= 16.00 && lng >= 48.60 && lng <= 48.72) {
       return ' شبام';
     }
-    // تاربة
     if (lat >= 15.78 && lat <= 15.92 && lng >= 48.90 && lng <= 49.05) {
       return ' تاربة';
     }
-    // دوعن
     if (lat >= 15.55 && lat <= 15.75 && lng >= 48.80 && lng <= 49.05) {
       return ' دوعن';
     }

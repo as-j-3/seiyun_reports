@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:seiyun_reports_app/screens/pickup_schedules/models/pickup_schedule_model.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
@@ -198,25 +199,25 @@ class NearbyContainerCard extends StatelessWidget {
                 _buildDetailItem(
                   context,
                   Icons.location_on_outlined,
-                  'المنطقة',
+                  'schedules.area'.tr(),
                   container.areaName,
                 ),
                 _buildDetailItem(
                   context,
                   Icons.wb_sunny_outlined,
-                  'الفترة',
+                  'schedules.period'.tr(),
                   container.period,
                 ),
                 _buildDetailItem(
                   context,
                   Icons.access_time,
-                  'وقت الرفع المتوقع',
+                  'schedules.expected_pickup'.tr(),
                   '${container.areaStartTime} - ${container.areaEndTime}',
                 ),
                 _buildDetailItem(
                   context,
                   Icons.info_outline,
-                  'الحالة الحالية',
+                  'schedules.current_status'.tr(),
                   container.status,
                   valueColor: _getStatusColor(container.status),
                 ),
@@ -241,9 +242,9 @@ class NearbyContainerCard extends StatelessWidget {
                       );
                     },
                     icon: const Icon(Icons.map_outlined),
-                    label: const Text(
-                      'عرض على الخريطة',
-                      style: TextStyle(
+                    label: Text(
+                      'schedules.show_on_map'.tr(),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),

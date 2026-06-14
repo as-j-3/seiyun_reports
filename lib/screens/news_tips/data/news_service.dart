@@ -5,12 +5,12 @@ class Newsservice {
   final ApiService _apiService;
   Newsservice(this._apiService);
 
-  // جلب النصائح
+  /// جلب النصائح البيئية من الخادم
   Future<Response> getTips() async {
     return await _apiService.get('tipCitizen_tips'); 
   }
 
-  // جلب الأخبار
+  /// جلب الأخبار من الخادم
   Future<Response> getNews() async {
     return await _apiService.get('tipCitizen_news'); 
   }}

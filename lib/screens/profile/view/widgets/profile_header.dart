@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 import 'package:seiyun_reports_app/screens/profile/viewmodel/profile_viewmodel.dart';
 import 'package:seiyun_reports_app/screens/map/view/map_screen.dart';
@@ -44,9 +45,9 @@ class ProfileHeader extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "الملف الشخصي",
-                    style: TextStyle(
+                  Text(
+                    "profile.title".tr(),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -282,11 +283,15 @@ class ProfileHeader extends StatelessWidget {
                 child: const Text("إلغاء"),
               ),
               ElevatedButton(
-                onPressed: () {
-                  viewModel.updateUserName(nameController.text);
-                  viewModel.updateUserPhone(phoneController.text);
-                  viewModel.updateUserAddress(addressController.text);
-                  Navigator.pop(context);
+                onPressed: () async {
+                  await viewModel.saveProfileDetails(
+                    name: nameController.text,
+                    phone: phoneController.text,
+                    address: addressController.text,
+                  );
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                  }
                 },
                 child: const Text("حفظ"),
               ),

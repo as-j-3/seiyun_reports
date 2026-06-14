@@ -1,5 +1,4 @@
 class AssignmentModel {
-  // تعريف الحقول الي بتجي من قواعد البيانات 
   final int idAssignments;
   final int reportId;
   final String status;
@@ -10,14 +9,12 @@ class AssignmentModel {
   final String reportImage;
   final String supervisorName;
   final String assignedAt;
-  
-  // حقول الموقع (Location) مفرودة ليسهل التعامل معها
+
   final String square;
   final String area;
   final String lat;
   final String lng;
 
-  // حقول التأكيد (تظهر بعد إكمال البلاغ)
   final String? confirmationNote;
   final String? confirmationImage;
 
@@ -78,13 +75,10 @@ class AssignmentModel {
     );
   }
 
-  // تحويل من جيسون الى كائن 
   factory AssignmentModel.fromJson(Map<String, dynamic> json) {
-    // استخراج ماب الموقع لتجنب أخطاء القيم الفارغة
     final location = json['location'] as Map<String, dynamic>? ?? {};
 
     return AssignmentModel(
-      // نحط قيم افتراضية تجنب للاخطاء 
       idAssignments: json['id_assignments'] != null ? int.parse(json['id_assignments'].toString()) : 0,
       reportId: json['report_id'] != null ? int.parse(json['report_id'].toString()) : 0,
       status: json['status'] ?? 'قيد الانتظار',
@@ -92,25 +86,22 @@ class AssignmentModel {
       priority: json['priority'] ?? 'عادي',
       title: json['title'] ?? 'تكليف بدون عنوان',
       description: json['description'] ?? '',
-      reportImage: json['report_image'] != null && json['report_image'].toString().isNotEmpty 
-          ? json['report_image'].toString() 
+      reportImage: json['report_image'] != null && json['report_image'].toString().isNotEmpty
+          ? json['report_image'].toString()
           : "https://via.placeholder.com/150",
       supervisorName: json['supervisor_name'] ?? 'غير معين',
       assignedAt: json['assigned_at'] ?? '',
-      
-      // قراءة بيانات الموقع من داخل كائن location
+
       square: location['square'] ?? '',
       area: location['area'] ?? '',
       lat: location['lat']?.toString() ?? '0.0',
       lng: location['lng']?.toString() ?? '0.0',
 
-      // بيانات التأكيد
-      confirmationNote: json['confirmation_note'],
-      confirmationImage: json['confirmation_image'],
+      confirmationNote: json['confirmation_note'] ?? json['note'],
+      confirmationImage: json['confirmation_image'] ?? json['image'],
     );
   }
 
-  // تحويل الكائن الى جيسون نحتاجه عند الارسال الى قاعدة البيانات 
   Map<String, dynamic> toJson() {
     return {
       'id_assignments': idAssignments,
@@ -134,7 +125,6 @@ class AssignmentModel {
     };
   }
 
-  // تحويل الكائن الى ماب بكامل الحقول للحفظ في قاعدة البيانات المحلية
   Map<String, dynamic> toMap() {
     return {
       'id_assignments': idAssignments,
@@ -172,8 +162,9 @@ class AssignmentModel {
       area: map['area'],
       lat: map['lat'],
       lng: map['lng'],
-      confirmationNote: map['confirmation_note'],
-      confirmationImage: map['confirmation_image'],
+
+      confirmationNote: map['confirmation_note'] ?? map['note'],
+      confirmationImage: map['confirmation_image'] ?? map['image'],
     );
   }
 }

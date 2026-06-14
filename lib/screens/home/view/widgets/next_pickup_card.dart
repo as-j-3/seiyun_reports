@@ -15,7 +15,7 @@ class NextPickupCard extends StatelessWidget {
     return InkWell(
       onTap: () {
         if (nextCollection == null) {
-          context.read<HomeViewModel>().setPage(3); // الانتقال للبروفايل لتحديد الموقع
+          context.read<HomeViewModel>().setPage(3); 
         } else {
           Navigator.push(
             context,

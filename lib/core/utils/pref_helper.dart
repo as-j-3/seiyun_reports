@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class PrefHelper {
   static SharedPreferences? _prefs;
 
+  /// تهيئة مثيل التفضيلات المشتركة Shared Preferences
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
   }
@@ -45,17 +46,19 @@ class PrefHelper {
     final prefs = _prefs!;
     return prefs.getString(_tokenKey);
   }
+  /// حفظ حالة تسجيل الدخول للمستخدم
   static Future<void> saveLoginStatus(bool status) async {
     final prefs = _prefs!;
     await prefs.setBool(_isLoggedInKey, status);
   }
   
+  /// حفظ المعرف الرقمي للمستخدم
   static Future<void> saveUserId(int userId) async {
     final prefs = _prefs!;
     await prefs.setInt(_userIdKey, userId);
   }
 
-  //  دالة لجلب الايدي
+  /// جلب المعرف الرقمي للمستخدم
   static Future<int?> getUserId() async {
     final prefs = _prefs!;
     return prefs.getInt(_userIdKey);

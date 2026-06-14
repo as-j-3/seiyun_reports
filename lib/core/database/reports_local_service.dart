@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:seiyun_reports_app/screens/report/models/report_model.dart';
 import 'package:seiyun_reports_app/screens/citizen_reports/models/citizen_report_model.dart';
@@ -12,7 +11,6 @@ class ReportsLocalService {
     final db = await _dbHelper.database;
     Batch batch = db.batch();
 
-    //  مسح البيانات القديمة قبل إضافة الجديدة لضمان المزامنة الصحيحة
     batch.delete('reports');
 
     for (var report in reportsList) {
@@ -39,8 +37,6 @@ class ReportsLocalService {
       try {
         return ReportModel.fromMap(map);
       } catch (e) {
-        debugPrint("خطأ في تحويل بلاغ محلي: $e");
-        // نرجع كائن افتراضي في حالة وجود خطأ لتجنب توقف واجهة المستخدم
         return ReportModel(
           id: 0,
           citizenId: 0,
@@ -103,7 +99,6 @@ class ReportsLocalService {
 
     Batch batch = db.batch();
 
-    // مسح البيانات القديمة )
     batch.delete('citizen_reports');
 
     for (var report in remoteReports) {
@@ -117,19 +112,6 @@ class ReportsLocalService {
     await batch.commit(noResult: true);
   }
 
-  /// زيادة عدد المشاهدات لبلاغ معين محلياً
-  Future<void> incrementCitizenReportView(
-    int reportId,
-    int currentViews,
-  ) async {
-    final db = await _dbHelper.database;
-    await db.update(
-      'citizen_reports',
-      {'viewsCount': currentViews + 1},
-      where: 'id = ?',
-      whereArgs: [reportId],
-    );
-  }
 
   /// جلب بلاغات المواطنين العامة المخزنة محلياً
   Future<List<CitizenReportModel>> getLocalCitizenReports() async {
@@ -140,24 +122,37 @@ class ReportsLocalService {
     );
     if (maps.isEmpty) return [];
 
-    return maps.map((map) {
+    List<CitizenReportModel> reports = [];
+    for (var map in maps) {
       try {
-        return CitizenReportModel.fromMap(map);
+        reports.add(CitizenReportModel.fromMap(map));
       } catch (e) {
-        debugPrint("خطأ في تحويل بلاغ مواطنين محلي: $e");
-        return CitizenReportModel(
-          id: 0,
-          title: "خطأ",
-          description: "",
-          status: "error",
-          viewsCount: 0,
-          commentsCount: 0,
-          report_image: "",
-          created_at: DateTime.now().toString(),
-          user_name: "",
-          user_profile: "",
-        );
       }
-    }).toList();
+    }
+    return reports;
+  }
+  /// زيادة عدد المشاهدات لبلاغ معين محلياً بالقيمة الجديدة مباشرة
+  Future<void> incrementCitizenReportView(int reportId, int newViewsCount) async {
+    final db = await _dbHelper.database;
+    await db.update(
+      'citizen_reports',
+      {'viewsCount': newViewsCount},
+      where: 'id = ?',
+      whereArgs: [reportId],
+    );
+  }
+
+  /// تحديث حالة الإعجاب والعداد الخاص به محلياً فوراً
+  Future<void> updateCitizenReportLikeLocal(int reportId, bool isLiked, int likesCount) async {
+    final db = await _dbHelper.database;
+    await db.update(
+      'citizen_reports',
+      {
+        'isLiked': isLiked ? 1 : 0,
+        'likesCount': likesCount,
+      },
+      where: 'id = ?',
+      whereArgs: [reportId],
+    );
   }
 }

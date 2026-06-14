@@ -18,21 +18,17 @@ class HomeRepository {
     if (isConnected) {
       try {
         final response = await _service.getHomeData();
-        debugPrint("Home API Response Data: ${response.data}");
         if (response.data['status'] == 'success') {
           final data = HomeDataModel.fromJson(response.data['data']);
 
-          // حفظ البيانات محلياً للكاش
           await _localService.saveHomeData(data);
 
           return data;
         }
       } catch (e) {
-        debugPrint("Error in HomeRepository Online: $e");
       }
     }
 
-    // إذا كان العميل أوفلاين أو فشل الطلب، نجلب من الكاش
     return await _localService.getHomeData();
   }
 }

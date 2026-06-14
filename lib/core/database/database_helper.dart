@@ -16,23 +16,22 @@ class DatabaseHelper {
     return _database!;
   }
 
+  /// تهيئة قاعدة البيانات المحلية وفتح الاتصال بها
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'seiyun_reports_v1.db');
     return await openDatabase(
       path,
-      version:
-          8, // 🚀 تم رفع النسخة إلى 8 لإضافة جدول تخزين بيانات الهوم (Home Cache)
+      version: 11,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
   }
 
+  /// معالجة ترقية قاعدة البيانات عند تحديث الإصدار
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // إذا كان المستخدم عنده نسخة قديمة، نقوم بإنشاء جدول المهام
     if (oldVersion < 3) {
       await _createAssignmentsTable(db);
     }
-    // 🆕 تحديث النسخة 4: إضافة حقول التأكيد لجدول المهام
     if (oldVersion < 4) {
       try {
         await db.execute(
@@ -42,10 +41,8 @@ class DatabaseHelper {
           'ALTER TABLE assignments ADD COLUMN confirmation_image TEXT',
         );
       } catch (e) {
-        print("Columns might already exist: $e");
       }
     }
-    // 🆕 تحديث النسخة 5: إعادة إنشاء جدول بلاغات المواطنين بدون حقول الإعجاب
     if (oldVersion < 5) {
       await db.execute('DROP TABLE IF EXISTS citizen_reports');
       await db.execute('''
@@ -56,6 +53,8 @@ class DatabaseHelper {
           status TEXT,
           viewsCount INTEGER,
           commentsCount INTEGER,
+          likesCount INTEGER,
+          isLiked INTEGER,
           report_image TEXT,
           imageAfterProcessing TEXT,
           created_at TEXT,
@@ -64,28 +63,38 @@ class DatabaseHelper {
         )
       ''');
     }
-    // 🆕 تحديث النسخة 6: إضافة حقول أسماء المناطق لجدول بلاغات المواطن
+    if (oldVersion < 10) {
+      try {
+        await db.execute('ALTER TABLE citizen_reports ADD COLUMN likesCount INTEGER DEFAULT 0');
+        await db.execute('ALTER TABLE citizen_reports ADD COLUMN isLiked INTEGER DEFAULT 0');
+      } catch (e) {
+      }
+    }
     if (oldVersion < 6) {
       try {
         await db.execute('ALTER TABLE reports ADD COLUMN area_name TEXT');
         await db.execute('ALTER TABLE reports ADD COLUMN square_name TEXT');
       } catch (e) {
-        print(
-          "Columns area_name/square_name might already exist in reports: $e",
-        );
       }
     }
-    // 🆕 تحديث النسخة 7: إضافة جدول مواقيت الرفع
     if (oldVersion < 7) {
       await _createPickupSchedulesTable(db);
     }
-    // 🆕 تحديث النسخة 8: إضافة جدول تخزين الهوم
     if (oldVersion < 8) {
       await _createHomeCacheTable(db);
     }
+    if (oldVersion < 9) {
+      await _createNotificationsTable(db);
+    }
+    if (oldVersion < 11) {
+      try {
+        await db.execute('ALTER TABLE notifications ADD COLUMN user_id TEXT DEFAULT ""');
+      } catch (e) {
+      }
+    }
   }
 
-  // دالة لإنشاء جدول تخزين بيانات الهوم
+  /// إنشاء جدول تخزين بيانات الصفحة الرئيسية
   Future<void> _createHomeCacheTable(Database db) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS home_cache (
@@ -95,7 +104,21 @@ class DatabaseHelper {
     ''');
   }
 
-  // دالة لإنشاء جدول مواقيت الرفع
+  /// إنشاء جدول الإشعارات المحلية
+  Future<void> _createNotificationsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        body TEXT NOT NULL,
+        time TEXT NOT NULL,
+        is_read INTEGER NOT NULL DEFAULT 0,
+        user_id TEXT DEFAULT ""
+      )
+    ''');
+  }
+
+  /// إنشاء جدول مواقيت رفع النفايات
   Future<void> _createPickupSchedulesTable(Database db) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS pickup_schedules (
@@ -116,7 +139,7 @@ class DatabaseHelper {
     ''');
   }
 
-  // دالة مستقلة لإنشاء جدول المهام لتكرار استخدامها
+  /// إنشاء جدول المهام المسندة للمشرفين
   Future<void> _createAssignmentsTable(Database db) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS assignments (
@@ -140,8 +163,8 @@ class DatabaseHelper {
     ''');
   }
 
+  /// إنشاء جميع جداول قاعدة البيانات عند التثبيت الأول
   Future _onCreate(Database db, int version) async {
-    // جدول الأخبار
     await db.execute('''
       CREATE TABLE news (
         id INTEGER PRIMARY KEY,
@@ -157,7 +180,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // جدول بلاغات المواطن (خاصتي)
     await db.execute('''
       CREATE TABLE reports (
         id INTEGER PRIMARY KEY,
@@ -176,7 +198,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // جدول البلاغات المعلقة
     await db.execute('''
      CREATE TABLE pending_reports (
       local_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -190,7 +211,6 @@ class DatabaseHelper {
     )
     ''');
 
-    // جدول بلاغات المواطنين العامة
     await db.execute('''
       CREATE TABLE citizen_reports (
         id INTEGER PRIMARY KEY,
@@ -199,6 +219,8 @@ class DatabaseHelper {
         status TEXT,
         viewsCount INTEGER,
         commentsCount INTEGER,
+        likesCount INTEGER,
+        isLiked INTEGER,
         report_image TEXT,
         imageAfterProcessing TEXT,
         created_at TEXT,
@@ -207,13 +229,9 @@ class DatabaseHelper {
       )
     ''');
 
-    // 2️⃣ إنشاء جدول المهام للمشرفين
     await _createAssignmentsTable(db);
-
-    // 3️⃣ إنشاء جدول مواقيت الرفع
     await _createPickupSchedulesTable(db);
-
-    // 4️⃣ إنشاء جدول تخزين الهوم
     await _createHomeCacheTable(db);
+    await _createNotificationsTable(db);
   }
 }

@@ -13,16 +13,13 @@ class MapMarkerHelper {
     final Canvas canvas = Canvas(pictureRecorder);
     final double iconSize = size;
 
-    // Rotate canvas 180 degrees to fix the "upside down" issue
     canvas.translate(iconSize / 2, iconSize / 2);
     canvas.rotate(math.pi);
     canvas.translate(-iconSize / 2, -iconSize / 2);
     
-    // Draw background circle for better visibility
     final Paint paint = Paint()..color = Colors.white;
     canvas.drawCircle(Offset(iconSize / 2, iconSize / 2), iconSize / 2, paint);
     
-    // Draw border
     final Paint borderPaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
@@ -42,7 +39,6 @@ class MapMarkerHelper {
     
     textPainter.layout();
     
-    // Position correctly to avoid clipping and flipping issues
     textPainter.paint(
       canvas,
       Offset(

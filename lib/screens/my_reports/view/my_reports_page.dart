@@ -18,7 +18,6 @@ class _MyReportsPageState extends State<MyReportsPage> {
   @override
   void initState() {
     super.initState();
-    // Fetch reports when the page is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ReportViewModel>().fetchReportsFromLaravel();
     });
@@ -28,45 +27,42 @@ class _MyReportsPageState extends State<MyReportsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Directionality(
-        textDirection: TextDirection.rtl,
-        child: Column(
-          children: [
-            const ReportsHeader(),
-            Expanded(
-              child: RefreshIndicator(
-                color: AppTheme.accentGreen,
-                onRefresh:
-                    () => context
-                        .read<ReportViewModel>()
-                        .fetchReportsFromLaravel(isRefresh: true),
-                child: Consumer<ReportViewModel>(
-                  builder: (context, viewModel, child) {
-                    if (viewModel.isLoadingReports) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: AppTheme.accentGreen,
-                        ),
-                      );
-                    }
+      body: Column(
+        children: [
+          const ReportsHeader(),
+          Expanded(
+            child: RefreshIndicator(
+              color: AppTheme.accentGreen,
+              onRefresh:
+                  () => context.read<ReportViewModel>().fetchReportsFromLaravel(
+                    isRefresh: true,
+                  ),
+              child: Consumer<ReportViewModel>(
+                builder: (context, viewModel, child) {
+                  if (viewModel.isLoadingReports) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: AppTheme.accentGreen,
+                      ),
+                    );
+                  }
 
-                    if (viewModel.filteredReports.isEmpty) {
-                      return ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        children: const [
-                          SizedBox(height: 100),
-                          EmptyReportsState(),
-                        ],
-                      );
-                    }
+                  if (viewModel.filteredReports.isEmpty) {
+                    return ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(height: 100),
+                        EmptyReportsState(),
+                      ],
+                    );
+                  }
 
-                    return ReportsList(reports: viewModel.filteredReports);
-                  },
-                ),
+                  return ReportsList(reports: viewModel.filteredReports);
+                },
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

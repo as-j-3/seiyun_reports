@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class PickupSummaryStats extends StatelessWidget {
   final int nearbyCount;
@@ -20,7 +21,7 @@ class PickupSummaryStats extends StatelessWidget {
           children: [
             Expanded(
               child: _StatCard(
-                label: 'حاويات قريبة',
+                label: 'schedules.total_nearby'.tr(),
                 value: '$nearbyCount',
                 color: const Color(0xFFE8F5E9),
                 textColor: const Color(0xFF2E7D32),
@@ -29,7 +30,7 @@ class PickupSummaryStats extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               child: _StatCard(
-                label: 'موعد الرفع',
+                label: 'schedules.next_pickup'.tr(),
                 value: nextPickupDay,
                 color: const Color(0xFFFFF3E0),
                 textColor: const Color(0xFFE65100),

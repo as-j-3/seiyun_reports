@@ -26,6 +26,7 @@ class HomeDataModel {
     );
   }
 
+  /// يحول نموذج بيانات الصفحة الرئيسية إلى خريطة JSON.
   Map<String, dynamic> toJson() {
     return {
       'user_name': userName,
@@ -50,6 +51,7 @@ class NextCollectionModel {
     );
   }
 
+  /// يحول نموذج التجميع القادم إلى خريطة JSON.
   Map<String, dynamic> toJson() {
     return {'status': status, 'timing': timing};
   }
@@ -77,6 +79,7 @@ class RecentReportModel {
     );
   }
 
+  /// يحول نموذج البلاغ الأخير إلى خريطة JSON.
   Map<String, dynamic> toJson() {
     return {
       'id': id,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class CallToActionCard extends StatelessWidget {
   const CallToActionCard({super.key});
@@ -17,19 +18,23 @@ class CallToActionCard extends StatelessWidget {
         children: [
           const Icon(Icons.eco_outlined, color: Colors.white, size: 40),
           const SizedBox(height: 15),
-          const Text(
-            "كن جزءاً من التغيير",
-            style: TextStyle(
+          Text(
+            "news_tips.cta_title".tr(),
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            "ساهم في تحسين البيئة وابدأ بتطبيق هذه النصائح اليوم في منزلك.",
+          Text(
+            "news_tips.cta_desc".tr(),
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 13,
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 20),
           ElevatedButton(
@@ -42,9 +47,9 @@ class CallToActionCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text(
-              "ابدأ الآن",
-              style: TextStyle(fontWeight: FontWeight.bold),
+            child: Text(
+              "news_tips.cta_button".tr(),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ],

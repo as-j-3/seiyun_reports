@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class PickupTipsCard extends StatelessWidget {
   const PickupTipsCard({super.key});
@@ -31,9 +32,9 @@ class PickupTipsCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                'نصائح وإرشادات',
-                style: TextStyle(
+              Text(
+                'schedules.tips'.tr(),
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                   color: Color(0xFFD48100),
@@ -42,15 +43,9 @@ class PickupTipsCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          _buildTipRow(
-            'يرجى وضع أكياس النفايات في الحاوية قبل موعد الرفع بنصف ساعة.',
-          ),
-          _buildTipRow(
-            'تأكد من إغلاق أكياس النفايات جيداً لمنع تسرب الروائح أو النفايات.',
-          ),
-          _buildTipRow(
-            'ساهم معنا في نظافة مدينتك عبر الالتزام بالمواعيد المحددة.',
-          ),
+          _buildTipRow('schedules.tip_1'.tr()),
+          _buildTipRow('schedules.tip_2'.tr()),
+          _buildTipRow('schedules.tip_3'.tr()),
         ],
       ),
     );

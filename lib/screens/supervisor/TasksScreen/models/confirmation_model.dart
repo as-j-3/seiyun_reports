@@ -1,7 +1,7 @@
 class ConfirmationModel {
   final int assignmentId;
   final String note;
-  final String image; // رابط الصورة بعد الرفع أو المسار المحلي
+  final String image; 
 
   ConfirmationModel({
     required this.assignmentId,

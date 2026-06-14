@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 
 class EmptyReportsState extends StatelessWidget {
@@ -25,7 +26,7 @@ class EmptyReportsState extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            "لا توجد بلاغات حالياً",
+            "my_reports.empty".tr(),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -36,7 +37,7 @@ class EmptyReportsState extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Text(
-              "لم تقم بإرسال أي بلاغ بعد.\nيمكنك البدء بالمساهمة في نظافة مدينتك الآن.",
+              "my_reports.empty_desc".tr(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,

@@ -146,7 +146,7 @@ class _Header extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 48), // Spacer for centering
+              const SizedBox(width: 48), 
             ],
           ),
           const SizedBox(height: 20),
@@ -274,7 +274,6 @@ class _DatePickerField extends StatelessWidget {
     return GestureDetector(
       onTap: () async {
         final now = DateTime.now();
-        // التأكد من أن التاريخ الأولي ليس قبل تاريخ اليوم لتجنب الخطأ البرمجي
         final initial = (vm.selectedDate != null && !vm.selectedDate!.isBefore(DateTime(now.year, now.month, now.day)))
             ? vm.selectedDate!
             : now;

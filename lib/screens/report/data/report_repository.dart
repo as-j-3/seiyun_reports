@@ -16,7 +16,7 @@ class ReportRepository {
 
   ReportRepository(this._reportService, this._localService, this._networkInfo);
 
-  // 1. دالة إرسال بلاغ للسيرفر أو حفظه محلياً
+  /// إرسال بلاغ جديد إلى الخادم، أو حفظه محلياً إذا لم يكن هناك اتصال
   Future<bool> sendNewReport({
     required String description,
     required String title,
@@ -43,15 +43,12 @@ class ReportRepository {
         };
 
         if (imageFile != null) {
-          // جلب اسم الملف بشكل آمن يدعم جميع الأنظمة
           String fileName = imageFile.path.split(RegExp(r'[/\\]')).last;
 
-          // التأكد من وجود امتداد للملف، إذا لم يوجد نفترض أنه jpeg
           if (!fileName.contains('.')) {
             fileName += '.jpg';
           }
 
-          // تحديد نوع المحتوى بناءً على الامتداد
           String extension = fileName.split('.').last.toLowerCase();
           String mimeType = (extension == 'png') ? 'png' : 'jpeg';
 
@@ -70,7 +67,6 @@ class ReportRepository {
           return true;
         }
       } catch (e) {
-        debugPrint("--- SERVER ERROR DETAILS ---");
       }
     }
     await _saveLocally(
@@ -85,13 +81,11 @@ class ReportRepository {
     return isConnected ? false : true;
   }
 
-  // 2. دالة جلب قائمة بلاغاتي (أونلاين + أوفلاين)
+  /// جلب بلاغات المستخدم الحالي مع دعم التخزين المحلي والمزامنة الخلفية
   Future<List<ReportModel>> fetchMyReports({bool isRefresh = false}) async {
     try {
-      // جلب الكاش أولاً
       List<ReportModel> cachedReports = await _localService.getLocalReports();
 
-      // جلب البلاغات المعلقة
       List<Map<String, dynamic>> pendingMaps =
           await _localService.getPendingReports();
       List<ReportModel> pendingReports =
@@ -112,7 +106,6 @@ class ReportRepository {
               )
               .toList();
 
-      // فحص: هل نحتاج تحديث من السيرفر؟ وهل فيه نت؟
       bool shouldSync = await UpdateHelper.canSync(
         lastUpdateKey: 'my_reports_sync',
         daysInterval: 1,
@@ -122,60 +115,51 @@ class ReportRepository {
 
       if (shouldSync && hasInternet) {
         if (cachedReports.isEmpty || isRefresh) {
-          await _syncReportsWithServer(); // الانتظار في حالة أول تشغيل أو التحديث اليدوي
+          await _syncReportsWithServer(); 
           cachedReports =
-              await _localService.getLocalReports(); // إعادة الجلب بعد المزامنة
+              await _localService.getLocalReports(); 
         } else {
-          _syncReportsWithServer(); // مزامنة في الخلفية
+          _syncReportsWithServer(); 
         }
       }
 
-      // دمج القائمتين
       List<ReportModel> allReports = [...pendingReports, ...cachedReports];
 
       return allReports;
     } catch (e) {
-      debugPrint("خطأ أثناء جلب البلاغات: $e");
-      return []; // نرجع قائمة فارغة لضمان عدم حدوث خطأ Null في الـ UI
+      return []; 
     }
   }
 
-  // دالة خاصة بالمزامنة مع السيرفر وتحديث الكاش
+  /// مزامنة البلاغات مع الخادم وتخزينها محلياً
   Future<void> _syncReportsWithServer() async {
     try {
       final response = await _reportService.getMyReports();
       if (response.statusCode == 200) {
         List data = response.data['data'] ?? [];
-        debugPrint("Fetched ${data.length} reports from server.");
 
         List<ReportModel> remoteReports =
             data.map((json) {
               final model = ReportModel.fromJson(json);
               if (model.id == 0) {
-                debugPrint("Warning: Parsed report with ID 0. JSON: $json");
               }
               return model;
             }).toList();
 
         await _localService.saveReports(remoteReports);
-        await UpdateHelper.saveLastUpdate('my_reports_sync'); // ختم الوقت
-        debugPrint(
-          "Successfully saved ${remoteReports.length} reports to local cache.",
-        );
+        await UpdateHelper.saveLastUpdate('my_reports_sync'); 
       }
     } catch (e) {
-      debugPrint("Sync Error: $e");
     }
   }
 
-  // مزامنة البلاغات المعلقة
+  /// رفع البلاغات المعلقة (المحفوظة محلياً أثناء انقطاع الإنترنت) إلى الخادم
   Future<void> syncPendingReports() async {
     if (!await _networkInfo.isConnected) return;
     List<Map<String, dynamic>> pending =
         await _localService.getPendingReports();
     if (pending.isEmpty) return;
 
-    debugPrint("جاري مزامنة ${pending.length} بلاغات...");
 
     for (var data in pending) {
       bool success = await sendNewReport(
@@ -198,7 +182,7 @@ class ReportRepository {
     }
   }
 
-  // دالة مساعدة للحفظ المحلي
+  /// حفظ بيانات البلاغ محلياً في انتظار رفعه لاحقاً
   Future<void> _saveLocally(
     String t,
     String d,
@@ -209,6 +193,5 @@ class ReportRepository {
     String path,
   ) async {
     await _localService.savePendingReport(t, d, ty, p, la, ln, path);
-    debugPrint("✅ تم حفظ البلاغ محلياً.");
   }
 }

@@ -10,7 +10,6 @@ class ScheduleTimelineItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // تحديد ما إذا كان النظام في الوضع الليلي
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isHighlight = schedule.isToday || schedule.isTomorrow;
 
@@ -18,7 +17,6 @@ class ScheduleTimelineItem extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        // استخدام لون خلفية يتناسب مع الوضع الليلي والعادي
         color:
             isHighlight
                 ? (isDark
@@ -33,7 +31,6 @@ class ScheduleTimelineItem extends StatelessWidget {
                   : Theme.of(context).dividerColor.withOpacity(0.1),
           width: 1.5,
         ),
-        // إضافة ظل خفيف في الوضع الفاتح ليعطي عمق
         boxShadow:
             isDark
                 ? []

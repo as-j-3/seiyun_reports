@@ -17,7 +17,6 @@ class MapViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  // Location tracking
   StreamSubscription<Position>? _positionStream;
   Position? _currentPosition;
   Position? get currentPosition => _currentPosition;
@@ -31,7 +30,6 @@ class MapViewModel extends ChangeNotifier {
   bool _isIsolatedMode = false;
   bool get isIsolatedMode => _isIsolatedMode;
 
-  // Custom Icons
   BitmapDescriptor? reportIconPending;
   BitmapDescriptor? reportIconProcessing;
   BitmapDescriptor? reportIconSolved;
@@ -51,6 +49,7 @@ class MapViewModel extends ChangeNotifier {
     _loadIcons().then((_) => fetchMapData());
   }
 
+  /// تحميل وتخصيص أيقونات العلامات (الماركرز) على الخريطة
   Future<void> _loadIcons() async {
     containerIcon = await MapMarkerHelper.getMarkerIconFromIcon(
       Icons.delete_outline,
@@ -80,6 +79,7 @@ class MapViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// جلب بيانات الخريطة (الحاويات والبلاغات) من المستودع
   Future<void> fetchMapData() async {
     _isLoading = true;
     notifyListeners();
@@ -87,14 +87,13 @@ class MapViewModel extends ChangeNotifier {
     try {
       _mapData = await _repository.getMapData();
     } catch (e) {
-      debugPrint("Error fetching map data: $e");
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  // Location Tracking Methods
+  /// بدء تتبع موقع المستخدم الحالي وحساب المسافة إلى موقع مستهدف
   Future<void> startLocationTracking(LatLng? target) async {
     _targetLocation = target;
     _isIsolatedMode = target != null;
@@ -125,12 +124,12 @@ class MapViewModel extends ChangeNotifier {
       notifyListeners();
     });
 
-    // Get initial position
     _currentPosition = await Geolocator.getCurrentPosition();
     _calculateDistance();
     notifyListeners();
   }
 
+  /// إيقاف تتبع موقع المستخدم وتصفير البيانات المتعلقة به
   void stopLocationTracking() {
     _positionStream?.cancel();
     _positionStream = null;
@@ -140,6 +139,7 @@ class MapViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// حساب المسافة بين موقع المستخدم الحالي والموقع المستهدف
   void _calculateDistance() {
     if (_currentPosition != null && _targetLocation != null) {
       _distanceToTarget = Geolocator.distanceBetween(
@@ -151,25 +151,30 @@ class MapViewModel extends ChangeNotifier {
     }
   }
 
+  /// إظهار أو إخفاء البلاغات على الخريطة
   void toggleReports() {
     _showReports = !_showReports;
     notifyListeners();
   }
 
+  /// إظهار أو إخفاء الحاويات على الخريطة
   void toggleContainers() {
     _showContainers = !_showContainers;
     notifyListeners();
   }
 
+  /// التبديل بين العرض العادي وعرض القمر الصناعي للخريطة
   void toggleSatellite() {
     _isSatellite = !_isSatellite;
     notifyListeners();
   }
 
+  /// تهيئة متحكم الخريطة عند إنشائها
   void onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
 
+  /// تحريك الكاميرا إلى موقع المستخدم الحالي أو إلى مركز سيئون
   void moveToCenter() {
     if (_currentPosition != null) {
       mapController?.animateCamera(
@@ -192,6 +197,7 @@ class MapViewModel extends ChangeNotifier {
     }
   }
 
+  /// التركيز وتقريب الكاميرا على موقع محدد على الخريطة
   void focusOnLocation(LatLng location) {
     mapController?.animateCamera(
       CameraUpdate.newCameraPosition(
@@ -200,10 +206,12 @@ class MapViewModel extends ChangeNotifier {
     );
   }
 
+  /// تكبير مستوى الرؤية (الزوم) في الخريطة
   void zoomIn() {
     mapController?.animateCamera(CameraUpdate.zoomIn());
   }
 
+  /// تصغير مستوى الرؤية (الزوم) في الخريطة
   void zoomOut() {
     mapController?.animateCamera(CameraUpdate.zoomOut());
   }

@@ -8,14 +8,11 @@ class NewsList extends StatelessWidget {
 
 @override
 Widget build(BuildContext context) {
-  //للاستماع لبيانات الاخبار من السيرفر 
   return Consumer<NewsTipsViewModel>(
     builder: (context, viewModel, child) {
-      //مؤشر تحميل لين تجي البيانات من السيرفر
       if (viewModel.isLoading) {
         return const Center(child: CircularProgressIndicator());
       }
-   // ياخذ اول خبرين فقط 
       final newsOnly = viewModel.newsList.take(2).toList();
       if (newsOnly.isEmpty) {
         return const Center(child: Text("لا توجد أخبار جديدة حالياً"));

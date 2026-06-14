@@ -1,0 +1,106 @@
+{
+    "profile": {
+        "title": "Profile",
+        "edit": "Edit Details",
+        "active_member": "Active Member",
+        "activities": "My Activities",
+        "my_reports": "My Reports",
+        "my_reports_desc": "View and track your submitted reports",
+        "general_settings": "General Settings",
+        "phone": "Phone Number",
+        "notifications": "App Notifications",
+        "notifications_desc": "Receive updates on new reports",
+        "language": "App Language",
+        "language_desc": "English",
+        "dark_mode": "Dark Mode",
+        "dark_mode_desc": "Enable dark theme",
+        "support": "Support & Help",
+        "help_center": "Help Center",
+        "about_app": "About App",
+        "logout": "Logout",
+        "select_language": "Select Language",
+        "arabic": "العربية",
+        "english": "English",
+        "app_name": "My Reports"
+    },
+    "home": {
+        "recent_reports": "Recent Reports",
+        "view_all": "View All",
+        "news_updates": "News & Updates",
+        "useful_tips": "Useful Tips"
+    },
+    "nav": {
+        "home": "Home",
+        "map": "Map",
+        "news": "News",
+        "profile": "Profile"
+    },
+    "schedules": {
+        "nearby_containers": "Nearby Containers",
+        "total_nearby": "Total Nearby",
+        "next_pickup": "Next Pickup",
+        "details": "Container Details",
+        "type": "Type",
+        "capacity": "Capacity",
+        "pickup_days": "Pickup Days",
+        "pickup_times": "Pickup Times",
+        "distance": "Distance",
+        "close": "Close",
+        "tips": "Tips & Guidelines",
+        "tip_1": "Please place waste bags in the container half an hour before the pickup time.",
+        "tip_2": "Ensure waste bags are tightly closed to prevent leaks and odors.",
+        "tip_3": "Help keep your city clean by adhering to the scheduled times.",
+        "area": "Area",
+        "period": "Period",
+        "expected_pickup": "Expected Pickup Time",
+        "current_status": "Current Status",
+        "show_on_map": "Show on Map"
+    },
+    "report": {
+        "type": "Report Type *",
+        "custom_title": "Report Title *",
+        "priority": "Priority *",
+        "location": "Location *",
+        "image_optional": "Image (Optional)",
+        "description": "Problem Description",
+        "warning_account_inactive": "Warning: Account inactive",
+        "warning_verify_phone": "You must verify your phone number to submit a report. Tap here to verify.",
+        "hint_title": "Enter a short summary (e.g. pothole in street)...",
+        "hint_description": "Describe the problem accurately to help the field team...",
+        "toast_verify_phone": "Please verify your phone number in profile first",
+        "toast_enter_title": "Please enter a report title",
+        "submit": "Submit Report to Fund",
+        "new_report": "New Report",
+        "header_desc": "Help improve your city by reporting issues, we will work to resolve them as soon as possible."
+    },
+    "my_reports": {
+        "title": "My Reports",
+        "search_hint": "Search for a report...",
+        "empty": "No reports currently",
+        "empty_desc": "You haven't submitted any reports yet.\nYou can start contributing to keeping your city clean now.",
+        "area_prefix": "Area: ",
+        "unspecified": "Unspecified"
+    },
+    "status": {
+        "pending": "Pending",
+        "in_progress": "In Progress",
+        "resolved": "Resolved",
+        "completed": "Completed"
+    },
+    "notifications": {
+        "title": "Notifications",
+        "empty": "No notifications currently"
+    },
+    "news_tips": {
+        "header_title": "News & Tips",
+        "tab_news": "News",
+        "tab_tips": "Tips",
+        "top_news": "Top News",
+        "no_news": "No news currently",
+        "environmental_tips": "Environmental Tips",
+        "no_tips": "No tips currently",
+        "cta_title": "Be part of the change",
+        "cta_desc": "Help improve the environment by applying these tips at home today.",
+        "cta_button": "Start Now"
+    }
+}

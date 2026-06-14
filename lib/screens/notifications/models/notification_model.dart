@@ -4,6 +4,7 @@ class AppNotification {
   final String body;
   final DateTime time;
   final bool isRead;
+  final String userId;
 
   AppNotification({
     this.id,
@@ -11,8 +12,10 @@ class AppNotification {
     required this.body,
     required this.time,
     this.isRead = false,
+    this.userId = '',
   });
 
+  /// تحويل كائن الإشعار إلى Map للتخزين
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -20,6 +23,7 @@ class AppNotification {
       'body': body,
       'time': time.toIso8601String(),
       'is_read': isRead ? 1 : 0,
+      'user_id': userId,
     };
   }
 
@@ -30,6 +34,7 @@ class AppNotification {
       body: map['body'] ?? '',
       time: DateTime.parse(map['time']),
       isRead: map['is_read'] == 1,
+      userId: map['user_id'] ?? '',
     );
   }
 }

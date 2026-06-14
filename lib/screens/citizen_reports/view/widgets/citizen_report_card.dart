@@ -3,28 +3,65 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/citizen_report_model.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 
-class CitizenReportCard extends StatelessWidget {
+class CitizenReportCard extends StatefulWidget {
   final CitizenReportModel report;
   final VoidCallback onComment;
   final VoidCallback onShare;
+  final VoidCallback onLike;
 
   const CitizenReportCard({
     Key? key,
     required this.report,
     required this.onComment,
     required this.onShare,
+    required this.onLike,
   }) : super(key: key);
 
   @override
+  State<CitizenReportCard> createState() => _CitizenReportCardState();
+}
+
+class _CitizenReportCardState extends State<CitizenReportCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+      lowerBound: 0.8,
+      upperBound: 1.0,
+      value: 1.0,
+    );
+    _scaleAnim = _animController;
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  void _handleLike() async {
+    await _animController.reverse();
+    await _animController.forward();
+    widget.onLike();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final report = widget.report;
     return Card(
+
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 2,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: User Info and Status
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Row(
@@ -76,7 +113,6 @@ class CitizenReportCard extends StatelessWidget {
             ),
           ),
 
-          // Report Image
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(0)),
             child: CachedNetworkImage(
@@ -88,7 +124,6 @@ class CitizenReportCard extends StatelessWidget {
             ),
           ),
 
-          // Title and Description
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
@@ -105,24 +140,13 @@ class CitizenReportCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-               /* const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
-                    const SizedBox(width: 4),
-                    Text(
-                      report.location,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                  ],
-                ),
+               
               ],
             ),
-          ),*/
+          ),
 
           const Divider(height: 1),
 
-          // Action Buttons
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             child: Row(
@@ -132,25 +156,30 @@ class CitizenReportCard extends StatelessWidget {
                   icon: Icons.chat_bubble_outline,
                   label: '${report.commentsCount}',
                   color: Colors.grey[600]!,
-                  onTap: onComment,
+                  onTap: widget.onComment,
                 ),
                 _ActionButton(
                   icon: Icons.share_outlined,
                   label: 'مشاركة',
                   color: Colors.grey[600]!,
-                  onTap: onShare,
+                  onTap: widget.onShare,
                 ),
-                _ActionButton(
-                  icon: Icons.visibility_outlined,
-                  label: '${report.viewsCount}',
-                  color: Colors.grey[600]!,
-                  onTap: () {},
+
+                ScaleTransition(
+                  scale: _scaleAnim,
+                  child: _ActionButton(
+                    icon: report.isLiked
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    label: '${report.likesCount}',
+                    color: report.isLiked ? Colors.red : Colors.grey[600]!,
+                    onTap: _handleLike,
+                  ),
                 ),
               ],
             ),
           ),
 
-          // تعديل الرد بحيث تظهر صورة بعد معالجة البلاغ 
           if (report.imageAfterProcessing != null)
             Container(
               width: double.infinity,
@@ -204,11 +233,10 @@ class CitizenReportCard extends StatelessWidget {
                   ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: CachedNetworkImage(
-                  imageUrl: report.imageAfterProcessing!, // رابط الصورة من المودل
+                  imageUrl: report.imageAfterProcessing!, 
                   height: 150,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  // تظهر ايقونة اذا الصورة خربانة 
                   errorWidget: (context, url, error) => const Icon(Icons.broken_image),
                 
             ),
@@ -220,7 +248,7 @@ class CitizenReportCard extends StatelessWidget {
             ),
         ],
       ),
-    ),]),);
+    );
   }
 
   Color _getStatusColor(String status) {

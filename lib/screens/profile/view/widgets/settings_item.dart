@@ -24,7 +24,7 @@ class SettingsItem extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor, // Changed from Colors.white
+        color: Theme.of(context).cardColor, 
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(

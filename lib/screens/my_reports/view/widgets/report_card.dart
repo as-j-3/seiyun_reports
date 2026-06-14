@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:seiyun_reports_app/screens/report/models/report_model.dart';
 
@@ -127,11 +128,6 @@ class ReportCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Icon(
-                        Icons.arrow_back_ios_new,
-                        size: 14,
-                        color: Colors.grey,
-                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -160,7 +156,7 @@ class ReportCard extends StatelessWidget {
                       Expanded(
                         child: Builder(
                           builder: (context) {
-                            String areaDisplay = 'غير محددة';
+                            String areaDisplay = 'my_reports.unspecified'.tr();
                             if (report.areaName != null &&
                                 report.areaName!.isNotEmpty) {
                               if (report.squareName != null &&
@@ -176,7 +172,7 @@ class ReportCard extends StatelessWidget {
                               areaDisplay = report.areaId!;
                             }
                             return Text(
-                              "المنطقة: $areaDisplay",
+                              "${'my_reports.area_prefix'.tr()}$areaDisplay",
                               style: TextStyle(
                                 fontSize: 11,
                                 color:
@@ -236,7 +232,7 @@ class ReportCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              report.status,
+                              report.status.tr(),
                               style: TextStyle(
                                 color: statusColor,
                                 fontSize: 11,

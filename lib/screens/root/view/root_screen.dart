@@ -22,7 +22,6 @@ class _RootScreenState extends State<RootScreen> {
   void initState() {
     super.initState();
     
-    // Listen to AuthViewModel. If it finishes a network call, reload the role.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkRole();
       if (mounted) {
@@ -32,6 +31,7 @@ class _RootScreenState extends State<RootScreen> {
     });
   }
 
+  /// يتعامل مع التغييرات في حالة المصادقة ويتحقق من دور المستخدم.
   void _onAuthChange() {
     if (_authVM != null && !_authVM!.isLoading) {
       _checkRole();
@@ -44,6 +44,7 @@ class _RootScreenState extends State<RootScreen> {
     super.dispose();
   }
 
+  /// يتحقق من دور المستخدم الحالي المخزن محلياً.
   Future<void> _checkRole() async {
     final role = await PrefHelper.getRole();
     if (mounted) {
@@ -56,8 +57,6 @@ class _RootScreenState extends State<RootScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // If AuthViewModel is currently loading (e.g. backend registerUser is in progress),
-    // we should show the loading indicator instead of resolving the screen yet.
     final authVM = Provider.of<AuthViewModel>(context);
     
     if (_isLoading || authVM.isLoading) {
@@ -73,7 +72,6 @@ class _RootScreenState extends State<RootScreen> {
     if (_userRole == 'supervisors') {
       return const SupervisorMainScreen();
     } else {
-      // الافتراضي هو واجهة المواطن
       return HomeScreen();
     }
   }

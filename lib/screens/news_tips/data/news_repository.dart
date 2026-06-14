@@ -20,38 +20,32 @@ class NewsRepository {
   /// جلب كل المحتوى (أخبار ونصائح)
   /// يقوم بجلب البيانات المخزنة محلياً فوراً، ثم يبدأ عملية مزامنة خلفية إذا لزم الأمر
   Future<List<NewsModel>> fetchAllContent({bool isRefresh = false}) async {
-    // 1. جلب البيانات من الذاكرة المحلية أولاً لسرعة العرض للمستخدم
     List<NewsModel> cachedData = await _localService.getLocalNews();
     
-    // 2. التحقق مما إذا كان يجب تحديث البيانات من السيرفر (بناءً على الوقت أو طلب التحديث)
     bool shouldSync = await UpdateHelper.canSync(
       lastUpdateKey: 'news_tips_sync',
-      daysInterval: 1, // التحديث التلقائي يتم كل يوم واحد
+      daysInterval: 1, 
       forceUpdate: isRefresh,
     );
 
-    // 3. التحقق من وجود اتصال بالإنترنت
     bool hasInternet = await _networkInfo.isConnected;
 
     if (shouldSync && hasInternet) {
-      // بدء عملية المزامنة في الخلفية دون تعطيل واجهة المستخدم
       _syncDataWithServer(); 
     }
 
-    // إعادة البيانات المخزنة (التي قد تكون قديمة قليلاً) ريثما تكتمل المزامنة
     return cachedData;
   }
 
   /// عملية المزامنة الخلفية مع السيرفر
+  /// عملية المزامنة الخلفية مع السيرفر ومزامنة الحذف
   Future<void> _syncDataWithServer() async {
     try {
-      debugPrint("بدء المزامنة الصامتة مع السيرفر...");
-      
-      // جلب الأخبار والنصائح في وقت واحد (Parallel requests) لسرعة التنفيذ
+
       final responses = await Future.wait([
-          _newsService.getNews(),
-          _newsService.getTips(),
-        ]);
+        _newsService.getNews(),
+        _newsService.getTips(),
+      ]);
 
       List<NewsModel> allRemoteData = [];
 
@@ -62,15 +56,12 @@ class NewsRepository {
         }
       }
 
-      if (allRemoteData.isNotEmpty) {
-        // 4. تحديث الذاكرة المحلية بالبيانات الجديدة القادمة من السيرفر
-        await _localService.saveNews(allRemoteData);
-        // تحديث طابع الوقت لآخر مزامنة ناجحة
+      if (responses[0].statusCode == 200 && responses[1].statusCode == 200) {
+        await _localService.syncNewsTable(allRemoteData);
+
         await UpdateHelper.saveLastUpdate('news_tips_sync');
-        debugPrint("تمت المزامنة وحفظ البيانات الجديدة في قاعدة البيانات المحلية.");
       }
     } catch (e) {
-      debugPrint("فشل في المزامنة الخلفية: $e");
     }
   }
 
@@ -81,7 +72,6 @@ class NewsRepository {
       localData.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return localData;
     } catch (e) {
-      debugPrint("خطأ في قراءة قاعدة البيانات المحلية: $e");
       return [];
     }
   }

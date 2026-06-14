@@ -56,10 +56,31 @@ class ProfileViewModel extends ChangeNotifier {
   String? get phoneErrorMessage => _phoneErrorMessage;
 
   ProfileViewModel(this._repository, this._locationService) {
-    _loadProfileData();
-    fetchProfile();
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user != null) {
+        _loadProfileData();
+        fetchProfile();
+      } else {
+        _clearLocalState();
+      }
+    });
   }
 
+  /// تصفير بيانات الحالة المحلية للمستخدم عند تسجيل الخروج
+  void _clearLocalState() {
+    _profile = null;
+    _profileImage = null;
+    _userName = null;
+    _userPhone = null;
+    _userAddress = null;
+    _userEmail = null;
+    _isPhoneVerified = false;
+    _otpSent = false;
+    _verificationId = null;
+    notifyListeners();
+  }
+
+  /// جلب بيانات الملف الشخصي للمستخدم من المستودع وحفظها محلياً
   Future<void> fetchProfile() async {
     _isLoading = true;
     notifyListeners();
@@ -69,26 +90,31 @@ class ProfileViewModel extends ChangeNotifier {
       if (_profile != null) {
         _userName = _profile!.fullName;
         _userPhone = _profile!.phone;
-        _userAddress = _profile!.areaName;
+        
+        String resolvedAddress = _profile!.areaName;
+        if (resolvedAddress.isEmpty && _profile!.latitude != 0.0 && _profile!.longitude != 0.0) {
+          resolvedAddress = _locationService.getAreaName(_profile!.latitude, _profile!.longitude);
+        }
+        _userAddress = resolvedAddress;
         _userEmail = _profile!.email;
 
         await PrefHelper.saveUserName(_profile!.fullName);
         await PrefHelper.saveUserPhone(_profile!.phone);
         await PrefHelper.saveUserEmail(_profile!.email);
-        await PrefHelper.saveUserAddress(_profile!.areaName);
+        await PrefHelper.saveUserAddress(resolvedAddress);
         await PrefHelper.saveUserLocation(
           _profile!.latitude,
           _profile!.longitude,
         );
       }
     } catch (e) {
-      debugPrint("Error fetching profile: $e");
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
+  /// تحديث موقع المستخدم تلقائياً باستخدام نظام تحديد المواقع العالمي (GPS)
   Future<void> updateLocationAutomatically() async {
     _isLoading = true;
     notifyListeners();
@@ -105,8 +131,7 @@ class ProfileViewModel extends ChangeNotifier {
           desiredAccuracy: LocationAccuracy.high,
         );
 
-        // جلب اسم المنطقة محلياً في حالة فشل الاتصال بالإنترنت
-        final localAreaName = await _locationService.getCurrentAreaName();
+        final localAreaName = _locationService.getAreaName(position.latitude, position.longitude);
 
         try {
           final updatedProfile = await _repository.updateProfile(
@@ -115,15 +140,21 @@ class ProfileViewModel extends ChangeNotifier {
           );
           if (updatedProfile != null) {
             _profile = updatedProfile;
-            _userAddress = updatedProfile.areaName;
-            await PrefHelper.saveUserAddress(updatedProfile.areaName);
+            _userAddress = updatedProfile.areaName.isNotEmpty ? updatedProfile.areaName : localAreaName;
+            await PrefHelper.saveUserAddress(_userAddress!);
             await PrefHelper.saveUserLocation(
               updatedProfile.latitude,
               updatedProfile.longitude,
             );
+          } else {
+            _userAddress = localAreaName;
+            await PrefHelper.saveUserAddress(localAreaName);
+            await PrefHelper.saveUserLocation(
+              position.latitude,
+              position.longitude,
+            );
           }
         } catch (apiError) {
-          debugPrint("API update failed, using local area name: $apiError");
           _userAddress = localAreaName;
           await PrefHelper.saveUserAddress(localAreaName);
           await PrefHelper.saveUserLocation(
@@ -133,16 +164,18 @@ class ProfileViewModel extends ChangeNotifier {
         }
       }
     } catch (e) {
-      debugPrint("Error updating location automatically: $e");
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
+  /// تحديث موقع المستخدم يدوياً بإحداثيات محددة
   Future<void> updateLocationManually(double lat, double lng) async {
     _isLoading = true;
     notifyListeners();
+
+    final localAreaName = _locationService.getAreaName(lat, lng);
 
     try {
       final updatedProfile = await _repository.updateProfile(
@@ -151,21 +184,28 @@ class ProfileViewModel extends ChangeNotifier {
       );
       if (updatedProfile != null) {
         _profile = updatedProfile;
-        _userAddress = updatedProfile.areaName;
-        await PrefHelper.saveUserAddress(updatedProfile.areaName);
+        _userAddress = updatedProfile.areaName.isNotEmpty ? updatedProfile.areaName : localAreaName;
+        await PrefHelper.saveUserAddress(_userAddress!);
         await PrefHelper.saveUserLocation(
           updatedProfile.latitude,
           updatedProfile.longitude,
         );
+      } else {
+        _userAddress = localAreaName;
+        await PrefHelper.saveUserAddress(localAreaName);
+        await PrefHelper.saveUserLocation(lat, lng);
       }
     } catch (e) {
-      debugPrint("Error updating location manually: $e");
+      _userAddress = localAreaName;
+      await PrefHelper.saveUserAddress(localAreaName);
+      await PrefHelper.saveUserLocation(lat, lng);
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
+  /// تحميل بيانات الملف الشخصي للمستخدم المخزنة محلياً
   Future<void> _loadProfileData() async {
     final String? path = await PrefHelper.getProfileImagePath();
     if (path != null && path.isNotEmpty) {
@@ -186,8 +226,8 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- Phone Verification Logic ---
 
+  /// إرسال رمز التحقق (OTP) إلى رقم الهاتف المحدد لتوثيقه
   Future<void> sendOTP(String phoneNumber) async {
     _isVerifying = true;
     _phoneErrorMessage = null;
@@ -227,6 +267,7 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
+  /// التحقق من رمز الـ OTP المدخل من قبل المستخدم
   Future<bool> verifyOTP(String smsCode) async {
     if (_verificationId == null) return false;
 
@@ -257,6 +298,7 @@ class ProfileViewModel extends ChangeNotifier {
 
   User? get currentUser => _auth.currentUser;
 
+  /// اختيار صورة للملف الشخصي من المعرض أو الكاميرا ورفعها
   Future<void> pickImage(ImageSource source) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(
@@ -267,7 +309,6 @@ class ProfileViewModel extends ChangeNotifier {
       );
 
       if (pickedFile != null) {
-        // تحديث الصورة في السيرفر أيضاً
         final updatedProfile = await _repository.updateProfile(
           imagePath: pickedFile.path,
         );
@@ -281,55 +322,115 @@ class ProfileViewModel extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint('Error picking image: $e');
     }
   }
 
+  /// تسجيل خروج المستخدم وتصفير كافة البيانات المحلية والحالة الحالية
   Future<void> logout() async {
     await PrefHelper.clear();
     await _auth.signOut();
-    notifyListeners();
+    _clearLocalState();
   }
 
+  /// تفعيل أو تعطيل تلقي التنبيهات
   Future<void> toggleNotifications(bool value) async {
     _notificationsEnabled = value;
     await PrefHelper.saveNotificationsEnabled(value);
     notifyListeners();
   }
 
+  /// حفظ وتحديث تفاصيل الملف الشخصي للمستخدم (الاسم، الهاتف، العنوان)
+  Future<void> saveProfileDetails({
+    required String name,
+    required String phone,
+    required String address,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _userName = name;
+      _userPhone = phone;
+      _userAddress = address;
+
+      await PrefHelper.saveUserName(name);
+      await PrefHelper.saveUserPhone(phone);
+      await PrefHelper.saveUserAddress(address);
+
+      final lat = _profile?.latitude ?? await PrefHelper.getUserLat();
+      final lng = _profile?.longitude ?? await PrefHelper.getUserLng();
+
+      final updatedProfile = await _repository.updateProfile(
+        name: name,
+        phone: phone,
+        latitude: lat,
+        longitude: lng,
+      );
+
+      if (updatedProfile != null) {
+        _profile = updatedProfile;
+      }
+    } catch (e) {
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// تحديث اسم المستخدم في المستودع والمخزن المحلي
   Future<void> updateUserName(String name) async {
     _userName = name;
     await PrefHelper.saveUserName(name);
 
-    // تحديث في السيرفر
-    await _repository.updateProfile(name: name);
+    final lat = _profile?.latitude ?? await PrefHelper.getUserLat();
+    final lng = _profile?.longitude ?? await PrefHelper.getUserLng();
+
+    final updatedProfile = await _repository.updateProfile(
+      name: name,
+      latitude: lat,
+      longitude: lng,
+    );
+    if (updatedProfile != null) {
+      _profile = updatedProfile;
+    }
     notifyListeners();
   }
 
+  /// تحديث رقم هاتف المستخدم في المستودع والمخزن المحلي
   Future<void> updateUserPhone(String phone) async {
     _userPhone = phone;
     await PrefHelper.saveUserPhone(phone);
 
-    // تحديث في السيرفر
-    await _repository.updateProfile(phone: phone);
+    final lat = _profile?.latitude ?? await PrefHelper.getUserLat();
+    final lng = _profile?.longitude ?? await PrefHelper.getUserLng();
+
+    final updatedProfile = await _repository.updateProfile(
+      phone: phone,
+      latitude: lat,
+      longitude: lng,
+    );
+    if (updatedProfile != null) {
+      _profile = updatedProfile;
+    }
     notifyListeners();
   }
 
+  /// تحديث عنوان المستخدم في المخزن المحلي
   Future<void> updateUserAddress(String address) async {
     _userAddress = address;
     await PrefHelper.saveUserAddress(address);
     notifyListeners();
   }
 
+  /// تحديث البريد الإلكتروني للمستخدم في المخزن المحلي
   Future<void> updateUserEmail(String email) async {
     _userEmail = email;
     await PrefHelper.saveUserEmail(email);
 
-    // تحديث في السيرفر (إذا كان يدعم ذلك)
-    // await _repository.updateProfile(email: email);
     notifyListeners();
   }
 
+  /// التبديل بين الوضع المظلم والوضع المضيء للتطبيق
   Future<void> toggleTheme(bool value) async {
     _isDarkMode = value;
     await PrefHelper.saveDarkMode(value);

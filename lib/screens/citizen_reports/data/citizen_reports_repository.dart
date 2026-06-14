@@ -10,62 +10,61 @@ class CitizenReportsRepository {
   final NetworkInfo _networkInfo;
   final ReportsLocalService _localService = ReportsLocalService();
 
-  // Constructor: نمرر السيرفس للمستودع (Dependency Injection)
   CitizenReportsRepository(this._service, this._networkInfo);
 
-  // جلب كافة البلاغات (بنفس أسلوب AssignmentRepository)
+  /// جلب بلاغات المواطنين من الخادم أو من قاعدة البيانات المحلية في حال عدم وجود اتصال بالإنترنت.
   Future<List<CitizenReportModel>> fetchReports() async {
-    // 1. إذا كان هناك إنترنت، نجلب من السيرفر ونحدث المحلي فوراً
     if (await _networkInfo.isConnected) {
       try {
         final response = await _service.getAllCitizenReports();
-        if (response.data['status'] == 'success') {
+        if (response.data['status'] == 'success' || response.statusCode == 201 || response.statusCode == 200) {
           final List list = response.data['data'];
-          
+
           List<CitizenReportModel> remoteReports = list.map((json) {
             return CitizenReportModel.fromJson(json);
           }).toList();
 
-          // حفظ في SQLite
+          final localReports = await _localService.getLocalCitizenReports();
+          final localDataMap = {for (var r in localReports) r.id: r};
+
+          remoteReports = remoteReports.map((remoteReport) {
+            final localReport = localDataMap[remoteReport.id];
+            if (localReport != null) {
+              return remoteReport.copyWith(
+                isLiked: localReport.isLiked,
+                likesCount: localReport.likesCount,
+                viewsCount: remoteReport.viewsCount > localReport.viewsCount
+                    ? remoteReport.viewsCount
+                    : localReport.viewsCount,
+              );
+            }
+            return remoteReport;
+          }).toList();
+
           await _localService.saveCitizenReports(remoteReports);
           return remoteReports;
         }
       } catch (e) {
-        print("خطأ في الجلب من السيرفر، العودة للمحلي: $e");
       }
     }
 
-    // 2. إذا لم يتوفر إنترنت أو فشل الطلب، نجلب من المحلي
     return await _localService.getLocalCitizenReports();
   }
 
-
-  // دالة زيادة المشاهدات
-  Future<void> addView(int reportId, int currentViews) async {
-    try {
-      // 1. تحديث السيرفر
-      await _service.incrementView(reportId);
-      // 2. تحديث المحلي
-      await _localService.incrementCitizenReportView(reportId, currentViews);
-    } catch (e) {
-      print("خطأ في زيادة المشاهدات: $e");
-    }
-  }
-  //دالة جلب الاحصائيات 
+  /// جلب إحصائيات البلاغات من الخادم.
   Future<ReportStatistics?> getReportStats() async {
-  if (!await _networkInfo.isConnected) return null; // لا تنتظر طلب السيرفر إذا لم يكن هناك إنترنت
+  if (!await _networkInfo.isConnected) return null; 
   try {
     final response = await _service.getStatistics();
     if (response.data['status'] == 'success') {
       return ReportStatistics.fromJson(response.data['data']);
     }
   } catch (e) {
-    print("Error fetching stats: $e");
   }
   return null;
 }
 
-  // دالة إضافة تعليق على بلاغ
+  /// إضافة تعليق جديد على بلاغ معين.
   Future<bool> addComment(int reportId, String commentText) async {
     if (!await _networkInfo.isConnected) return false;
     try {
@@ -75,12 +74,11 @@ class CitizenReportsRepository {
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      print("خطأ في إرسال التعليق: $e");
       return false;
     }
   }
 
-  // دالة جلب التعليقات الخاصة ببلاغ
+  /// جلب جميع التعليقات الخاصة ببلاغ معين.
   Future<List<CommentModel>> fetchComments(int reportId) async {
     if (!await _networkInfo.isConnected) return [];
     try {
@@ -90,8 +88,39 @@ class CitizenReportsRepository {
         return list.map((json) => CommentModel.fromJson(json)).toList();
       }
     } catch (e) {
-      print("خطأ في جلب التعليقات: $e");
     }
     return [];
+  }
+
+  /// تبديل حالة الإعجاب لبلاغ معين محلياً وعبر الخادم.
+  Future<void> toggleLike(CitizenReportModel report) async {
+    final bool newIsLiked = !report.isLiked;
+    final int newLikesCount = newIsLiked ? report.likesCount + 1 : (report.likesCount - 1).clamp(0, 999999);
+
+    await _localService.updateCitizenReportLikeLocal(report.id, newIsLiked, newLikesCount);
+
+    if (!await _networkInfo.isConnected) return;
+    try {
+      if (report.isLiked) {
+        await _service.decrementLike(report.id);
+      } else {
+        await _service.incrementLike(report.id);
+      }
+    } catch (e) {
+      await _localService.updateCitizenReportLikeLocal(report.id, report.isLiked, report.likesCount);
+      rethrow;
+    }
+  }
+
+  /// زيادة عدد المشاهدات لبلاغ معين محلياً وعبر الخادم.
+  Future<void> addView(int reportId, int newViewsCount) async {
+    try {
+      await _localService.incrementCitizenReportView(reportId, newViewsCount);
+
+      if (await _networkInfo.isConnected) {
+        await _service.incrementView(reportId);
+      }
+    } catch (e) {
+    }
   }
 }

@@ -14,10 +14,9 @@ import '../data/news_repository.dart';
   Timer? _autoRefreshTimer;
   
   NewsTipsViewModel(this._newsRepository) {
-  // 1. تجهيز الأدوات الأساسية (التي كانت ناقصة عندك)
     final dioClient = DioClient();
     final apiService = ApiService(dioClient);
-    final newsService = Newsservice(apiService); // تأكدي من مطابقة اسم الكلاس عندك
+    final newsService = Newsservice(apiService); 
     final localService = NewsLocalService();
     final networkInfo = NetworkInfoImpl(Connectivity());
      _newsRepository = NewsRepository(
@@ -41,7 +40,6 @@ import '../data/news_repository.dart';
   bool _isNewsSelected = true;
   bool get isNewsSelected => _isNewsSelected;
 
-  //تخزن كل 
   List<NewsModel> _allContent = [];
   List<NewsModel>  get newsList => _allContent.where((item)=>item.type.trim().toLowerCase()=='news').toList();
   List<NewsModel>  get tipssList => _allContent.where((item)=>item.type.trim().toLowerCase()=='tips').toList();
@@ -53,18 +51,15 @@ import '../data/news_repository.dart';
   }
 
   Future <void> loadContent({bool isRefresh = true}) async {
-    //اذا كانت القائمة فارغة تماما يظهر حق
   if (_allContent.isEmpty) {
       _isLoading = true;
       notifyListeners();
     }
     try{
-      //يجيب من الكاش اول مره ويجبر السيرفر على جلب البيانات الجديدة
       _allContent = await _newsRepository.fetchAllContent(isRefresh: isRefresh);
       _isLoading = false;
       notifyListeners();
 
-      // انتظار بسيط للسماح للمزامنة الخلفية بالانتهاء
       await Future.delayed(const Duration(seconds: 2));
 
       _allContent = await _newsRepository.fetchAllContent(isRefresh: false);
@@ -72,7 +67,6 @@ import '../data/news_repository.dart';
 
    
     } catch (e) {
-     debugPrint("Error fetching content: $e");
     } finally {
       _isLoading = false;
       notifyListeners(); 

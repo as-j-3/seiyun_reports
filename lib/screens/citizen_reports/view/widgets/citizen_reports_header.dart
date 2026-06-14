@@ -39,7 +39,7 @@ class CitizenReportsHeader extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 48), // Spacer for centering
+              const SizedBox(width: 48), 
             ],
           ),
           const SizedBox(height: 20),

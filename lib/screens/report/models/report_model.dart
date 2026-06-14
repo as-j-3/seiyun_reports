@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 class ReportModel {
-  // تعريف الحقول الي بتجي من قواعد البيانات
   final int id;
   final int citizenId;
   final String title;
@@ -31,11 +30,9 @@ class ReportModel {
     required this.lng,
     required this.createdAt,
   });
-  // تحويل من جيسون الى كائن
   factory ReportModel.fromJson(Map<String, dynamic> json) {
     try {
       return ReportModel(
-        // نحط قيم افتراضية تجنب للاخطاء
         id: json['id'] != null ? int.parse(json['id'].toString()) : 0,
         citizenId:
             json['citizen_id'] != null
@@ -60,8 +57,6 @@ class ReportModel {
         createdAt: json['created_at']?.toString() ?? '',
       );
     } catch (e) {
-      debugPrint("Error parsing ReportModel from JSON: $e");
-      // نرجع كائن فارغ/افتراضي في حالة وجود خطأ جسيم في البيانات
       return ReportModel(
         id: 0,
         citizenId: 0,
@@ -76,7 +71,6 @@ class ReportModel {
       );
     }
   }
-  // تحويل الكائن الى جيسون نحتاجه عند الارسال الى قاعدة البيانات
   Map<String, dynamic> toJson() {
     return {
       'title': title,
@@ -89,7 +83,6 @@ class ReportModel {
     };
   }
 
-  // تحويل الكائن الى ماب بكامل الحقول للحفظ في قاعدة البيانات المحلية
   Map<String, dynamic> toMap() {
     return {
       'id': id,

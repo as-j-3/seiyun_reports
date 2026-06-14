@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:seiyun_reports_app/core/theme/app_theme.dart';
 
 class ReportHeader extends StatelessWidget {
@@ -29,9 +30,9 @@ class ReportHeader extends StatelessWidget {
                 ),
                 onPressed: () => Navigator.maybePop(context),
               ),
-              const Text(
-                "بلاغ جديد",
-                style: TextStyle(
+              Text(
+                "report.new_report".tr(),
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -48,9 +49,13 @@ class ReportHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.white.withOpacity(0.1)),
             ),
-            child: const Text(
-              "ساعد في تحسين مدينتك من خلال الإبلاغ عن المشكلات، سنعمل على حلها في أقرب وقت.",
-              style: TextStyle(color: Colors.white, fontSize: 13, height: 1.6),
+            child: Text(
+              "report.header_desc".tr(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                height: 1.6,
+              ),
             ),
           ),
         ],

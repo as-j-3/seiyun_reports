@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:seiyun_reports_app/screens/profile/viewmodel/profile_viewmodel.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class LogoutButton extends StatelessWidget {
   final ProfileViewModel viewModel;
@@ -22,8 +23,8 @@ class LogoutButton extends StatelessWidget {
           ),
           child: const Icon(Icons.logout, color: Colors.red),
         ),
-        title: const Text(
-          "تسجيل الخروج",
+        title: Text(
+         "profile.logout".tr(),
           style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
         ),
         onTap: () => viewModel.logout(),

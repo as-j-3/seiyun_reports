@@ -29,6 +29,7 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
     });
   }
 
+  /// يحمل بيانات الملف الشخصي للمشرف الميداني من التخزين المحلي.
   Future<void> _loadProfileData() async {
     final name = await PrefHelper.getUserName() ?? FirebaseAuth.instance.currentUser?.displayName ?? "مشرف ميداني";
     final role = await PrefHelper.getRole();
@@ -39,11 +40,12 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
         _userName = name;
         _userRole = role;
         _userEmail = email;
-        _qrData = name; // الباركود يمثل اسم المشرف كما طلب المستخدم
+        _qrData = name; 
       });
     }
   }
 
+  /// يسجل خروج المستخدم من الحساب ويقوم بتوجيهه إلى شاشة تسجيل الدخول.
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
     await PrefHelper.clear();
@@ -97,6 +99,7 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
     );
   }
 
+  /// يبني الجزء العلوي (الهيدر) الخاص بالملف الشخصي للمشرف.
   Widget _buildHeader(bool isDark) {
     return Container(
       width: double.infinity,
@@ -182,6 +185,7 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
     );
   }
 
+  /// يبني صف الإحصائيات لعرض المهام اليومية والمهام المنجزة.
   Widget _buildStatsRow(bool isDark) {
     return Consumer<SupervisorTasksViewModel>(
       builder: (context, viewModel, child) {
@@ -211,6 +215,7 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
     );
   }
 
+  /// يبني بطاقة عرض إحصائية واحدة بناءً على القيم الممررة.
   Widget _buildStatCard(String label, String value, IconData icon, Color color, bool isDark) {
     return Expanded(
       child: Container(
@@ -251,6 +256,7 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
     );
   }
 
+  /// يبني بطاقة عرض كود الـ QR الخاص بالتحضير الرقمي للمشرف.
   Widget _buildQRCodeCard(bool isDark) {
     return Container(
       padding: const EdgeInsets.all(30),
@@ -288,6 +294,7 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
     );
   }
 
+  /// يبني زر تسجيل الخروج مع إظهار نافذة تأكيد للمستخدم.
   Widget _buildLogoutButton() {
     return SizedBox(
       width: double.infinity,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // ... (previous colors remain the same)
   static const Color primaryGreen = Color(0xFF2E7D32);
   static const Color accentGreen = Color(0xFF2ECC71);
   static const Color darkGreen = Color(0xFF1B5E20);
@@ -10,15 +9,12 @@ class AppTheme {
   static const Color errorColor = Color(0xFFD32F2F);
   static const Color errorContainer = Color(0xFFFFEBEE);
 
-  // ألوان الخلفيات للوضع الفاتح
   static const Color lightScaffoldBg = Color(0xFFF5F7F9);
   static const Color lightCardBg = Colors.white;
 
-  // ألوان الخلفيات للوضع الداكن
   static const Color darkScaffoldBg = Color(0xFF121212);
   static const Color darkCardBg = Color(0xFF1E1E1E);
 
-  // التدرج الموحد للهيدر في جميع الصفحات
   static const LinearGradient headerGradient = LinearGradient(
     colors: [accentGreen, darkGreen],
     begin: Alignment.topLeft,

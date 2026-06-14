@@ -26,9 +26,10 @@ class HomeViewModel extends ChangeNotifier {
   String _userName = 'مستخدم';
   String get userName => _userName;
 
+  /// تغيير الصفحة الحالية في واجهة المستخدم وتحديث الموقع
   void setPage(int index) {
     _currentIndex = index;
-    _fetchLocation(); // تحديث الموقع عند التبديل بين الصفحات
+    _fetchLocation(); 
     notifyListeners();
   }
 
@@ -55,6 +56,7 @@ class HomeViewModel extends ChangeNotifier {
     });
   }
 
+  /// بدء مؤقت التحديث التلقائي لبيانات الصفحة الرئيسية
   void _startAutoRefresh() {
     _autoRefreshTimer?.cancel();
     _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
@@ -62,18 +64,21 @@ class HomeViewModel extends ChangeNotifier {
     });
   }
 
+  /// تحديث كافة بيانات الصفحة الرئيسية من الخادم والموقع
   Future<void> refreshData() async {
     await _fetchUser();
     await _fetchHomeData();
     await _fetchLocation();
   }
 
+  /// جلب بيانات المستخدم الحالي واسمه المخزن محلياً
   Future<void> _fetchUser() async {
     _currentUser = FirebaseAuth.instance.currentUser;
     _userName = await PrefHelper.getUserName() ?? 'مستخدم';
     notifyListeners();
   }
 
+  /// جلب اسم المنطقة الحالية للمستخدم
   Future<void> _fetchLocation() async {
     final savedAddress = await PrefHelper.getUserAddress();
     if (savedAddress != null && savedAddress.isNotEmpty) {
@@ -84,6 +89,7 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// جلب بيانات اللوحة الرئيسية (الإحصائيات، البلاغات الأخيرة) من المستودع
   Future<void> _fetchHomeData() async {
     try {
       final data = await _repository.getHomeData();
@@ -98,7 +104,6 @@ class HomeViewModel extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint("Error fetching home data: $e");
     }
   }
 
@@ -108,7 +113,6 @@ class HomeViewModel extends ChangeNotifier {
     super.dispose();
   }
 
-  // --- منطق البحث عن الخدمات ---
   String _serviceSearchQuery = "";
   String get serviceSearchQuery => _serviceSearchQuery;
 
@@ -124,6 +128,7 @@ class HomeViewModel extends ChangeNotifier {
     {'title': 'الملف الشخصي', 'icon': Icons.person_outline, 'page': 3},
   ];
 
+  /// تعيين نص البحث الخاص بالخدمات
   void setServiceSearchQuery(String query) {
     _serviceSearchQuery = query;
     notifyListeners();

@@ -13,6 +13,7 @@ class AuthRepository {
     _authService = AuthService(apiService);
   }
 
+  /// تسجيل أو إنشاء حساب مستخدم جديد وحفظ بياناته محلياً.
   Future<UserModel> registerUser({
     required String role,
     String? name,
@@ -31,7 +32,6 @@ class AuthRepository {
       final serverRole = data['role']?.toString() ?? 'citizens';
       final laravelToken = data['token']?.toString();
 
-      // إنشاء موديل المستخدم مع دمج الدور من مستوى أعلى
       final userModel = UserModel(
         id: userData['id'],
         name: userData['name'] ?? '',
@@ -41,15 +41,12 @@ class AuthRepository {
 
       await PrefHelper.saveLoginStatus(true);
       
-      // حفظ التوكن القادم من لارفيل (مهم جداً للطلبات القادمة)
       if (laravelToken != null) {
         await PrefHelper.saveToken(laravelToken);
       }
       
-      // حفظ الدور القادم من السيرفر
       await PrefHelper.saveRole(serverRole);
 
-      // حفظ بيانات المستخدم في التخزين المحلي لجميع المستخدمين
       await PrefHelper.saveUserId(userModel.id);
       await PrefHelper.saveUserName(userModel.name);
       await PrefHelper.saveUserEmail(userModel.email);

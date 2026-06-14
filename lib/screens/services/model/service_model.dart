@@ -5,7 +5,7 @@ class AppService {
   final String title;
   final String subtitle;
   final double? price;
-  final String? priceLabel; // for "حسب الحجم"
+  final String? priceLabel; 
   final IconData icon;
   final Color iconBgColor;
 
